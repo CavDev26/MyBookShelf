@@ -1,0 +1,34 @@
+//
+//  Trip.swift
+//  TravelDiary
+//
+//  Created by Gianni Tumedei on 07/05/25.
+//
+
+import Foundation
+import SwiftData
+
+@Model
+class Book {
+    var id: UUID
+    var name: String
+    var date: Date
+    var tripDescription: String
+    var image: String
+    var imageUrl: URL? { URL(string: image) }
+    var latitude: Double
+    var longitude: Double
+
+    init(
+        id: UUID = UUID(), name: String, date: Date, tripDescription: String,
+        image: String, latitude: Double, longitude: Double
+    ) {
+        self.id = id
+        self.name = name
+        self.date = date
+        self.tripDescription = tripDescription
+        self.image = image
+        self.latitude = latitude
+        self.longitude = longitude
+    }
+}
