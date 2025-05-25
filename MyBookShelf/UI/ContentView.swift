@@ -1,20 +1,22 @@
-//
-//  ContentView.swift
-//  TravelDiary
-//
-//  Created by Gianni Tumedei on 07/05/25.
-//
-
 import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        TabView {
-            BookListView()
-                .tabItem { Label("Home", systemImage: "house") }
-            ProfileView()
-                .tabItem { Label("Profile", systemImage: "") }
-        }
+            TabView {
+                BookListView()
+                    .background(Color(.blue))
+                    .tabItem { Label("My Books", systemImage: "books.vertical") }
+                AddBooksView()
+                    .background(Color(.blue))
+                    .tabItem { Label("Add", systemImage: "plus") }
+                DiscoverView()
+                    .background(Color(.blue))
+                    .tabItem { Label("Discover", systemImage: "safari") }
+                ProfileView()
+                    .background(Color(.blue))
+                    .tabItem { Label("Profile", systemImage: "person.crop.circle") }
+
+            }
     }
 }
 
