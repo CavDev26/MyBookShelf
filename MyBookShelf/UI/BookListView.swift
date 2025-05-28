@@ -12,29 +12,25 @@ struct BookListView: View {
 
     var body: some View {
         ZStack{
-            Color.blue.ignoresSafeArea()
-            
             NavigationStack {
-                VStack{
-                    HStack (){
-                        Image("MyIcon").resizable().frame(width: 50, height: 50).padding(.leading)
-                        Text("MyBookShelf").frame(maxWidth: .infinity, alignment: .leading).font(.custom("Baskerville-SemiBoldItalic", size: 20))
-                        Button(action: {
-                            isView1 = !isView1
-                        }) {
-                            Image(systemName: isView1 ? "rectangle.grid.3x2.fill" : "rectangle.grid.1x2.fill")
-                                .contentTransition(.symbolEffect(.replace))
-                        }.padding(.horizontal)
-                    }
+                HStack (){
+                    Image("MyIcon").resizable().frame(width: 50, height:50).padding(.leading)
+                    Text("MyBookShelf").frame(maxWidth: .infinity, alignment:.leading).font(.custom("Baskerville-SemiBoldItalic", size: 20))
+                    Button(action: {
+                        isView1 = !isView1
+                    }) {
+                        Image(systemName: isView1 ? "rectangle.grid.3x2.fill" :"rectangle.grid.1x2.fill")
+                            .contentTransition(.symbolEffect(.replace))
+                    }.padding(.horizontal)
+                }
+                
+                switch isView1{
+                case true:
+                    BookListViewGrid(books: books)
                     
-                    switch isView1{
-                    case true:
-                        BookListViewGrid(books: books)
-                        
-                    case false:
-                        BookListViewList(books : books)
-                    }
-                }.frame(maxWidth: .infinity, maxHeight: .infinity)
+                case false:
+                    BookListViewList(books : books)
+                }
             }
         }
     }
@@ -59,7 +55,6 @@ struct BookListViewGrid: View {
                 }
             }
         }
-        .background(Color.clear)
         .overlay(alignment: .center) {
             if books.isEmpty {
                 ContentUnavailableView(
@@ -88,7 +83,7 @@ struct BookListViewList: View {
     @State var showAddBookSheet = false
     var body: some View {
         let columnCount: Int = 1
-        let gridSpacing: CGFloat = 0.0
+        let gridSpacing: CGFloat = -20.0
 
         ScrollView(.vertical) {
             LazyVGrid(columns: Array(repeating: .init(.flexible(), spacing: gridSpacing), count: columnCount), spacing: gridSpacing) {
@@ -96,12 +91,11 @@ struct BookListViewList: View {
                     NavigationLink(
                         destination: BookDetailsView(book: book)
                     ) {
-                        BookListItem2(book: book).aspectRatio(3/1, contentMode: .fit).padding(.horizontal).padding(.vertical, 6)
+                        BookListItem2(book: book).aspectRatio(contentMode: .fit).padding(.horizontal).padding(.vertical, 6)
                     }
                 }
             }
         }
-        .background(Color.clear)
         .overlay(alignment: .center) {
             if books.isEmpty {
                 ContentUnavailableView(
