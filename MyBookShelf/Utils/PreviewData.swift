@@ -10,104 +10,114 @@ import SwiftData
 enum PreviewData {
     static let sampleBooks = [
         Book(
-            name: "Rocca di Cesena",
+            name: "libro1(letto)",
             date: .now,
             tripDescription:
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
             image:
                 "https://upload.wikimedia.org/wikipedia/commons/a/a1/La_rocca_malatestiana_di_Cesena.jpg",
             latitude: 44.136,
-            longitude: 12.237
+            longitude: 12.237,
+            readingStatus: .read
         ),
         Book(
-            name: "Campus di Cesena",
+            name: "libro2(letto)",
             date: .now,
             tripDescription:
                 "Praesent volutpat, neque ac eleifend dapibus, velit nisl placerat erat, vel dapibus nisi velit vel arcu.",
             image:
                 "https://magazine.unibo.it/archivio/2018/inaugurato-il-nuovo-campus-di-cesena-allex-zuccherificio/cesena2.jpeg",
             latitude: 44.136,
-            longitude: 12.23
+            longitude: 12.23,
+            readingStatus: .read
         ),
         Book(
-            name: "Campus di Cesena",
+            name: "Libro3(nonletto)",
             date: .now,
             tripDescription:
                 "Praesent volutpat, neque ac eleifend dapibus, velit nisl placerat erat, vel dapibus nisi velit vel arcu.",
             image:
                 "https://magazine.unibo.it/archivio/2018/inaugurato-il-nuovo-campus-di-cesena-allex-zuccherificio/cesena2.jpeg",
             latitude: 44.136,
-            longitude: 12.23
+            longitude: 12.23,
+            readingStatus: .unread
         ),
         Book(
-            name: "Campus di Cesena",
+            name: "libro4(leggendo)",
             date: .now,
             tripDescription:
                 "Praesent volutpat, neque ac eleifend dapibus, velit nisl placerat erat, vel dapibus nisi velit vel arcu.",
             image:
                 "https://magazine.unibo.it/archivio/2018/inaugurato-il-nuovo-campus-di-cesena-allex-zuccherificio/cesena2.jpeg",
             latitude: 44.136,
-            longitude: 12.23
+            longitude: 12.23,
+            readingStatus: .reading
         ),
         Book(
-            name: "Campus di Cesena",
+            name: "libro5(nonLetto)",
             date: .now,
             tripDescription:
                 "Praesent volutpat, neque ac eleifend dapibus, velit nisl placerat erat, vel dapibus nisi velit vel arcu.",
             image:
                 "https://magazine.unibo.it/archivio/2018/inaugurato-il-nuovo-campus-di-cesena-allex-zuccherificio/cesena2.jpeg",
             latitude: 44.136,
-            longitude: 12.23
+            longitude: 12.23,
+            readingStatus: .unread
         ),
         Book(
-            name: "Campus di Cesena",
+            name: "libro6(leggendo)",
             date: .now,
             tripDescription:
                 "Praesent volutpat, neque ac eleifend dapibus, velit nisl placerat erat, vel dapibus nisi velit vel arcu.",
             image:
                 "https://magazine.unibo.it/archivio/2018/inaugurato-il-nuovo-campus-di-cesena-allex-zuccherificio/cesena2.jpeg",
             latitude: 44.136,
-            longitude: 12.23
+            longitude: 12.23,
+            readingStatus: .reading
         ),
         Book(
-            name: "Campus di Cesena",
+            name: "Libro7(nonletto)",
             date: .now,
             tripDescription:
                 "Praesent volutpat, neque ac eleifend dapibus, velit nisl placerat erat, vel dapibus nisi velit vel arcu.",
             image:
                 "https://magazine.unibo.it/archivio/2018/inaugurato-il-nuovo-campus-di-cesena-allex-zuccherificio/cesena2.jpeg",
             latitude: 44.136,
-            longitude: 12.23
+            longitude: 12.23,
+            readingStatus: .unread
         ),
         Book(
-            name: "Campus di Cesena",
+            name: "libro8(nonletto)",
             date: .now,
             tripDescription:
                 "Praesent volutpat, neque ac eleifend dapibus, velit nisl placerat erat, vel dapibus nisi velit vel arcu.",
             image:
                 "https://magazine.unibo.it/archivio/2018/inaugurato-il-nuovo-campus-di-cesena-allex-zuccherificio/cesena2.jpeg",
             latitude: 44.136,
-            longitude: 12.23
+            longitude: 12.23,
+            readingStatus: .unread
         ),
         Book(
-            name: "Campus di Cesena",
+            name: "libro9(nonletto)",
             date: .now,
             tripDescription:
                 "Praesent volutpat, neque ac eleifend dapibus, velit nisl placerat erat, vel dapibus nisi velit vel arcu.",
             image:
                 "https://magazine.unibo.it/archivio/2018/inaugurato-il-nuovo-campus-di-cesena-allex-zuccherificio/cesena2.jpeg",
             latitude: 44.136,
-            longitude: 12.23
+            longitude: 12.23,
+            readingStatus: .unread
         ),
         Book(
-            name: "Campus di Cesena",
+            name: "Libro10(nonletto)",
             date: .now,
             tripDescription:
                 "Praesent volutpat, neque ac eleifend dapibus, velit nisl placerat erat, vel dapibus nisi velit vel arcu.",
             image:
                 "https://magazine.unibo.it/archivio/2018/inaugurato-il-nuovo-campus-di-cesena-allex-zuccherificio/cesena2.jpeg",
             latitude: 44.136,
-            longitude: 12.23
+            longitude: 12.23,
+            readingStatus: .unread
         ),
         
     ]

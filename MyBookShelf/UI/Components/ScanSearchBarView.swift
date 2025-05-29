@@ -10,15 +10,13 @@ import SwiftUI
 struct ScanSearchBarView: View {
     
     @Environment(\.colorScheme) var colorScheme
-    
     @State var searchText: String = ""
     @State var navigated = false
-    
     @State var scanview = false
 
     
     var body: some View {
-        NavigationView{
+        //NavigationView{
             HStack{
                 Image(systemName: "magnifyingglass")
                     .foregroundColor(colorScheme == .dark ? .white : .black)
@@ -52,13 +50,7 @@ struct ScanSearchBarView: View {
                     .fill(.gray).opacity(0.6)
                     .shadow(color: .black.opacity(0.50), radius: 5, x: 0, y: 0)
             )
-            .padding()
-            
-            
-            
-            
-        }
-    
+        //}
     }
 }
 

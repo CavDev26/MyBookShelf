@@ -17,6 +17,7 @@ struct AddBookSheet: View {
     @State private var image: String = ""
     @State private var latitude: Double? = nil
     @State private var longitude: Double? = nil
+    @State private var readingStatus: ReadingStatus = .unread
 
     private var canSubmit: Bool { !name.isEmpty && !description.isEmpty }
 
@@ -87,7 +88,8 @@ struct AddBookSheet: View {
                             tripDescription: description,
                             image: image,
                             latitude: latitude ?? 0,
-                            longitude: longitude ?? 0
+                            longitude: longitude ?? 0,
+                            readingStatus: readingStatus
                         )
                         modelContext.insert(book)
                         dismiss()

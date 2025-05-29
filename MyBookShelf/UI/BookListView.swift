@@ -5,9 +5,9 @@ struct BookListView: View {
     
     @Environment(\.modelContext) private var modelContext
 
-    @Query(sort: \Book.date, order: .reverse) var books: [Book]
+    @Query(sort: \Book.name, order: .forward) var books: [Book]
 
-    @State var isView1 = false
+    @State var isViewGrid = true
 
 
     var body: some View {
@@ -17,14 +17,14 @@ struct BookListView: View {
                     Image("MyIcon").resizable().frame(width: 50, height:50).padding(.leading)
                     Text("MyBookShelf").frame(maxWidth: .infinity, alignment:.leading).font(.custom("Baskerville-SemiBoldItalic", size: 20))
                     Button(action: {
-                        isView1 = !isView1
+                        isViewGrid = !isViewGrid
                     }) {
-                        Image(systemName: isView1 ? "rectangle.grid.3x2.fill" :"rectangle.grid.1x2.fill")
+                        Image(systemName: isViewGrid ? "rectangle.grid.1x2.fill" : "rectangle.grid.3x2.fill")
                             .contentTransition(.symbolEffect(.replace))
                     }.padding(.horizontal)
                 }
                 
-                switch isView1{
+                switch isViewGrid{
                 case true:
                     BookListViewGrid(books: books)
                     
@@ -50,7 +50,7 @@ struct BookListViewGrid: View {
                     NavigationLink(
                         destination: BookDetailsView(book: book)
                     ) {
-                        BookListItem(book: book).aspectRatio(2/3, contentMode: .fit).padding(.horizontal).padding(.vertical, 8)
+                        BookListItemGrid(book: book).aspectRatio(2/3, contentMode: .fit).padding(.horizontal).padding(.vertical, 8)
                     }
                 }
             }
@@ -91,7 +91,7 @@ struct BookListViewList: View {
                     NavigationLink(
                         destination: BookDetailsView(book: book)
                     ) {
-                        BookListItem2(book: book).aspectRatio(contentMode: .fit).padding(.horizontal).padding(.vertical, 6)
+                        BookListItemList(book: book).aspectRatio(contentMode: .fit).padding(.horizontal).padding(.vertical, 6)
                     }
                 }
             }

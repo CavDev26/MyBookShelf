@@ -1,10 +1,3 @@
-//
-//  TripListItem.swift
-//  TravelDiary
-//
-//  Created by Gianni Tumedei on 07/05/25.
-//
-
 import SwiftUI
 import _SwiftData_SwiftUI
 
@@ -24,39 +17,59 @@ struct Triangle: Shape {
 
 
 
-struct BookListItem: View {
-    var book: Book
 
+
+struct BookListItemGrid: View {
+    var book: Book
+    var readingStatusColor: Color {
+        switch book.readingStatus{
+        case .reading:
+            return Color.blue
+        case .read:
+            return Color.green
+        case .unread:
+            return Color.red
+        }
+    }
     var body: some View {
-    
-        AsyncImage(
-            url: book.imageUrl,
-            content: { image in image.resizable() },
-            placeholder: { ProgressView().tint(.blue) }
-        )
-        .clipShape(.rect(cornerRadius: 10))
         
-        
-        
-        
-        /*HStack {
+        ZStack(alignment: .topLeading){
+            Color.clear
+            Text(book.name)
+                .padding(-5)
+                .foregroundColor(.white)
+                .multilineTextAlignment(.leading)
+        }
+        .padding()
+        .background(alignment: .bottomTrailing) {
+
             AsyncImage(
                 url: book.imageUrl,
                 content: { image in image.resizable() },
                 placeholder: { ProgressView().tint(.blue) }
             )
-            .frame(width: 50, height: 50)
-            .background(.tint.opacity(0.2))
-            .clipShape(RoundedRectangle(cornerRadius: 10))
-            Spacer().frame(width: 16)
-            Text(book.name)
-        }*/
+            Triangle()
+            .frame(width: 60, height: 60)
+            .foregroundColor(readingStatusColor)
+            .offset(x: 60, y: 60)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
 }
 
-struct BookListItem2: View {
+struct BookListItemList: View {
     var book: Book
         
+    var readingStatusColor: Color {
+        switch book.readingStatus{
+        case .reading:
+            return Color.blue
+        case .read:
+            return Color.green
+        case .unread:
+            return Color.red
+        }
+    }
         let stripeHeight = 10.0
         var body: some View {
             HStack(alignment: .top) {
@@ -91,7 +104,7 @@ struct BookListItem2: View {
             .background {
                 ZStack(alignment: .top) {
                     Rectangle()
-                        .opacity(0.3)
+                        .opacity(0.1)
                     Rectangle()
                         .frame(maxHeight: stripeHeight)
                 }
@@ -103,46 +116,13 @@ struct BookListItem2: View {
                     
                     Triangle()
                         .frame(width: 60, height: 60)
-                        .foregroundColor(.blue)
+                        .foregroundColor(readingStatusColor)
                         .offset(x: 30, y: 25)
                     
-                }
-                .foregroundColor(Color(red: 0.6862745098039216, green: 0.8235294117647058, blue: 0.6549019607843137))
-                //.foregroundColor(Color(red: 175.0, green: 210.0, blue: 167.0))
+            }
+            .foregroundColor(Color(red: 0.6862745098039216, green: 0.8235294117647058, blue: 0.6549019607843137))
             }
             .clipShape(RoundedRectangle(cornerRadius: stripeHeight, style: .continuous))
-        
-        
-        
-        
-        
-        
-        
-        /*HStack(alignment: .top, spacing: 12) {
-            AsyncImage(
-                url: book.imageUrl,
-                content: { image in image.resizable() },
-                placeholder: { ProgressView().tint(.blue) }
-            )
-            .frame(width: 60, height: 60)
-            .background(.tint.opacity(0.2))
-            .clipShape(RoundedRectangle(cornerRadius: 8))
-            
-            VStack(alignment: .leading) {
-                Text(book.name)
-                    .font(.headline)
-                    .foregroundColor(.primary)
-                    .lineLimit(1)
-                    .fixedSize(horizontal: false, vertical: true)
-                Text(book.tripDescription)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .lineLimit(1)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .multilineTextAlignment(.leading)
-            }
-            .frame(maxWidth: .infinity, maxHeight: 70, alignment: .leading)
-        }*/
     }
 }
 

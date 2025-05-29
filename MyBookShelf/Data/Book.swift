@@ -8,6 +8,12 @@
 import Foundation
 import SwiftData
 
+enum ReadingStatus: String, Codable, Hashable {
+    case read
+    case unread
+    case reading
+}
+
 @Model
 class Book {
     var id: UUID
@@ -18,10 +24,11 @@ class Book {
     var imageUrl: URL? { URL(string: image) }
     var latitude: Double
     var longitude: Double
+    var readingStatus: ReadingStatus
 
     init(
         id: UUID = UUID(), name: String, date: Date, tripDescription: String,
-        image: String, latitude: Double, longitude: Double
+        image: String, latitude: Double, longitude: Double, readingStatus: ReadingStatus
     ) {
         self.id = id
         self.name = name
@@ -30,5 +37,6 @@ class Book {
         self.image = image
         self.latitude = latitude
         self.longitude = longitude
+        self.readingStatus = readingStatus
     }
 }
