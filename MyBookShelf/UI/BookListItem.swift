@@ -31,6 +31,8 @@ struct BookListItemGrid: View {
             return Color.red
         }
     }
+    
+
     var body: some View {
         
         ZStack(alignment: .topLeading){

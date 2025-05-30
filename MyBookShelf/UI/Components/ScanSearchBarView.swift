@@ -49,6 +49,7 @@ struct ScanSearchBarView: View {
                 RoundedRectangle(cornerRadius: 25)
                     .fill(.gray).opacity(0.6)
                     .shadow(color: .black.opacity(0.50), radius: 5, x: 0, y: 0)
+                    .frame(width: .infinity, height: 40)
             )
         //}
     }
