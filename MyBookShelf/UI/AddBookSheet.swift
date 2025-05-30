@@ -1,10 +1,3 @@
-//
-//  AddTripSheet.swift
-//  TravelDiary
-//
-//  Created by Gianni Tumedei on 07/05/25.
-//
-
 import SwiftUI
 
 struct AddBookSheet: View {

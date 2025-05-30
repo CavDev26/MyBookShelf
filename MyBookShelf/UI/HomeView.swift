@@ -3,15 +3,12 @@ import _SwiftData_SwiftUI
 
 struct HomeView: View {
 
-    
     @Environment(\.colorScheme) var colorScheme
-    //@Environment(\.modelContext) private var modelContext
     @StateObject private var vm = ViewModel()
     let columnCount: Int = 3
     let gridSpacing: CGFloat = -20.0
     @Query(sort: \Book.name, order: .forward) var books: [Book]
 
-    
     var body: some View {
         NavigationStack {
             ZStack(alignment: .top) {
