@@ -17,7 +17,7 @@ struct AddBooksView: View {
                     .opacity(colorScheme == .dark ? 1 : 0.5)
                 VStack {
                     HStack{
-                        ScanSearchBarView()
+                        ScanSearchBarView(scan: true)
                             .padding(.bottom)
                             .padding(.top)
                             .padding(.horizontal)

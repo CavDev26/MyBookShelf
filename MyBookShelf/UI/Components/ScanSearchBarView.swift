@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ScanSearchBarView: View {
-    
+    var scan: Bool
     @Environment(\.colorScheme) var colorScheme
     @State var searchText: String = ""
     @State var navigated = false
@@ -34,20 +34,21 @@ struct ScanSearchBarView: View {
                                 searchText = ""
                             }, alignment: .trailing
                     )
-                
-                Image(systemName: "barcode.viewfinder")
-                    .foregroundColor(colorScheme == .dark ? .white : .black)
-                    //.opacity(searchText.isEmpty ? 1.0 : 0.0)
-                    .onTapGesture {
-                        scanview.toggle()
-                    }
-                NavigationLink("", destination: ScanView(), isActive: $scanview)
+                if (scan) {
+                    Image(systemName: "barcode.viewfinder")
+                        .foregroundColor(colorScheme == .dark ? .white : .black)
+                        //.opacity(searchText.isEmpty ? 1.0 : 0.0)
+                        .onTapGesture {
+                            scanview.toggle()
+                        }
+                    NavigationLink("", destination: ScanView(), isActive: $scanview)
+                }
             }
             .font(.headline)
             .padding()
             .background(
                 RoundedRectangle(cornerRadius: 25)
-                    .fill(.gray).opacity(0.6)
+                    .fill(.gray).opacity(scan ? 0.6 : 1.0)
                     .shadow(color: .black.opacity(0.50), radius: 5, x: 0, y: 0)
                     .frame(width: .infinity, height: 40)
             )
@@ -56,5 +57,5 @@ struct ScanSearchBarView: View {
 }
 
 #Preview {
-    ScanSearchBarView()
+    ScanSearchBarView(scan: true)
 }

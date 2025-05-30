@@ -1,16 +1,22 @@
 import SwiftData
 import SwiftUI
 
-struct BookListView: View {
+
+/*extension Animation {
+    var myAnimation: Animation { Animation(MyCustomAnimation()) }
+}*/
+
+
+struct MyBooksView: View {
     
     @Environment(\.colorScheme) var colorScheme
-    
     @StateObject private var vm = ViewModel()
-    
-    @Query(sort: \Book.name, order: .forward) var books: [Book]
     @Environment(\.modelContext) private var modelContext
+    @State var isViewGrid: Bool = true
+    @State var searching: Bool = false
 
-    @State var isViewGrid = true
+    @Query(sort: \Book.name, order: .forward) var books: [Book]
+    
 
 
     var body: some View {
@@ -21,23 +27,59 @@ struct BookListView: View {
                     .opacity(colorScheme == .dark ? 1 : 0.5)
                 
                 VStack{
-                    HStack (){
-                        Image("MyIcon").resizable().frame(width: 50, height:50).padding(.leading)
-                        Text("MyBookShelf").frame(maxWidth: .infinity, alignment:.leading).font(.custom("Baskerville-SemiBoldItalic", size: 20))
-                        Button(action: {
-                            isViewGrid = !isViewGrid
-                        }) {
-                            Image(systemName: isViewGrid ? "rectangle.grid.1x2.fill" : "rectangle.grid.3x2.fill")
-                                .contentTransition(.symbolEffect(.replace))
-                                .foregroundColor(colorScheme == .dark ? .white : .black)
-                        }.padding(.horizontal)
+                    ZStack(alignment: .top) {
+                        HStack (){
+                            Image("MyIcon").resizable().frame(width: 50, height:50).padding(.leading)
+                                .opacity(searching ? 0 : 1)
+                            Text("MyBookShelf").frame(maxWidth: .infinity, alignment:.leading).font(.custom("Baskerville-SemiBoldItalic", size: 20))
+                                .opacity(searching ? 0 : 1)
+                            Button(action: {
+                                withAnimation(.linear(duration: 0.1)){
+                                    searching.toggle()
+                                }
+                            }) {
+                                Image(systemName: "magnifyingglass")
+                                    .foregroundColor(colorScheme == .dark ? .white : .black)
+                            }
+                            .opacity(searching ? 0 : 1)
+                            
+                            Button(action: {
+                                withAnimation(.snappy(duration: 0.2)) {
+                                    isViewGrid.toggle()
+                                }
+                            }) {
+                                Image(systemName: isViewGrid ? "rectangle.grid.1x2.fill" : "rectangle.grid.3x2.fill")
+                                    .contentTransition(.symbolEffect(.replace))
+                                    .foregroundColor(colorScheme == .dark ? .white : .black)
+                            }
+                            .padding(.horizontal)
+                            .opacity(searching ? 0 : 1)
+                                
+                             
+                        }
+                        .frame(width: .infinity, height: 50)
+                        .padding(.bottom)
+                        .background {
+                            Color(colorScheme == .dark ? vm.backgroundColorDark2 : vm.backgroundColorLight)
+                                .ignoresSafeArea()
+                        }
+                        HStack {
+                            ScanSearchBarView(scan: false)
+                                .padding(.leading)
+                                .opacity(searching ? 1 : 0)
+                            Button(action: {
+                                withAnimation(.linear(duration: 0.1)){
+                                    searching.toggle()
+                                }
+                            }) {
+                                Text("Cancel")
+                                    .foregroundColor(colorScheme == .dark ? .white : .black)
+                                    .padding(.trailing)
+                            }
+                            .opacity(searching ? 1 : 0)
+                        }
                     }
-                    .frame(width: .infinity, height: 50)
-                    .padding(.bottom)
-                    .background {
-                        Color(colorScheme == .dark ? vm.backgroundColorDark2 : vm.backgroundColorLight)
-                            .ignoresSafeArea()
-                    }
+                    
                     
                     switch isViewGrid{
                     case true:
@@ -137,5 +179,5 @@ struct BookListViewList: View {
 
 
 #Preview {
-    BookListView().modelContainer(PreviewData.makeModelContainer())
+    MyBooksView().modelContainer(PreviewData.makeModelContainer())
 }

@@ -129,5 +129,5 @@ struct BookListItemList: View {
 }
 
 #Preview {
-    BookListView().modelContainer(PreviewData.makeModelContainer())
+    MyBooksView().modelContainer(PreviewData.makeModelContainer())
 }
