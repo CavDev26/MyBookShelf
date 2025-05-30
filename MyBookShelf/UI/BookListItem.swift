@@ -14,13 +14,33 @@ struct Triangle: Shape {
 }
 
 
+struct SizeCalculator: ViewModifier {
+    @Binding var size: CGSize
+    func body(content: Content) -> some View {
+        content
+            .background(
+                GeometryReader { proxy in
+                    Color.clear // we just want the reader to get triggered, so let's use an empty color
+                        .onAppear {
+                            size = proxy.size
+                        }
+                }
+            )
+    }
+}
 
+extension View {
+    func saveSize(in size: Binding<CGSize>) -> some View {
+        modifier(SizeCalculator(size: size))
+    }
+}
 
 
 
 
 struct BookListItemGrid: View {
     var book: Book
+    var showStatus: Bool
     var readingStatusColor: Color {
         switch book.readingStatus{
         case .reading:
@@ -32,30 +52,35 @@ struct BookListItemGrid: View {
         }
     }
     
-
     var body: some View {
-        
-        ZStack(alignment: .topLeading){
-            Color.clear
-            Text(book.name)
-                .padding(-5)
-                .foregroundColor(.white)
-                .multilineTextAlignment(.leading)
+        VStack {
+            ZStack(alignment: .topLeading){
+                Color.clear
+                Text(book.name)
+                    .padding(-5)
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.leading)
+            }
+            .padding()
+            .background(alignment: .bottomTrailing) {
+                AsyncImage(
+                    url: book.imageUrl,
+                    content: { image in image.resizable() },
+                    placeholder: { ProgressView().tint(.blue) }
+                )
+                if(!showStatus) {
+                    Triangle()
+                    .frame(width: 60, height: 60)
+                    .foregroundColor(readingStatusColor)
+                    .offset(x: 60, y: 60)
+                }
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            
+            if(showStatus) {
+                progressView(book: book)
+            }
         }
-        .padding()
-        .background(alignment: .bottomTrailing) {
-
-            AsyncImage(
-                url: book.imageUrl,
-                content: { image in image.resizable() },
-                placeholder: { ProgressView().tint(.blue) }
-            )
-            Triangle()
-            .frame(width: 60, height: 60)
-            .foregroundColor(readingStatusColor)
-            .offset(x: 60, y: 60)
-        }
-        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
 }
 
@@ -127,6 +152,43 @@ struct BookListItemList: View {
             .clipShape(RoundedRectangle(cornerRadius: stripeHeight, style: .continuous))
     }
 }
+
+struct progressView : View {
+    @State var size: CGSize = .zero
+    var book: Book
+    var body: some View {
+        VStack {
+            ZStack(alignment: .leading) {
+                Rectangle()
+                    .frame(height: 20)
+                    .foregroundColor(Color.red)
+                    .saveSize(in: $size)
+                Rectangle()
+                    .frame(width: CGFloat(book.pagesRead) * size.width / CGFloat(book.pages), height: 20)
+                    .foregroundColor(Color.green)
+            }.clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            let v = CGFloat(book.pagesRead) / CGFloat(book.pages)
+            //ProgressView(value: v)
+            HStack {
+                Text("\(Int(v*100))%")
+                    .font(.system(size: 12))
+                Button(action: {
+                    //TODO porta direttamente all'aggiornamento del progresso
+                }) {
+                    Text("Update")
+                        .font(.system(size: 12))
+                    
+                }.background {
+                    Color.brown
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 5))
+                .frame(width: .infinity)
+            }
+            .frame(width: .infinity, height: 20)
+        }
+    }
+}
+
 
 #Preview {
     MyBooksView().modelContainer(PreviewData.makeModelContainer())

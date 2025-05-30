@@ -1,12 +1,6 @@
 import SwiftData
 import SwiftUI
 
-
-/*extension Animation {
-    var myAnimation: Animation { Animation(MyCustomAnimation()) }
-}*/
-
-
 struct MyBooksView: View {
     
     @Environment(\.colorScheme) var colorScheme
@@ -108,7 +102,7 @@ struct BookListViewGrid: View {
                     NavigationLink(
                         destination: BookDetailsView(book: book)
                     ) {
-                        BookListItemGrid(book: book).aspectRatio(2/3, contentMode: .fit).padding(.horizontal).padding(.vertical, 8)
+                        BookListItemGrid(book: book, showStatus: false).aspectRatio(2/3, contentMode: .fit).padding(.horizontal).padding(.vertical, 8)
                     }
                 }
             }

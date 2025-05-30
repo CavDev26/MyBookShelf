@@ -1,10 +1,3 @@
-//
-//  PreviewModelContainer.swift
-//  TravelDiary
-//
-//  Created by Gianni Tumedei on 14/05/25.
-//
-
 import SwiftData
 
 enum PreviewData {
@@ -18,7 +11,9 @@ enum PreviewData {
                 "https://upload.wikimedia.org/wikipedia/commons/a/a1/La_rocca_malatestiana_di_Cesena.jpg",
             latitude: 44.136,
             longitude: 12.237,
-            readingStatus: .read
+            readingStatus: .read,
+            pages: 100,
+            pagesRead: 0
         ),
         Book(
             name: "libro2(letto)",
@@ -29,7 +24,9 @@ enum PreviewData {
                 "https://magazine.unibo.it/archivio/2018/inaugurato-il-nuovo-campus-di-cesena-allex-zuccherificio/cesena2.jpeg",
             latitude: 44.136,
             longitude: 12.23,
-            readingStatus: .read
+            readingStatus: .read,
+            pages: 100,
+            pagesRead: 100
         ),
         Book(
             name: "Libro3(nonletto)",
@@ -40,7 +37,9 @@ enum PreviewData {
                 "https://magazine.unibo.it/archivio/2018/inaugurato-il-nuovo-campus-di-cesena-allex-zuccherificio/cesena2.jpeg",
             latitude: 44.136,
             longitude: 12.23,
-            readingStatus: .unread
+            readingStatus: .unread,
+            pages: 100,
+            pagesRead: 0
         ),
         Book(
             name: "libro4(leggendo)",
@@ -51,7 +50,9 @@ enum PreviewData {
                 "https://magazine.unibo.it/archivio/2018/inaugurato-il-nuovo-campus-di-cesena-allex-zuccherificio/cesena2.jpeg",
             latitude: 44.136,
             longitude: 12.23,
-            readingStatus: .reading
+            readingStatus: .reading,
+            pages: 100,
+            pagesRead: 20
         ),
         Book(
             name: "libro5(nonLetto)",
@@ -62,7 +63,9 @@ enum PreviewData {
                 "https://magazine.unibo.it/archivio/2018/inaugurato-il-nuovo-campus-di-cesena-allex-zuccherificio/cesena2.jpeg",
             latitude: 44.136,
             longitude: 12.23,
-            readingStatus: .unread
+            readingStatus: .unread,
+            pages: 100,
+            pagesRead: 0
         ),
         Book(
             name: "libro6(leggendo)",
@@ -73,7 +76,9 @@ enum PreviewData {
                 "https://magazine.unibo.it/archivio/2018/inaugurato-il-nuovo-campus-di-cesena-allex-zuccherificio/cesena2.jpeg",
             latitude: 44.136,
             longitude: 12.23,
-            readingStatus: .reading
+            readingStatus: .reading,
+            pages: 200,
+            pagesRead: 100
         ),
         Book(
             name: "Libro7(nonletto)",
@@ -84,7 +89,9 @@ enum PreviewData {
                 "https://magazine.unibo.it/archivio/2018/inaugurato-il-nuovo-campus-di-cesena-allex-zuccherificio/cesena2.jpeg",
             latitude: 44.136,
             longitude: 12.23,
-            readingStatus: .unread
+            readingStatus: .unread,
+            pages: 100,
+            pagesRead: 0
         ),
         Book(
             name: "libro8(nonletto)",
@@ -95,7 +102,9 @@ enum PreviewData {
                 "https://magazine.unibo.it/archivio/2018/inaugurato-il-nuovo-campus-di-cesena-allex-zuccherificio/cesena2.jpeg",
             latitude: 44.136,
             longitude: 12.23,
-            readingStatus: .unread
+            readingStatus: .unread,
+            pages: 100,
+            pagesRead: 0
         ),
         Book(
             name: "libro9(nonletto)",
@@ -106,7 +115,9 @@ enum PreviewData {
                 "https://magazine.unibo.it/archivio/2018/inaugurato-il-nuovo-campus-di-cesena-allex-zuccherificio/cesena2.jpeg",
             latitude: 44.136,
             longitude: 12.23,
-            readingStatus: .unread
+            readingStatus: .unread,
+            pages: 100,
+            pagesRead: 0
         ),
         Book(
             name: "Libro10(nonletto)",
@@ -117,7 +128,9 @@ enum PreviewData {
                 "https://magazine.unibo.it/archivio/2018/inaugurato-il-nuovo-campus-di-cesena-allex-zuccherificio/cesena2.jpeg",
             latitude: 44.136,
             longitude: 12.23,
-            readingStatus: .unread
+            readingStatus: .unread,
+            pages: 100,
+            pagesRead: 0
         ),
         
     ]

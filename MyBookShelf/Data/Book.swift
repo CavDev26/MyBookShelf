@@ -25,10 +25,12 @@ class Book {
     var latitude: Double
     var longitude: Double
     var readingStatus: ReadingStatus
+    var pages: Int
+    var pagesRead: Int
 
     init(
         id: UUID = UUID(), name: String, date: Date, tripDescription: String,
-        image: String, latitude: Double, longitude: Double, readingStatus: ReadingStatus
+        image: String, latitude: Double, longitude: Double, readingStatus: ReadingStatus, pages: Int, pagesRead: Int
     ) {
         self.id = id
         self.name = name
@@ -38,5 +40,7 @@ class Book {
         self.latitude = latitude
         self.longitude = longitude
         self.readingStatus = readingStatus
+        self.pages = pages
+        self.pagesRead = pagesRead
     }
 }
