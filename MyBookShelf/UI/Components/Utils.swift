@@ -39,3 +39,27 @@ extension View {
         modifier(SizeCalculator(size: size))
     }
 }
+
+
+struct TopNavBar<Content: View>: View {
+    @Environment(\.colorScheme) var colorScheme
+    @StateObject private var vm = ViewModel()
+    let content: Content
+    init(@ViewBuilder content: () -> Content) {
+        self.content = content()
+    }
+
+    var body: some View {
+        HStack(spacing: 12) {
+            content
+        }
+        .padding(.horizontal)
+        .padding(.bottom)
+        .frame(maxWidth: .infinity)
+        .frame(height: 65)
+        .background {
+            Color(colorScheme == .dark ? vm.backgroundColorDark2 : vm.backgroundColorLight)
+                .ignoresSafeArea(edges: .top)
+        }
+    }
+}

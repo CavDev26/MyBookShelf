@@ -12,26 +12,16 @@ struct HomeView: View {
     var body: some View {
         NavigationStack {
             ZStack(alignment: .top) {
-                Color(colorScheme == .dark ? vm.backgroundColorDark : vm.backgroundColorLight)
+                Color(colorScheme == .dark ? vm.backgroundColorDark : vm.lightColorApp)
                     .ignoresSafeArea()
-                    .opacity(colorScheme == .dark ? 1 : 0.5)
                 
                 VStack{
                     ZStack(alignment: .top) {
-                        HStack (){
+                        TopNavBar {
                             Image("MyIcon").resizable().frame(width: 50, height:50).padding(.leading)
                             Text("MyBookShelf").frame(maxWidth: .infinity, alignment:.leading).font(.custom("Baskerville-SemiBoldItalic", size: 20))
                         }
-                        .frame(width: .infinity, height: 50)
-                        .padding(.bottom)
-                        .background {
-                            Color(colorScheme == .dark ? vm.backgroundColorDark2 : vm.backgroundColorLight)
-                                .ignoresSafeArea()
-                        }
                     }
-                    
-                    
-                    
                     ScrollView(.vertical) {
                         Text("Your progress")
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -51,6 +41,22 @@ struct HomeView: View {
                                     }
                                 }
                             }
+                            BlankBookPlaceHolderView()
+                                .aspectRatio(2/4, contentMode: .fit)
+                                .padding(.horizontal)
+                                .padding(.vertical, 8)
+                        }
+                        
+                        Text("Challenges")
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal)
+                            .padding(.top)
+                        ScrollView(.horizontal) {
+                            HStack {
+                                ForEach (0..<6) { i in
+                                    RoundedRectangle(cornerSize: .zero).frame(width: 100, height: 100).padding()
+                                }
+                            }
                         }
                     }
                 }
@@ -58,10 +64,6 @@ struct HomeView: View {
         }
     }
 }
-
-
-
-
 
 #Preview {
     HomeView().modelContainer(PreviewData.makeModelContainer())

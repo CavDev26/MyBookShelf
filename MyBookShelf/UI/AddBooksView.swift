@@ -12,22 +12,12 @@ struct AddBooksView: View {
     var body: some View {
         NavigationStack {
             ZStack(alignment: .top) {
-                Color(colorScheme == .dark ? vm.backgroundColorDark : vm.backgroundColorLight)
+                Color(colorScheme == .dark ? vm.backgroundColorDark : vm.lightColorApp)
                     .ignoresSafeArea()
-                    .opacity(colorScheme == .dark ? 1 : 0.5)
                 VStack {
-                    HStack{
-                        ScanSearchBarView(scan: true)
-                            .padding(.bottom)
-                            .padding(.top)
-                            .padding(.horizontal)
-                            .background {
-                                Color(colorScheme == .dark ? vm.backgroundColorDark2 : vm.backgroundColorLight)
-                                    .ignoresSafeArea()
-                            }
+                    TopNavBar{
+                        ScanSearchBarView(scan: true, searchInLibrary: false)
                     }
-                    .frame(width: .infinity, height: 50)
-
                     ScrollView(.vertical) {
                         Text("Discover by genre")
                             .frame(maxWidth: .infinity, alignment: .leading)

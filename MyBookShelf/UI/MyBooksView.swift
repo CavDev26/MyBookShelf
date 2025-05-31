@@ -8,6 +8,11 @@ struct MyBooksView: View {
     @Environment(\.modelContext) private var modelContext
     @State var isViewGrid: Bool = true
     @State var searching: Bool = false
+    
+    @State private var isExpanded = false
+
+    @State var filterSheet = false
+
 
     @Query(sort: \Book.name, order: .forward) var books: [Book]
     
@@ -22,21 +27,40 @@ struct MyBooksView: View {
                 
                 VStack{
                     ZStack(alignment: .top) {
+                        
+                        
                         HStack (){
+                           
+                            
+                            
                             Image("MyIcon").resizable().frame(width: 50, height:50).padding(.leading)
                                 .opacity(searching ? 0 : 1)
                             Text("MyBookShelf").frame(maxWidth: .infinity, alignment:.leading).font(.custom("Baskerville-SemiBoldItalic", size: 20))
                                 .opacity(searching ? 0 : 1)
+                            
                             Button(action: {
-                                withAnimation(.linear(duration: 0.1)){
+                                filterSheet.toggle()
+                            }) {
+                                Image(systemName: "line.3.horizontal.decrease.circle")
+                                    .foregroundColor(colorScheme == .dark ? .white : .black)
+                            }.padding(.horizontal)
+                            .sheet(isPresented: $filterSheet) {
+                                    AddBookSheet()
+                            }
+                             Button(action: {
+                                
+                                withAnimation(.spring(response: 0.5, dampingFraction: 0.5)) {
                                     searching.toggle()
                                 }
+                                //withAnimation(.linear(duration: 0.1)){
+                                    //searching.toggle()
+                                //}
                             }) {
                                 Image(systemName: "magnifyingglass")
                                     .foregroundColor(colorScheme == .dark ? .white : .black)
                             }
                             .opacity(searching ? 0 : 1)
-                            
+                                               
                             Button(action: {
                                 withAnimation(.snappy(duration: 0.2)) {
                                     isViewGrid.toggle()
@@ -50,21 +74,26 @@ struct MyBooksView: View {
                             .opacity(searching ? 0 : 1)
                                 
                              
-                        }
+                            }
                         .frame(width: .infinity, height: 50)
                         .padding(.bottom)
                         .background {
                             Color(colorScheme == .dark ? vm.backgroundColorDark2 : vm.backgroundColorLight)
                                 .ignoresSafeArea()
                         }
-                        HStack {
-                            ScanSearchBarView(scan: false)
+                        .animation(.easeInOut, value: isExpanded)
+
+                        
+                        
+                        
+                       HStack {
+                            ScanSearchBarView(scan: false, searchInLibrary: true)
                                 .padding(.leading)
                                 .opacity(searching ? 1 : 0)
                             Button(action: {
-                                withAnimation(.linear(duration: 0.1)){
+                                //withAnimation(.linear(duration: 0.1)){
                                     searching.toggle()
-                                }
+                                //}
                             }) {
                                 Text("Cancel")
                                     .foregroundColor(colorScheme == .dark ? .white : .black)

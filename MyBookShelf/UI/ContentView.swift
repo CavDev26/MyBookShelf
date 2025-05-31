@@ -5,7 +5,7 @@ struct ContentView: View {
         TabView {
             HomeView()
                 .tabItem { Label("Home", systemImage: "house.fill") }
-            MyBooksView()
+            MyBooksView2()
                 .tabItem { Label("My Books", systemImage: "books.vertical") }
             AddBooksView()
                 .tabItem { Label("Add", systemImage: "plus") }
