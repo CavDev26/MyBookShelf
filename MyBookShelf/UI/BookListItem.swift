@@ -7,11 +7,11 @@ struct BookListItemGrid: View {
     var readingStatusColor: Color {
         switch book.readingStatus{
         case .reading:
-            return Color.blue
+            return Color(red: 130/255, green: 180/255, blue: 230/255)
         case .read:
-            return Color.green
+            return Color(red: 142/255, green: 197/255, blue: 160/255)
         case .unread:
-            return Color.red
+            return Color(red: 216/255, green: 190/255, blue: 168/255)
         }
     }
     
@@ -43,21 +43,21 @@ struct BookListItemGrid: View {
             if(showStatus) {
                 progressView(book: book)
             }
-        }
+        }.shadow(color: Color.black.opacity(0.40), radius: 4, x: 5, y: 4)
     }
 }
 
-struct BookListItemList: View {
+struct BookListItemList2: View {
     var book: Book
         
     var readingStatusColor: Color {
         switch book.readingStatus{
         case .reading:
-            return Color.blue
+            return Color(red: 130/255, green: 180/255, blue: 230/255)
         case .read:
-            return Color.green
+            return Color(red: 142/255, green: 197/255, blue: 160/255)
         case .unread:
-            return Color.red
+            return Color(red: 216/255, green: 190/255, blue: 168/255)
         }
     }
         let stripeHeight = 10.0
@@ -116,6 +116,66 @@ struct BookListItemList: View {
     }
 }
 
+struct BookListItemList: View {
+    var book: Book
+
+    var readingStatusColor: Color {
+        switch book.readingStatus {
+        case .reading:
+            return Color(red: 130/255, green: 180/255, blue: 230/255)
+        case .read:
+            return Color(red: 142/255, green: 197/255, blue: 160/255)
+        case .unread:
+            return Color(red: 216/255, green: 190/255, blue: 168/255)
+        }
+    }
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 16) {
+            AsyncImage(
+                url: book.imageUrl,
+                content: { image in image.resizable() },
+                placeholder: { ProgressView().tint(.blue) }
+            )
+            .aspectRatio(1, contentMode: .fill)
+            .frame(width: 60, height: 60)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(book.name)
+                    .font(.headline)
+                    .foregroundColor(.primary)
+
+                Text(book.tripDescription)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+
+                Text(book.date, format: Date.FormatStyle().day().month(.wide))
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+
+            Spacer()
+
+            // Badge di stato lettura
+            Circle()
+                .fill(readingStatusColor)
+                .frame(width: 12, height: 12)
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color(.systemBackground))
+                .shadow(color: .black.opacity(0.06), radius: 4, x: 2, y: 2)
+        )
+        //.padding(.horizontal)
+        .padding(.vertical, 3)
+    }
+}
+
+
+
 struct progressView : View {
     @State var size: CGSize = .zero
     var book: Book
@@ -154,5 +214,5 @@ struct progressView : View {
 
 
 #Preview {
-    MyBooksView().modelContainer(PreviewData.makeModelContainer())
+    MyBooksView2().modelContainer(PreviewData.makeModelContainer())
 }

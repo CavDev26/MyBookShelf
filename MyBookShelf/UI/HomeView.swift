@@ -18,11 +18,11 @@ struct HomeView: View {
                 VStack{
                     ZStack(alignment: .top) {
                         TopNavBar {
-                            Image("MyIcon").resizable().frame(width: 50, height:50).padding(.leading)
+                            Image("MyIcon").resizable().frame(width: 50, height:50)
                             Text("MyBookShelf").frame(maxWidth: .infinity, alignment:.leading).font(.custom("Baskerville-SemiBoldItalic", size: 20))
                         }
                     }
-                    ScrollView(.vertical) {
+                    ScrollView(.vertical, showsIndicators: false) {
                         Text("Your progress")
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal)

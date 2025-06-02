@@ -47,9 +47,15 @@ struct MyBooksView2: View {
                                 
                                 Button {
                                     filterSheet.toggle()
-                                } label: {
-                                    Image(systemName: "line.3.horizontal.decrease.circle")
+                                }
+                                label: {
+                                    Image(systemName: "line.3.horizontal.decrease")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 18, height: 18)
                                         .foregroundColor(colorScheme == .dark ? .white : .black)
+                                    
+                                    
                                 }
                                 .modifier(TopBarButtonStyle())
                                 .sheet(isPresented: $filterSheet) {
@@ -64,7 +70,7 @@ struct MyBooksView2: View {
                                 } label: {
                                     HStack {
                                         Image(systemName: "magnifyingglass")
-                                            .foregroundColor(.black)
+                                            .foregroundColor(colorScheme == .dark ? .white : .black)
                                     }
                                     .modifier(TopBarButtonStyle())
                                     .matchedGeometryEffect(id: "search", in: searchNamespace)
@@ -87,12 +93,16 @@ struct MyBooksView2: View {
                         .animation(.easeInOut, value: isExpanded)
                     }
                     
-                    switch isViewGrid {
-                    case true:
-                        BookListViewGrid(books: books)
-                    case false:
-                        BookListViewList(books: books)
+                    ZStack {
+                        if isViewGrid {
+                            BookListViewGrid(books: books)
+                                .transition(.opacity.combined(with: .scale))
+                        } else {
+                            BookListViewList(books: books)
+                                .transition(.opacity.combined(with: .scale))
+                        }
                     }
+                    .animation(.easeInOut(duration: 0.3), value: isViewGrid)
                 }
             }
         }
@@ -101,10 +111,12 @@ struct MyBooksView2: View {
 
 
 struct TopBarButtonStyle: ViewModifier {
+    @Environment(\.colorScheme) var colorScheme
+    @StateObject private var vm = ViewModel()
     func body(content: Content) -> some View {
         content
             .padding(10)
-            .background(Color(red: 244/255, green: 238/255, blue: 224/255))
+            .background(colorScheme == .dark ? vm.backgroundColorDark : Color(red: 244/255, green: 238/255, blue: 224/255))
             .clipShape(Circle())
             .shadow(radius: 1)
     }

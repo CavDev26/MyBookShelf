@@ -117,7 +117,7 @@ struct MyBooksView: View {
     }
 }
 
-struct BookListViewGrid: View {
+/*struct BookListViewGrid: View {
     var books: [Book]
     @State var showAddBookSheet = false
 
@@ -199,7 +199,7 @@ struct BookListViewList: View {
         }
     }
 }
-
+*/
 
 #Preview {
     MyBooksView().modelContainer(PreviewData.makeModelContainer())

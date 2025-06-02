@@ -83,7 +83,7 @@ struct ScanSearchBarView: View {
         //.font(.headline)
         .padding(10)
         .frame(height: 44)
-        .background(vm.lightColorApp)
+        .background(colorScheme == .dark ? vm.backgroundColorDark : vm.lightColorApp)
         .cornerRadius(22)
         /*.background(
             RoundedRectangle(cornerRadius: 25)
