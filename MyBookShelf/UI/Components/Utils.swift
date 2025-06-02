@@ -64,6 +64,36 @@ struct TopNavBar<Content: View>: View {
     }
 }
 
+struct GlossyOverlay: View {
+    @State private var animate = false
+
+    var body: some View {
+        GeometryReader { geo in
+            Rectangle()
+                .fill(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            .white.opacity(0.0),
+                            .white.opacity(0.15), // 👈 meno invasivo
+                            .white.opacity(0.0)
+                        ]),
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .frame(width: geo.size.width * 0.5) // 👈 più stretto
+                .rotationEffect(.degrees(25))
+                .offset(x: animate ? geo.size.width : -geo.size.width)
+                .animation(.linear(duration: 2.5), value: animate)
+                //.repeatForever(autoreverses: false), value: animate)
+                .onAppear { animate = true }
+        }
+        .blendMode(.screen) // 👈 riflesso più naturale
+        .clipped()
+        .allowsHitTesting(false)
+    }
+}
+
 extension Color {
     static let terracotta = Color(red: 200/255, green: 120/255, blue: 60/255)
     static let readingColor = Color(red: 130/255, green: 180/255, blue: 230/255)
@@ -74,5 +104,6 @@ extension Color {
     static let backgroundColorDark2 = Color(red: 0.2784313725490196, green: 0.25882352941176473, blue: 0.21568627450980393)
     static let lightColorApp = Color(red: 244/255, green: 238/255, blue: 224/255)
     static let peachColorIcons = Color(red: 200/255, green: 120/255, blue: 60/255)
+    static let terracottaDarkIcons = Color(red: 180/255, green: 100/255, blue: 50/255) // #B46432
     
 }

@@ -2,11 +2,11 @@ import SwiftUI
 
 struct ContentView: View {
     @Environment(\.colorScheme) var colorScheme
-
+    
     var body: some View {
         ZStack {
             //Color(colorScheme == .dark ? .black : .white)
-                //.ignoresSafeArea()
+            //.ignoresSafeArea()
             TabView {
                 HomeView()
                     .tabItem { Label("Home", systemImage: "house.fill") }
@@ -20,10 +20,9 @@ struct ContentView: View {
                 ProfileView()
                     .tabItem { Label("Profile", systemImage: "person.crop.circle") }
             }
-            //.ignoresSafeArea(Edge.bottom)
-            .tint(colorScheme == .dark ? Color(red: 160/255, green: 190/255, blue: 160/255)
+            .tint(colorScheme == .dark ? .terracottaDarkIcons
                   : .peachColorIcons
-)
+            )
             .onAppear {
                 setTabBarAppearance(for: colorScheme)
             }
@@ -36,7 +35,7 @@ struct ContentView: View {
     private func setTabBarAppearance(for scheme: ColorScheme) {
         let appearance = UITabBarAppearance()
         appearance.configureWithDefaultBackground()
-
+        
         if scheme == .dark {
             appearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
             appearance.backgroundColor = UIColor(.backgroundColorDark2).withAlphaComponent(0.5)
@@ -45,7 +44,7 @@ struct ContentView: View {
             appearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterialLight)
             appearance.backgroundColor = UIColor(.backgroundColorLight).withAlphaComponent(0.8)
         }
-
+        
         UITabBar.appearance().standardAppearance = appearance
         UITabBar.appearance().scrollEdgeAppearance = appearance
     }

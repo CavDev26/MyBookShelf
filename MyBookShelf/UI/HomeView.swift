@@ -28,8 +28,7 @@ struct HomeView: View {
                                 .frame(width: 4, height: 20)
                             
                             Text("Your Progress")
-                                //.font(.title3.weight(.semibold))
-                                //.foregroundColor(.primary)
+                                .font(.system(size: 20, weight: .semibold, design: .serif))
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal)
@@ -50,7 +49,7 @@ struct HomeView: View {
                                 }
                             }
                             BlankBookPlaceHolderView()
-                                .aspectRatio(2/4, contentMode: .fit)
+                                .aspectRatio(2/4, contentMode: .fill)
                                 .padding(.horizontal)
                                 .padding(.vertical, 8)
                         }
@@ -61,8 +60,7 @@ struct HomeView: View {
                                 .frame(width: 4, height: 20)
                             
                             Text("Challenges")
-                                //.font(.title3.weight(.semibold))
-                                //.foregroundColor(.primary)
+                                .font(.system(size: 20, weight: .semibold, design: .serif))
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal)
