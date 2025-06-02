@@ -7,8 +7,6 @@ struct ScanSearchBarView: View {
     @State var navigated = false
     @State var scanview = false
     @State var searchInLibrary: Bool
-    @StateObject private var vm = ViewModel()
-
     
     var body: some View {
         
@@ -83,7 +81,7 @@ struct ScanSearchBarView: View {
         //.font(.headline)
         .padding(10)
         .frame(height: 44)
-        .background(colorScheme == .dark ? vm.backgroundColorDark : vm.lightColorApp)
+        .background(colorScheme == .dark ? Color.backgroundColorDark : Color.lightColorApp)
         .cornerRadius(22)
         /*.background(
             RoundedRectangle(cornerRadius: 25)

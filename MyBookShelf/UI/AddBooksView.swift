@@ -2,9 +2,7 @@
 import SwiftUI
 
 struct AddBooksView: View {
-    @StateObject private var vm = ViewModel()
     @Environment(\.colorScheme) var colorScheme
-
     //@State private var searchText: String = ""
     let columnCount: Int = 3
     let gridSpacing: CGFloat = -20.0
@@ -12,7 +10,7 @@ struct AddBooksView: View {
     var body: some View {
         NavigationStack {
             ZStack(alignment: .top) {
-                Color(colorScheme == .dark ? vm.backgroundColorDark : vm.lightColorApp)
+                Color(colorScheme == .dark ? Color.backgroundColorDark : Color.lightColorApp)
                     .ignoresSafeArea()
                 VStack {
                     TopNavBar{

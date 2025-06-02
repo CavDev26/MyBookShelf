@@ -1,10 +1,3 @@
-//
-//  TripDetailsView.swift
-//  TravelDiary
-//
-//  Created by Gianni Tumedei on 07/05/25.
-//
-
 import MapKit
 import SwiftUI
 

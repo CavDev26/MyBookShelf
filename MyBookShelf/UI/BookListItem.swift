@@ -7,11 +7,11 @@ struct BookListItemGrid: View {
     var readingStatusColor: Color {
         switch book.readingStatus{
         case .reading:
-            return Color(red: 130/255, green: 180/255, blue: 230/255)
+            return .readingColor
         case .read:
-            return Color(red: 142/255, green: 197/255, blue: 160/255)
+            return .readColor
         case .unread:
-            return Color(red: 216/255, green: 190/255, blue: 168/255)
+            return .unreadColor
         }
     }
     
@@ -47,17 +47,17 @@ struct BookListItemGrid: View {
     }
 }
 
-struct BookListItemList2: View {
+/*struct BookListItemList2: View {
     var book: Book
         
     var readingStatusColor: Color {
         switch book.readingStatus{
         case .reading:
-            return Color(red: 130/255, green: 180/255, blue: 230/255)
+            return .readingColor
         case .read:
-            return Color(red: 142/255, green: 197/255, blue: 160/255)
+            return .readColor
         case .unread:
-            return Color(red: 216/255, green: 190/255, blue: 168/255)
+            return .unreadColor
         }
     }
         let stripeHeight = 10.0
@@ -114,7 +114,7 @@ struct BookListItemList2: View {
             }
             .clipShape(RoundedRectangle(cornerRadius: stripeHeight, style: .continuous))
     }
-}
+}*/
 
 struct BookListItemList: View {
     var book: Book
@@ -122,11 +122,11 @@ struct BookListItemList: View {
     var readingStatusColor: Color {
         switch book.readingStatus {
         case .reading:
-            return Color(red: 130/255, green: 180/255, blue: 230/255)
+            return .readingColor
         case .read:
-            return Color(red: 142/255, green: 197/255, blue: 160/255)
+            return .readColor
         case .unread:
-            return Color(red: 216/255, green: 190/255, blue: 168/255)
+            return .unreadColor
         }
     }
 
@@ -158,7 +158,6 @@ struct BookListItemList: View {
 
             Spacer()
 
-            // Badge di stato lettura
             Circle()
                 .fill(readingStatusColor)
                 .frame(width: 12, height: 12)
@@ -169,8 +168,7 @@ struct BookListItemList: View {
                 .fill(Color(.systemBackground))
                 .shadow(color: .black.opacity(0.06), radius: 4, x: 2, y: 2)
         )
-        //.padding(.horizontal)
-        .padding(.vertical, 3)
+        .padding(.vertical, 4)
     }
 }
 

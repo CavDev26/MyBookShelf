@@ -1,14 +1,6 @@
-//
-//  BlamkBookPlaceHolderView.swift
-//  MyBookShelf
-//
-//  Created by Lorenzo Cavallucci on 31/05/25.
-//
-
 import SwiftUI
 
 struct BlankBookPlaceHolderView : View {
-    @StateObject private var vm = ViewModel()
     @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
@@ -18,7 +10,7 @@ struct BlankBookPlaceHolderView : View {
             ) {
                 ZStack(alignment: .center) {
                     RoundedRectangle(cornerRadius: 8)
-                        .fill(vm.backgroundColorLight)
+                        .fill(Color.peachColorIcons)
                     
                     Image(systemName: "plus")
                         .resizable()

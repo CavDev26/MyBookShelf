@@ -1,10 +1,3 @@
-//
-//  ScanView.swift
-//  MyBookShelf
-//
-//  Created by Lorenzo Cavallucci on 26/05/25.
-//
-
 import SwiftUI
 
 struct ScanView: View {

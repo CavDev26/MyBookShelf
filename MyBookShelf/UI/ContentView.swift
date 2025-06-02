@@ -5,31 +5,49 @@ struct ContentView: View {
 
     var body: some View {
         ZStack {
-            Color(colorScheme == .dark ? .black : .white)
-                .ignoresSafeArea()
+            //Color(colorScheme == .dark ? .black : .white)
+                //.ignoresSafeArea()
             TabView {
                 HomeView()
                     .tabItem { Label("Home", systemImage: "house.fill") }
-
+                
                 MyBooksView2()
                     .tabItem { Label("My Books", systemImage: "books.vertical") }
-
+                
                 AddBooksView()
                     .tabItem { Label("Add", systemImage: "plus") }
-
+                
                 ProfileView()
                     .tabItem { Label("Profile", systemImage: "person.crop.circle") }
-            }.onAppear {
-                let appearance = UITabBarAppearance()
-                appearance.configureWithOpaqueBackground()
-                appearance.backgroundColor = UIColor(
-                    white: colorScheme == .dark ? 0.05 : 1.0,
-                    alpha: 0.9
-                )
-                UITabBar.appearance().standardAppearance = appearance
-                UITabBar.appearance().scrollEdgeAppearance = appearance
+            }
+            //.ignoresSafeArea(Edge.bottom)
+            .tint(colorScheme == .dark ? Color(red: 160/255, green: 190/255, blue: 160/255)
+                  : .peachColorIcons
+)
+            .onAppear {
+                setTabBarAppearance(for: colorScheme)
+            }
+            .onChange(of: colorScheme) { newScheme in
+                setTabBarAppearance(for: newScheme)
             }
         }
+    }
+    
+    private func setTabBarAppearance(for scheme: ColorScheme) {
+        let appearance = UITabBarAppearance()
+        appearance.configureWithDefaultBackground()
+
+        if scheme == .dark {
+            appearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
+            appearance.backgroundColor = UIColor(.backgroundColorDark2).withAlphaComponent(0.5)
+        }
+        else {
+            appearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterialLight)
+            appearance.backgroundColor = UIColor(.backgroundColorLight).withAlphaComponent(0.8)
+        }
+
+        UITabBar.appearance().standardAppearance = appearance
+        UITabBar.appearance().scrollEdgeAppearance = appearance
     }
 }
 

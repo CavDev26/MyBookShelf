@@ -4,7 +4,6 @@ import _SwiftData_SwiftUI
 struct HomeView: View {
 
     @Environment(\.colorScheme) var colorScheme
-    @StateObject private var vm = ViewModel()
     let columnCount: Int = 3
     let gridSpacing: CGFloat = -20.0
     @Query(sort: \Book.name, order: .forward) var books: [Book]
@@ -12,7 +11,7 @@ struct HomeView: View {
     var body: some View {
         NavigationStack {
             ZStack(alignment: .top) {
-                Color(colorScheme == .dark ? vm.backgroundColorDark : vm.lightColorApp)
+                Color(colorScheme == .dark ? Color.backgroundColorDark : Color.lightColorApp)
                     .ignoresSafeArea()
                 
                 VStack{
@@ -23,10 +22,19 @@ struct HomeView: View {
                         }
                     }
                     ScrollView(.vertical, showsIndicators: false) {
-                        Text("Your progress")
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.horizontal)
-                            .padding(.top)
+                        HStack(spacing: 6) {
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(Color.terracotta)
+                                .frame(width: 4, height: 20)
+                            
+                            Text("Your Progress")
+                                //.font(.title3.weight(.semibold))
+                                //.foregroundColor(.primary)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal)
+                        .padding(.top)
+                        
                         LazyVGrid(columns: Array(repeating: .init(.flexible(), spacing: gridSpacing), count: columnCount), spacing: gridSpacing) {
                             
                             ForEach(books) { book in
@@ -47,10 +55,24 @@ struct HomeView: View {
                                 .padding(.vertical, 8)
                         }
                         
-                        Text("Challenges")
+                        HStack(spacing: 6) {
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(Color.terracotta)
+                                .frame(width: 4, height: 20)
+                            
+                            Text("Challenges")
+                                //.font(.title3.weight(.semibold))
+                                //.foregroundColor(.primary)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal)
+                        .padding(.top)
+                        
+                        
+                        /*Text("Challenges")
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal)
-                            .padding(.top)
+                            .padding(.top)*/
                         ScrollView(.horizontal) {
                             HStack {
                                 ForEach (0..<6) { i in

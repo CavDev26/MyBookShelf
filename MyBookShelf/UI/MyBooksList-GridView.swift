@@ -1,10 +1,3 @@
-//
-//  MyBooksListView.swift
-//  MyBookShelf
-//
-//  Created by Lorenzo Cavallucci on 02/06/25.
-//
-
 import SwiftUICore
 import SwiftUI
 

@@ -16,7 +16,7 @@ struct MyBooksView2: View {
     var body: some View {
         NavigationStack {
             ZStack(alignment: .top) {
-                Color(colorScheme == .dark ? vm.backgroundColorDark : vm.lightColorApp)
+                Color(colorScheme == .dark ? Color.backgroundColorDark : Color.lightColorApp)
                     .ignoresSafeArea()
                 
                 VStack {
@@ -112,11 +112,11 @@ struct MyBooksView2: View {
 
 struct TopBarButtonStyle: ViewModifier {
     @Environment(\.colorScheme) var colorScheme
-    @StateObject private var vm = ViewModel()
     func body(content: Content) -> some View {
         content
             .padding(10)
-            .background(colorScheme == .dark ? vm.backgroundColorDark : Color(red: 244/255, green: 238/255, blue: 224/255))
+            .background(colorScheme == .dark ? .backgroundColorDark : Color(red: 244/255, green: 238/255, blue: 224/255))
+            //TODO
             .clipShape(Circle())
             .shadow(radius: 1)
     }
