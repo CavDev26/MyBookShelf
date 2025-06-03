@@ -6,6 +6,7 @@
 //
 
 import SwiftUICore
+import UIKit
 
 struct Triangle: Shape {
     func path(in rect: CGRect) -> Path {
@@ -106,4 +107,53 @@ extension Color {
     static let peachColorIcons = Color(red: 200/255, green: 120/255, blue: 60/255)
     static let terracottaDarkIcons = Color(red: 180/255, green: 100/255, blue: 50/255) // #B46432
     
+}
+
+extension UIImage {
+    func suitableBackgroundColor() -> Color {
+        
+        
+        
+        guard let cgImage = self.cgImage else { return .black }
+
+        let ciImage = CIImage(cgImage: cgImage)
+        let context = CIContext()
+        guard let filter = CIFilter(name: "CIAreaAverage", parameters: [kCIInputImageKey: ciImage]),
+              let outputImage = filter.outputImage else { return .black }
+
+        var bitmap = [UInt8](repeating: 0, count: 4)
+        context.render(outputImage,
+                       toBitmap: &bitmap,
+                       rowBytes: 4,
+                       bounds: CGRect(x: 0, y: 0, width: 1, height: 1),
+                       format: .RGBA8,
+                       colorSpace: CGColorSpaceCreateDeviceRGB())
+
+        // Calcolo del colore medio
+        let red = Double(bitmap[0]) / 255
+        let green = Double(bitmap[1]) / 255
+        let blue = Double(bitmap[2]) / 255
+
+        // Converti in luminosità percepita
+        let brightness = 0.299 * red + 0.587 * green + 0.114 * blue
+
+        // Se troppo chiaro, scurisci artificialmente
+        if brightness > 0.7 {
+            return Color(red: red * 0.4, green: green * 0.4, blue: blue * 0.4)
+        }
+
+        // Se già scuro, mantienilo
+        return Color(red: red, green: green, blue: blue)
+    }
+}
+extension Image {
+    func asUIImage() -> UIImage? {
+        let mirror = Mirror(reflecting: self)
+        for child in mirror.children {
+            if let image = child.value as? UIImage {
+                return image
+            }
+        }
+        return nil
+    }
 }

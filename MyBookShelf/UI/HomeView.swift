@@ -54,23 +54,22 @@ struct HomeView: View {
                                 .padding(.vertical, 8)
                         }
                         
-                        HStack(spacing: 6) {
-                            RoundedRectangle(cornerRadius: 2)
-                                .fill(Color.terracotta)
-                                .frame(width: 4, height: 20)
-                            
-                            Text("Challenges")
-                                .font(.system(size: 20, weight: .semibold, design: .serif))
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal)
-                        .padding(.top)
-                        
-                        
-                        /*Text("Challenges")
+                        NavigationLink(destination: ChallengesView()
+                        ) {
+                            HStack(spacing: 6) {
+                                RoundedRectangle(cornerRadius: 2)
+                                    .fill(Color.terracotta)
+                                    .frame(width: 4, height: 20)
+                                
+                                Text("Challenges >")
+                                    .font(.system(size: 20, weight: .semibold, design: .serif))
+                                    .foregroundColor(colorScheme == .dark ? .white : .black)
+                            }
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal)
-                            .padding(.top)*/
+                            .padding(.top)
+                        }
+                        
                         ScrollView(.horizontal) {
                             HStack {
                                 ForEach (0..<6) { i in
