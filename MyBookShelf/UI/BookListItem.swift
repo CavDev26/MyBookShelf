@@ -200,15 +200,18 @@ struct progressView: View {
                 Text("\(Int(progress * 100))%")
                     .font(.caption)
                     .foregroundColor(.secondary)
+                    .padding(.trailing, 10)
 
-                Spacer()
+                //Spacer()
 
                 Button(action: {
-                    // Aggiorna il progresso
+                    //aggiorna in processo
                 }) {
                     Text("Update")
                         .font(.caption)
-                        .padding(.horizontal, 10)
+                        .lineLimit(1)                // Blocca il testo su una sola riga
+                        .minimumScaleFactor(0.5)     // Riduce il font fino al 50% se necessario
+                        .padding(.horizontal, 8)
                         .padding(.vertical, 4)
                         .background(Color.terracottaDarkIcons.opacity(0.15))
                         .foregroundColor(.terracottaDarkIcons)

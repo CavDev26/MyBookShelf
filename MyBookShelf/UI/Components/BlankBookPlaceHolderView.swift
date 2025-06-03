@@ -21,8 +21,9 @@ struct BlankBookPlaceHolderView: View {
                         .frame(width: 28, height: 28)
                         .foregroundColor(.white)
                 }
-                Text("Start a new reading adventure!")
+                Text("Start a new adventure!")
                     .font(.system(size: 12, weight: .semibold))
+                    .minimumScaleFactor(0.5)
                     .multilineTextAlignment(.center)
                     .foregroundColor(.secondary)
                     .lineLimit(2)

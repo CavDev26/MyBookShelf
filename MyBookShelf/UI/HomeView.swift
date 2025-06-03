@@ -18,7 +18,10 @@ struct HomeView: View {
                     ZStack(alignment: .top) {
                         TopNavBar {
                             Image("MyIcon").resizable().frame(width: 50, height:50)
-                            Text("MyBookShelf").frame(maxWidth: .infinity, alignment:.leading).font(.custom("Baskerville-SemiBoldItalic", size: 20))
+                            Text("MyBookShelf")
+                                .padding(.leading, -10)
+                                .frame(maxWidth: .infinity, alignment:.leading)
+                                .font(.custom("Baskerville-SemiBoldItalic", size: 20))
                         }
                     }
                     ScrollView(.vertical, showsIndicators: false) {

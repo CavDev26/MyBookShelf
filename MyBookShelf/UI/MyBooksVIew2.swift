@@ -43,16 +43,17 @@ struct MyBooksView2: View {
                                 
                                 Text("MyBookShelf")
                                     .font(.custom("Baskerville-SemiBoldItalic", size: 20))
-                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.leading, -10)
+                                    //.frame(width: .infinity, alignment: .leading)
                                 
                                 Button {
                                     filterSheet.toggle()
                                 }
                                 label: {
                                     Image(systemName: "line.3.horizontal.decrease")
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 18, height: 18)
+                                        //.resizable()
+                                        //.scaledToFit()
+                                        //.frame(width: 18, height: 18)
                                         .foregroundColor(colorScheme == .dark ? .white : .black)
                                     
                                     
@@ -114,10 +115,10 @@ struct TopBarButtonStyle: ViewModifier {
     @Environment(\.colorScheme) var colorScheme
     func body(content: Content) -> some View {
         content
-            .padding(10)
+            .padding(8)
             .background(colorScheme == .dark ? .backgroundColorDark : Color(red: 244/255, green: 238/255, blue: 224/255))
             //TODO
-            .clipShape(Circle())
+            .clipShape(RoundedRectangle(cornerRadius: 10))
             .shadow(radius: 1)
     }
 }

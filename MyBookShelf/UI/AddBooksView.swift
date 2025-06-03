@@ -6,6 +6,7 @@ struct AddBooksView: View {
     //@State private var searchText: String = ""
     let columnCount: Int = 3
     let gridSpacing: CGFloat = -20.0
+    let genreImages = ["Scifi", "ComicsManga", "Horror", "Crime", "Fantasy", "Classics"]
     
     var body: some View {
         NavigationStack {
@@ -17,18 +18,44 @@ struct AddBooksView: View {
                         ScanSearchBarView(scan: true, searchInLibrary: false)
                     }
                     ScrollView(.vertical) {
-                        Text("Discover by genre")
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.horizontal)
-                            .padding(.top)
+                        NavigationLink(
+                            destination: PlaceHolderView()
+                        ) {
+                            HStack {
+                                Text("Discover by genre")
+                                    .font(.system(size: 18, weight: .semibold, design: .serif))
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .foregroundColor(colorScheme == .dark ? .white : .black)
+                                Image(systemName: "chevron.right")
+                                    .foregroundColor(colorScheme == .dark ? .white : .black)
+                                    .font(.system(size: 18, weight: .semibold))
+                            }.padding(.top)
+                                .padding(.horizontal)
+                        }
+                        
                         LazyVGrid(columns: Array(repeating: .init(.flexible(), spacing: gridSpacing), count: columnCount), spacing: gridSpacing) {
-                            ForEach (0..<6) { i in
-                                RoundedRectangle(cornerSize: .zero).frame(width: 100, height: 100).padding()
+                            ForEach (genreImages, id: \.self) { imageName in
+                                NavigationLink(
+                                    destination: PlaceHolderView()
+                                ) {
+                                    genreView(imageName: imageName)
+                                }
                             }
                         }
-                        Text("Discover top picks")
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.horizontal)
+                        NavigationLink(
+                            destination: PlaceHolderView()
+                        ) {
+                            HStack {
+                                Text("Discover our Top picks")
+                                    .font(.system(size: 18, weight: .semibold, design: .serif))
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .foregroundColor(colorScheme == .dark ? .white : .black)
+                                Image(systemName: "chevron.right")
+                                    .foregroundColor(colorScheme == .dark ? .white : .black)
+                                    .font(.system(size: 18, weight: .semibold))
+                            }.padding(.top)
+                                .padding(.horizontal)
+                        }
                         ScrollView(.horizontal) {
                             HStack {
                                 ForEach (0..<6) { i in
@@ -42,6 +69,22 @@ struct AddBooksView: View {
         }
     }
 }
+
+
+struct genreView: View {
+    var imageName: String
+    var body: some View {
+        Image(imageName)
+            .resizable()
+            .aspectRatio(contentMode: .fit) // mantiene il rapporto originale
+            .cornerRadius(12) // angoli arrotondati
+            .clipped()
+            .shadow(radius: 4)
+            .padding()
+    }
+}
+
+
 
 
 #Preview {
