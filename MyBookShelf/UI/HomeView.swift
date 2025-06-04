@@ -20,7 +20,7 @@ struct HomeView: View {
                             Image("MyIcon").resizable().frame(width: 50, height:50)
                             Text("MyBookShelf")
                                 .padding(.leading, -10)
-                                .frame(maxWidth: .infinity, alignment:.leading)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                                 .font(.custom("Baskerville-SemiBoldItalic", size: 20))
                         }
                     }

@@ -37,59 +37,54 @@ struct MyBooksView2: View {
                                     .transition(.opacity.combined(with: .move(edge: .trailing)))
                                 }
                             } else {
-                                Image("MyIcon")
-                                    .resizable()
-                                    .frame(width: 50, height: 50)
-                                
-                                Text("MyBookShelf")
-                                    .font(.custom("Baskerville-SemiBoldItalic", size: 20))
-                                    .padding(.leading, -10)
-                                    //.frame(width: .infinity, alignment: .leading)
-                                
-                                Button {
-                                    filterSheet.toggle()
-                                }
-                                label: {
-                                    Image(systemName: "line.3.horizontal.decrease")
-                                        //.resizable()
-                                        //.scaledToFit()
-                                        //.frame(width: 18, height: 18)
-                                        .foregroundColor(colorScheme == .dark ? .white : .black)
-                                    
-                                    
-                                }
-                                .modifier(TopBarButtonStyle())
-                                .sheet(isPresented: $filterSheet) {
-                                    AddBookSheet()
-                                }
-                                
-                                // 🔍 Bottone stilisticamente identico alla searchbar
-                                Button {
-                                    withAnimation(.easeInOut(duration: 0.3)) {
-                                        isExpanded = true
+                                HStack {
+                                    Image("MyIcon")
+                                        .resizable()
+                                        .frame(width: 50, height: 50)
+                                    Text("MyBookShelf")
+                                        .font(.custom("Baskerville-SemiBoldItalic", size: 20))
+                                        .padding(.leading, -10)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                    Button {
+                                        filterSheet.toggle()
                                     }
-                                } label: {
-                                    HStack {
-                                        Image(systemName: "magnifyingglass")
+                                    label: {
+                                        Image(systemName: "line.3.horizontal.decrease")
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 18, height: 18)
                                             .foregroundColor(colorScheme == .dark ? .white : .black)
                                     }
                                     .modifier(TopBarButtonStyle())
-                                    .matchedGeometryEffect(id: "search", in: searchNamespace)
-                                }
-                                .transition(.scale)
+                                    .sheet(isPresented: $filterSheet) {
+                                        AddBookSheet()
+                                    }
+                                    Button {
+                                        withAnimation(.easeInOut(duration: 0.3)) {
+                                            isExpanded = true
+                                        }
+                                    } label: {
+                                        HStack {
+                                            Image(systemName: "magnifyingglass")
+                                                .foregroundColor(colorScheme == .dark ? .white : .black)
+                                        }
+                                        .modifier(TopBarButtonStyle())
+                                        .matchedGeometryEffect(id: "search", in: searchNamespace)
+                                    }
+                                    .transition(.scale)
+                                    
+                                    Button(action: {
+                                        withAnimation(.snappy(duration: 0.2)) {
+                                            isViewGrid.toggle()
+                                        }
+                                    }) {
+                                        Image(systemName: isViewGrid ? "rectangle.grid.1x2.fill" : "rectangle.grid.3x2.fill")
+                                            .contentTransition(.symbolEffect(.replace))
+                                            .foregroundColor(colorScheme == .dark ? .white : .black)
+                                    }
+                                    .modifier(TopBarButtonStyle())
+                                }.frame(maxWidth: .infinity, alignment: .leading)
                             }
-                            
-                            // 🔲 Grid/List toggle
-                            Button(action: {
-                                withAnimation(.snappy(duration: 0.2)) {
-                                    isViewGrid.toggle()
-                                }
-                            }) {
-                                Image(systemName: isViewGrid ? "rectangle.grid.1x2.fill" : "rectangle.grid.3x2.fill")
-                                    .contentTransition(.symbolEffect(.replace))
-                                    .foregroundColor(colorScheme == .dark ? .white : .black)
-                            }
-                            .modifier(TopBarButtonStyle())
                         }
                         .animation(.easeInOut, value: isExpanded)
                     }
@@ -117,7 +112,7 @@ struct TopBarButtonStyle: ViewModifier {
         content
             .padding(8)
             .background(colorScheme == .dark ? .backgroundColorDark : Color(red: 244/255, green: 238/255, blue: 224/255))
-            //TODO
+        //TODO
             .clipShape(RoundedRectangle(cornerRadius: 10))
             .shadow(radius: 1)
     }
