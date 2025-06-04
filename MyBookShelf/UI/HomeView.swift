@@ -2,12 +2,12 @@ import SwiftUI
 import _SwiftData_SwiftUI
 
 struct HomeView: View {
-
+    
     @Environment(\.colorScheme) var colorScheme
     let columnCount: Int = 3
     let gridSpacing: CGFloat = -20.0
     @Query(sort: \Book.name, order: .forward) var books: [Book]
-
+    
     var body: some View {
         NavigationStack {
             ZStack(alignment: .top) {
@@ -33,10 +33,9 @@ struct HomeView: View {
     }
 }
 
-
 struct challengesPreview: View {
     @Environment(\.colorScheme) var colorScheme
-
+    
     var body: some View {
         NavigationLink(destination: ChallengesView()
         ) {
@@ -45,7 +44,7 @@ struct challengesPreview: View {
                     .fill(Color.terracotta)
                     .frame(width: 4, height: 20)
                 
-                Text("Challenges")
+                Text("Challenges & Achievements")
                     .font(.system(size: 20, weight: .semibold, design: .serif))
                     .foregroundColor(colorScheme == .dark ? .white : .black)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -56,13 +55,58 @@ struct challengesPreview: View {
             .padding(.horizontal)
             .padding(.top)
         }
-        ScrollView(.horizontal) {
-            HStack {
-                ForEach (0..<6) { i in
-                    RoundedRectangle(cornerSize: .zero).frame(width: 100, height: 100).padding()
+        
+        HStack(spacing: 16) {
+            NavigationLink(destination: ChallengesView()) {
+                VStack(spacing: 4) {
+                    SingleRingProgress(progress: 0.75, current: 18, goal: 24, small: true)
+                        .padding()
+                    Text("2025 Goal")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
                 }
             }
+            NavigationLink(destination: ChallengesView()) {
+                VStack(spacing: 4) {
+                    SingleRingProgress(progress: 0.33, current: 1, goal: 3, small: true)
+                        .padding()
+                    Text("June Goal")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+            }
+            NavigationLink(destination: StatsView()) {
+                VStack(spacing: 4) {
+                    ZStack {
+                        Circle()
+                            .stroke(Color.gray.opacity(0.2), lineWidth: 10)
+                            .frame(width: 60, height: 60)
+                        Circle()
+                            .trim(from: 0, to: 1.0)
+                            .stroke(Color.terracotta, lineWidth: 10)
+                            .frame(width: 60, height: 60)
+                            .opacity(0.2)
+                        
+                        Image(systemName: "chart.bar.xaxis")
+                            .foregroundColor(.terracotta)
+                            .font(.system(size: 20, weight: .semibold))
+                    }
+                    .padding()
+                    Text("Stats")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+                //.padding()
+            }
         }
+        .frame(maxWidth: .infinity)
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.backgroundColorLight.opacity(0.8))
+        )
+        .padding(.horizontal)
+        .padding(.bottom, 10)
     }
 }
 

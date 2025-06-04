@@ -72,7 +72,7 @@ struct TopBarView: View {
                 Image("MyIcon")
                     .resizable()
                     .frame(width: 50, height: 50)
-                Text("MyBookShelf")
+                Text("MyBooks")
                     .font(.custom("Baskerville-SemiBoldItalic", size: 20))
                     .padding(.leading, -10)
                     .frame(maxWidth: .infinity, alignment: .leading)
