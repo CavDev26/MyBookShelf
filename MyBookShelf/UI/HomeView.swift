@@ -13,7 +13,6 @@ struct HomeView: View {
             ZStack(alignment: .top) {
                 Color(colorScheme == .dark ? Color.backgroundColorDark : Color.lightColorApp)
                     .ignoresSafeArea()
-                
                 VStack{
                     ZStack(alignment: .top) {
                         TopNavBar {
@@ -25,67 +24,89 @@ struct HomeView: View {
                         }
                     }
                     ScrollView(.vertical, showsIndicators: false) {
-                        HStack(spacing: 6) {
-                            RoundedRectangle(cornerRadius: 2)
-                                .fill(Color.terracotta)
-                                .frame(width: 4, height: 20)
-                            
-                            Text("Your Progress")
-                                .font(.system(size: 20, weight: .semibold, design: .serif))
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal)
-                        .padding(.top)
-                        
-                        LazyVGrid(columns: Array(repeating: .init(.flexible(), spacing: gridSpacing), count: columnCount), spacing: gridSpacing) {
-                            
-                            ForEach(books) { book in
-                                if (book.readingStatus == .reading) {
-                                    NavigationLink(
-                                        destination: BookDetailsView(book: book)
-                                    ) {
-                                        BookListItemGrid(book: book, showStatus: true)
-                                            .aspectRatio(2/4, contentMode: .fit)
-                                            .padding(.horizontal)
-                                            .padding(.vertical, 8)
-                                    }
-                                }
-                            }
-                            BlankBookPlaceHolderView()
-                                .aspectRatio(2/4, contentMode: .fill)
-                                .padding(.horizontal)
-                                .padding(.vertical, 8)
-                        }
-                        
-                        NavigationLink(destination: ChallengesView()
-                        ) {
-                            HStack(spacing: 6) {
-                                RoundedRectangle(cornerRadius: 2)
-                                    .fill(Color.terracotta)
-                                    .frame(width: 4, height: 20)
-                                
-                                Text("Challenges >")
-                                    .font(.system(size: 20, weight: .semibold, design: .serif))
-                                    .foregroundColor(colorScheme == .dark ? .white : .black)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.horizontal)
-                            .padding(.top)
-                        }
-                        
-                        ScrollView(.horizontal) {
-                            HStack {
-                                ForEach (0..<6) { i in
-                                    RoundedRectangle(cornerSize: .zero).frame(width: 100, height: 100).padding()
-                                }
-                            }
-                        }
+                        yourProgressView(books: books, gridSpacing: gridSpacing, columnCount: columnCount)
+                        challengesPreview()
                     }
                 }
             }
         }
     }
 }
+
+
+struct challengesPreview: View {
+    @Environment(\.colorScheme) var colorScheme
+
+    var body: some View {
+        NavigationLink(destination: ChallengesView()
+        ) {
+            HStack(spacing: 6) {
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(Color.terracotta)
+                    .frame(width: 4, height: 20)
+                
+                Text("Challenges")
+                    .font(.system(size: 20, weight: .semibold, design: .serif))
+                    .foregroundColor(colorScheme == .dark ? .white : .black)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Image(systemName: "chevron.right")
+                    .foregroundColor(colorScheme == .dark ? .white : .black)
+                    .font(.system(size: 18, weight: .semibold))
+            }
+            .padding(.horizontal)
+            .padding(.top)
+        }
+        ScrollView(.horizontal) {
+            HStack {
+                ForEach (0..<6) { i in
+                    RoundedRectangle(cornerSize: .zero).frame(width: 100, height: 100).padding()
+                }
+            }
+        }
+    }
+}
+
+
+struct yourProgressView: View {
+    var books : [Book]
+    var gridSpacing: CGFloat
+    var columnCount: Int
+    
+    var body: some View {
+        HStack(spacing: 6) {
+            RoundedRectangle(cornerRadius: 2)
+                .fill(Color.terracotta)
+                .frame(width: 4, height: 20)
+            
+            Text("Your Progress")
+                .font(.system(size: 20, weight: .semibold, design: .serif))
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal)
+        .padding(.top)
+        
+        LazyVGrid(columns: Array(repeating: .init(.flexible(), spacing: gridSpacing), count: columnCount), spacing: gridSpacing) {
+            
+            ForEach(books) { book in
+                if (book.readingStatus == .reading) {
+                    NavigationLink(
+                        destination: BookDetailsView(book: book)
+                    ) {
+                        BookListItemGrid(book: book, showStatus: true)
+                            .aspectRatio(2/4, contentMode: .fit)
+                            .padding(.horizontal)
+                            .padding(.vertical, 8)
+                    }
+                }
+            }
+            BlankBookPlaceHolderView()
+                .aspectRatio(2/4, contentMode: .fill)
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+        }
+    }
+}
+
 
 #Preview {
     HomeView().modelContainer(PreviewData.makeModelContainer())

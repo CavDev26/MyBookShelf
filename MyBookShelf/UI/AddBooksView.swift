@@ -6,7 +6,6 @@ struct AddBooksView: View {
     //@State private var searchText: String = ""
     let columnCount: Int = 3
     let gridSpacing: CGFloat = -20.0
-    let genreImages = ["Scifi", "ComicsManga", "Horror", "Crime", "Fantasy", "Classics"]
     
     var body: some View {
         NavigationStack {
@@ -18,51 +17,8 @@ struct AddBooksView: View {
                         ScanSearchBarView(scan: true, searchInLibrary: false)
                     }
                     ScrollView(.vertical) {
-                        NavigationLink(
-                            destination: PlaceHolderView()
-                        ) {
-                            HStack {
-                                Text("Discover by genre")
-                                    .font(.system(size: 18, weight: .semibold, design: .serif))
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .foregroundColor(colorScheme == .dark ? .white : .black)
-                                Image(systemName: "chevron.right")
-                                    .foregroundColor(colorScheme == .dark ? .white : .black)
-                                    .font(.system(size: 18, weight: .semibold))
-                            }.padding(.top)
-                                .padding(.horizontal)
-                        }
-                        
-                        LazyVGrid(columns: Array(repeating: .init(.flexible(), spacing: gridSpacing), count: columnCount), spacing: gridSpacing) {
-                            ForEach (genreImages, id: \.self) { imageName in
-                                NavigationLink(
-                                    destination: PlaceHolderView()
-                                ) {
-                                    genreView(imageName: imageName)
-                                }
-                            }
-                        }
-                        NavigationLink(
-                            destination: PlaceHolderView()
-                        ) {
-                            HStack {
-                                Text("Discover our Top picks")
-                                    .font(.system(size: 18, weight: .semibold, design: .serif))
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .foregroundColor(colorScheme == .dark ? .white : .black)
-                                Image(systemName: "chevron.right")
-                                    .foregroundColor(colorScheme == .dark ? .white : .black)
-                                    .font(.system(size: 18, weight: .semibold))
-                            }.padding(.top)
-                                .padding(.horizontal)
-                        }
-                        ScrollView(.horizontal) {
-                            HStack {
-                                ForEach (0..<6) { i in
-                                    RoundedRectangle(cornerSize: .zero).frame(width: 100, height: 100).padding()
-                                }
-                            }
-                        }
+                        genreDiscoverView(gridSpacing: gridSpacing, columnCount: columnCount)
+                        topPicksDiscoverView()
                     }
                 }
             }
@@ -70,6 +26,67 @@ struct AddBooksView: View {
     }
 }
 
+struct topPicksDiscoverView: View {
+    @Environment(\.colorScheme) var colorScheme
+
+    var body: some View {
+        NavigationLink(
+            destination: PlaceHolderView()
+        ) {
+            HStack {
+                Text("Discover our Top picks")
+                    .font(.system(size: 18, weight: .semibold, design: .serif))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .foregroundColor(colorScheme == .dark ? .white : .black)
+                Image(systemName: "chevron.right")
+                    .foregroundColor(colorScheme == .dark ? .white : .black)
+                    .font(.system(size: 18, weight: .semibold))
+            }.padding(.top)
+                .padding(.horizontal)
+        }
+        ScrollView(.horizontal) {
+            HStack {
+                ForEach (0..<6) { i in
+                    RoundedRectangle(cornerSize: .zero).frame(width: 100, height: 100).padding()
+                }
+            }
+        }
+    }
+}
+
+struct genreDiscoverView: View {
+    @Environment(\.colorScheme) var colorScheme
+    let genreImages = ["Scifi", "ComicsManga", "Horror", "Crime", "Fantasy", "Classics"]
+    var gridSpacing: CGFloat
+    var columnCount: Int
+    
+    var body: some View {
+        NavigationLink(
+            destination: PlaceHolderView()
+        ) {
+            HStack {
+                Text("Discover by genre")
+                    .font(.system(size: 18, weight: .semibold, design: .serif))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .foregroundColor(colorScheme == .dark ? .white : .black)
+                Image(systemName: "chevron.right")
+                    .foregroundColor(colorScheme == .dark ? .white : .black)
+                    .font(.system(size: 18, weight: .semibold))
+            }.padding(.top)
+                .padding(.horizontal)
+        }
+        
+        LazyVGrid(columns: Array(repeating: .init(.flexible(), spacing: gridSpacing), count: columnCount), spacing: gridSpacing) {
+            ForEach (genreImages, id: \.self) { imageName in
+                NavigationLink(
+                    destination: PlaceHolderView()
+                ) {
+                    genreView(imageName: imageName)
+                }
+            }
+        }
+    }
+}
 
 struct genreView: View {
     var imageName: String
@@ -77,14 +94,12 @@ struct genreView: View {
         Image(imageName)
             .resizable()
             .aspectRatio(contentMode: .fit) // mantiene il rapporto originale
-            .cornerRadius(12) // angoli arrotondati
+            .cornerRadius(12)
             .clipped()
             .shadow(radius: 4)
             .padding()
     }
 }
-
-
 
 
 #Preview {
