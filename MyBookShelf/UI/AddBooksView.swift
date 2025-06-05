@@ -19,9 +19,85 @@ struct AddBooksView: View {
                     ScrollView(.vertical) {
                         genreDiscoverView(gridSpacing: gridSpacing, columnCount: columnCount)
                         topPicksDiscoverView()
+                        addBookManuallyView()
                     }
                 }
             }
+        }
+    }
+}
+
+struct addBookManuallyView: View {
+    @State private var showSheet = false
+
+    var body: some View {
+        Button {
+            showSheet.toggle()
+            }
+        label: {
+            RoundedRectangle(cornerRadius: 10)
+                .fill(Color.blue)
+                .overlay{
+                    Text("Add manually\n-\nDebug")
+                        .foregroundColor(.white)
+                }
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 150)
+        .padding()
+        .sheet(isPresented: $showSheet) {
+            manualAddSheet()
+                .presentationDetents([.fraction(0.25), .medium])
+                .presentationDragIndicator(.visible)
+        }
+    }
+}
+
+struct manualAddSheet: View {
+    @Environment(\.colorScheme) var colorScheme
+    //@Binding var goal: Int?
+    //@Binding var tempGoal: String
+    //@Binding var showSheet: Bool
+    //var goalName: String
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Add a book - Manually")
+            /*Text(goalName)
+                .font(.headline)
+                .padding(.top, 30)
+            TextField("Books you want to read", text: $tempGoal)
+                            .padding()
+                            .background(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(colorScheme == .dark ? Color(white: 0.15) : Color(white: 0.9))
+                            )
+                            .foregroundColor(colorScheme == .dark ? .white : .black)
+                            .keyboardType(.numberPad)
+                            .padding(.horizontal)
+            
+            Button("Save") {
+                if let newGoal = Int(tempGoal), newGoal > 0 {
+                    goal = newGoal
+                    showSheet = false
+                    tempGoal = ""
+                }
+            }
+            .font(.system(size: 17, weight: .semibold))
+            .padding(.horizontal, 32)
+            .padding(.vertical, 12)
+            .background(Color.terracotta)
+            .foregroundColor(.white)
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+            //.buttonStyle(.borderedProminent)
+            Spacer()
+        }
+        .padding()
+        .padding(.top, 30)
+        .onAppear {
+            if let goal {
+                tempGoal = "\(goal)"
+            }*/
         }
     }
 }
@@ -62,7 +138,7 @@ struct genreDiscoverView: View {
     
     var body: some View {
         NavigationLink(
-            destination: PlaceHolderView()
+            destination: GenresView()
         ) {
             HStack {
                 Text("Discover by genre")

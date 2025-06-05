@@ -210,7 +210,7 @@ struct BadgesSectionView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             
-            NavigationLink(destination: PlaceHolderView()
+            NavigationLink(destination: AchievementsView()
             ) {
                 HStack(spacing: 6) {
                     RoundedRectangle(cornerRadius: 2)
@@ -249,7 +249,7 @@ struct StatsSectionView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             
-            NavigationLink(destination: PlaceHolderView()
+            NavigationLink(destination: StatsView()
             ) {
                 HStack(spacing: 6) {
                     RoundedRectangle(cornerRadius: 2)
