@@ -66,7 +66,12 @@ enum ReadingStatus: String, Codable, CaseIterable {
     case read, unread, reading
 }
 
-@Model
+struct IndustryIdentifierModel: Codable, Hashable {
+    var type: String
+    var identifier: String
+}
+
+/*@Model
 class IndustryIdentifierModel {
     var type: String
     var identifier: String
@@ -75,7 +80,7 @@ class IndustryIdentifierModel {
         self.type = type
         self.identifier = identifier
     }
-}
+}*/
 
 extension SavedBook {
     convenience init(from book: BookAPI) {

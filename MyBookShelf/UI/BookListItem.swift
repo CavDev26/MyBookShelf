@@ -2,7 +2,8 @@ import SwiftUI
 import _SwiftData_SwiftUI
 
 struct BookListItemGrid: View {
-    var book: Book
+    var book: SavedBook
+    //var book: Book
     var showStatus: Bool
     var readingStatusColor: Color {
         switch book.readingStatus{
@@ -19,18 +20,28 @@ struct BookListItemGrid: View {
         VStack {
             ZStack(alignment: .topLeading){
                 Color.clear
-                Text(book.name)
+                Text(book.title)
+                //Text(book.name)
                     .padding(-5)
                     .foregroundColor(.white)
                     .multilineTextAlignment(.leading)
             }
             .padding()
             .overlay(alignment: .bottomTrailing) {
-                AsyncImage(
+                
+                if let urlString = book.coverURL, let url = URL(string: urlString) {
+                    AsyncImageView(
+                        urlString: book.coverURL,
+                        width: 60,
+                        height: 90,
+                        cornerRadius: 6
+                    )
+                }
+                /*AsyncImage(
                     url: book.imageUrl,
                     content: { image in image.resizable() },
                     placeholder: { ProgressView().tint(.terracottaDarkIcons) }
-                )
+                )*/
                 if(!showStatus) {
                     Triangle()
                         .frame(width: 60, height: 60)
@@ -50,7 +61,8 @@ struct BookListItemGrid: View {
 
 
 struct BookListItemList: View {
-    var book: Book
+    var book: SavedBook
+    //var book: Book
     
     var readingStatusColor: Color {
         switch book.readingStatus {
@@ -65,26 +77,37 @@ struct BookListItemList: View {
     
     var body: some View {
         HStack(alignment: .center, spacing: 16) {
-            AsyncImage(
+            
+            if let urlString = book.coverURL, let url = URL(string: urlString) {
+                AsyncImageView(
+                    urlString: book.coverURL,
+                    width: 60,
+                    height: 90,
+                    cornerRadius: 6
+                )
+            }
+            
+           /* AsyncImage(
                 url: book.imageUrl,
                 content: { image in image.resizable() },
                 placeholder: { ProgressView().tint(.blue) }
             )
             .aspectRatio(1, contentMode: .fill)
             .frame(width: 60, height: 60)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .clipShape(RoundedRectangle(cornerRadius: 12))*/
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(book.name)
+                Text(book.title)
+                //Text(book.name)
                     .font(.headline)
                     .foregroundColor(.primary)
-                
-                Text(book.tripDescription)
+                Text(book.bookDescription ?? "No Description")
+                //Text(book.tripDescription)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .lineLimit(1)
-                
-                Text(book.date, format: Date.FormatStyle().day().month(.wide))
+                Text(book.publishedDate ?? "No date")
+                //Text(book.date, format: Date.FormatStyle().day().month(.wide))
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
@@ -107,11 +130,15 @@ struct BookListItemList: View {
 
 struct progressViewBook: View {
     @State var size: CGSize = .zero
-    var book: Book
+    var book: SavedBook
+    //var book: Book
 
     var progress: CGFloat {
-        guard book.pages > 0 else { return 0 }
-        return CGFloat(book.pagesRead) / CGFloat(book.pages)
+        
+        guard book.pageCount! > 0 else { return 0 }
+        //guard book.pages > 0 else { return 0 }
+        return CGFloat(book.pagesRead) / CGFloat(book.pageCount!)
+        //return CGFloat(book.pagesRead) / CGFloat(book.pages)
     }
 
     var body: some View {

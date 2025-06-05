@@ -6,7 +6,9 @@ struct HomeView: View {
     @Environment(\.colorScheme) var colorScheme
     let columnCount: Int = 3
     let gridSpacing: CGFloat = -20.0
-    @Query(sort: \Book.name, order: .forward) var books: [Book]
+    
+    //@Query(sort: \Book.name, order: .forward) var books: [Book]
+    @Query(sort: \SavedBook.title, order: .forward) var books: [SavedBook]
     
     var body: some View {
         NavigationStack {
@@ -121,7 +123,8 @@ struct challengesPreview: View {
 
 
 struct yourProgressView: View {
-    var books : [Book]
+    var books: [SavedBook]
+    //var books: [Book]
     var gridSpacing: CGFloat
     var columnCount: Int
     

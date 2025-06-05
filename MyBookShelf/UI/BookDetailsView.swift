@@ -4,7 +4,8 @@ import UIKit
 import CoreImage
 
 struct BookDetailsView: View {
-    var book: Book
+    var book: SavedBook
+    //var book: Book
     @State private var dominantColor: Color = .gray.opacity(0.2)
     @State private var titleOffset: CGFloat = .infinity
     @State private var showNavTitle = false
@@ -31,7 +32,16 @@ struct BookDetailsView: View {
                              .frame(height: 300)
                              .animation(.easeInOut(duration: 0.3), value: dominantColor)*/
                             
-                            AsyncImage(url: book.imageUrl) { phase in
+                           
+                            if let urlString = book.coverURL, let url = URL(string: urlString) {
+                                AsyncImageView(
+                                    urlString: book.coverURL,
+                                    width: 60,
+                                    height: 90,
+                                    cornerRadius: 6
+                                )
+                            }
+                            /*AsyncImage(url: book.imageUrl) { phase in
                                 switch phase {
                                 case .success(let image):
                                     image
@@ -44,13 +54,14 @@ struct BookDetailsView: View {
                                 default:
                                     ProgressView()
                                 }
-                            }.padding()
+                            }.padding()*/
                         }
                         
                         
                         
                         VStack(alignment: .center, spacing: 8) {
-                            Text(book.name)
+                            Text(book.title)
+                            //Text(book.name)
                                 .font(.system(size: 30, weight: .semibold, design: .serif))
                             //.foregroundColor(.white)
                                 .background(
@@ -66,8 +77,8 @@ struct BookDetailsView: View {
                                             }
                                     }
                                 )
-                            
-                            Text(book.tripDescription)
+                            Text(book.bookDescription ?? "Non ho desc")
+                            //Text(book.tripDescription)
                                 .font(.system(size: 20, weight: .light, design: .serif))
                                 .padding(.horizontal, 8)
                             //.foregroundColor(.white)
@@ -75,7 +86,8 @@ struct BookDetailsView: View {
                             HStack(spacing: 4) {
                                 Image(systemName: "star.fill")
                                 Text("4.2 (123)")
-                                Text("• \(book.pages)")
+                                Text("• \(book.pageCount)")
+                                //Text("• \(book.pages)")
                             }
                             .font(.caption)
                             //.foregroundColor(.white)
@@ -86,7 +98,8 @@ struct BookDetailsView: View {
                             }
                             .buttonStyle(.borderedProminent)
                             
-                            Button("Buy for \(book.pages)") {
+                            Button("Buy for \(book.pageCount)") {
+                            //Button("Buy for \(book.pages)") {
                             }
                             .buttonStyle(.bordered)
                         }.padding()
@@ -99,7 +112,8 @@ struct BookDetailsView: View {
                             //.foregroundColor(.white)
                                 .bold()
                             ForEach(0..<10) { _ in
-                                Text(book.tripDescription)
+                                Text(book.bookDescription ?? "No desc")
+                                //Text(book.tripDescription)
                                 //.foregroundColor(.white)
                             }
                         }
@@ -110,7 +124,9 @@ struct BookDetailsView: View {
                     .frame(maxWidth: .infinity)
                 }
                 .onAppear {
-                    fetchDominantColor(from: book.imageUrl) { color in
+                    let coverURL = URL(string: book.coverURL ?? "")
+                    fetchDominantColor(from: coverURL) { color in
+                    //fetchDominantColor(from: book.imageUrl) { color in
                         dominantColor = color
                     }
                 }
@@ -127,7 +143,8 @@ struct BookDetailsView: View {
                         }
                     }
                     ToolbarItem(placement: .principal) {
-                        Text(book.name)
+                        Text(book.title)
+                        //Text(book.name)
                             .font(.system(size: 20, weight: .semibold, design: .serif))
                             .opacity(showNavTitle ? 1 : 0)
                             .animation(.easeInOut(duration: 0.25), value: showNavTitle)

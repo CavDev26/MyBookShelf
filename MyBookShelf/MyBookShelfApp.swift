@@ -16,11 +16,20 @@ struct MyBookShelfApp: App {
         WindowGroup {
             ContentView()
         }
-        .modelContainer(for: SavedBook.self)
+        .modelContainer(container2)
+        //.modelContainer(for: SavedBook.self)
 
         //.modelContainer(container)
     }
 
+    var container2: ModelContainer {
+        #if DEBUG
+        return PreviewData2.makeModelContainer()
+        #else
+        return try! ModelContainer(for: SavedBook.self)
+        #endif
+    }
+    
     var container: ModelContainer {
         #if DEBUG
         return PreviewData.makeModelContainer()

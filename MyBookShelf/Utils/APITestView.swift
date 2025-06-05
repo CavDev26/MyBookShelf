@@ -56,6 +56,7 @@ struct BookSearchDebugView: View {
     @Environment(\.modelContext) private var context
     @StateObject private var viewModel = BookSearchViewModel()
     @State private var searchText = ""
+    @Environment(\.dismiss) var dismiss
 
     var body: some View {
         NavigationStack {
@@ -117,11 +118,15 @@ struct BookSearchDebugView: View {
                                 Button("Add to My Library") {
                                     let saved = SavedBook(from: book)
                                     context.insert(saved)
-                                    do {
-                                        try context.save()
-                                        print("✅ Saved: \(saved.title)")
-                                    } catch {
-                                        print("❌ Error saving: \(error)")
+
+                                    DispatchQueue.main.async {
+                                        do {
+                                            try context.save()
+                                            print("✅ Saved: \(saved.title)")
+                                            dismiss()
+                                        } catch {
+                                            print("❌ Save error: \(error)")
+                                        }
                                     }
                                 }
                                 .font(.caption)

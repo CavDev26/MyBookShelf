@@ -11,7 +11,9 @@ struct MyBooksView2: View {
     @State var filterSheet = false
     @Namespace private var searchNamespace
 
-    @Query(sort: \Book.name, order: .forward) var books: [Book]
+    //@Query(sort: \Book.name, order: .forward) var books: [Book]
+    @Query(sort: \SavedBook.title, order: .forward) var books: [SavedBook]
+    
     
     var body: some View {
         NavigationStack {

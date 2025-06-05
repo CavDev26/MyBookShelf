@@ -2,7 +2,8 @@ import SwiftUICore
 import SwiftUI
 
 struct BookListViewGrid: View {
-    var books: [Book]
+    var books: [SavedBook]
+    //var books: [Book]
     @State var showAddBookSheet = false
 
     var body: some View {
@@ -44,7 +45,8 @@ struct BookListViewGrid: View {
 }
 
 struct BookListViewList: View {
-    var books: [Book]
+    var books: [SavedBook]
+    //var books: [Book]
     @State var showAddBookSheet = false
     var body: some View {
         let columnCount: Int = 1

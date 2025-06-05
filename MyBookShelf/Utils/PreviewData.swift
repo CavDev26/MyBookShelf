@@ -1,5 +1,81 @@
 import SwiftData
 
+enum PreviewData2 {
+    static let sampleBooks2 = [
+        SavedBook(
+            id: "preview1-id",
+            title: "The Swift Adventure",
+            authors: ["Jane Appleseed"],
+            publisher: "Cupertino Books",
+            coverURL: "https://upload.wikimedia.org/wikipedia/commons/a/a1/La_rocca_malatestiana_di_Cesena.jpg",
+            pageCount: 320,
+            bookDescription: "Un viaggio attraverso Swift e SwiftUI.",
+            publishedDate: "2024-01-01",
+            industryIdentifiers: [],
+            categories: ["Programming"],
+            mainCategory: "Development",
+            averageRating: 4.5,
+            ratingsCount: 42,
+            readingStatus: .read,
+            pagesRead: 320
+        ),
+        SavedBook(
+            id: "preview2-id",
+            title: "The Swift Adventure",
+            authors: ["Jane Appleseed"],
+            publisher: "Cupertino Books",
+            coverURL: "https://upload.wikimedia.org/wikipedia/commons/a/a1/La_rocca_malatestiana_di_Cesena.jpg",
+            pageCount: 100,
+            bookDescription: "Un viaggio attraverso Swift e SwiftUI.",
+            publishedDate: "2024-01-01",
+            industryIdentifiers: [],
+            categories: ["Programming"],
+            mainCategory: "Development",
+            averageRating: 4.5,
+            ratingsCount: 42,
+            readingStatus: .reading,
+            pagesRead: 30
+        ),
+        SavedBook(
+            id: "preview3-id",
+            title: "The Swift Adventure",
+            authors: ["Jane Appleseed"],
+            publisher: "Cupertino Books",
+            coverURL: "https://upload.wikimedia.org/wikipedia/commons/a/a1/La_rocca_malatestiana_di_Cesena.jpg",
+            pageCount: 500,
+            bookDescription: "Un viaggio attraverso Swift e SwiftUI.",
+            publishedDate: "2024-01-01",
+            industryIdentifiers: [],
+            categories: ["Programming"],
+            mainCategory: "Development",
+            averageRating: 4.5,
+            ratingsCount: 42,
+            readingStatus: .unread
+        )
+    ]
+    static func makeModelContainer(
+        for entities: [any PersistentModel.Type] = [SavedBook.self],
+        withSampleData: Bool = true
+    ) -> ModelContainer {
+        // Create container
+        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        let schema = Schema(entities)
+        let container = try! ModelContainer(for: schema, configurations: config)
+
+        // Add sample data if requested
+        if withSampleData {
+            let modelContext = ModelContext(container)
+            for book in sampleBooks2 {
+                modelContext.insert(book)
+            }
+            try! modelContext.save()
+        }
+        return container
+    }
+}
+
+
+
 enum PreviewData {
     static let sampleBooks = [
         Book(
