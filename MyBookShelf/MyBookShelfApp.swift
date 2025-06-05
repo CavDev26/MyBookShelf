@@ -16,7 +16,9 @@ struct MyBookShelfApp: App {
         WindowGroup {
             ContentView()
         }
-        .modelContainer(container)
+        .modelContainer(for: SavedBook.self)
+
+        //.modelContainer(container)
     }
 
     var container: ModelContainer {
@@ -26,6 +28,7 @@ struct MyBookShelfApp: App {
         return try! ModelContainer(for: Book.self)
         #endif
     }
+    
     
     
     

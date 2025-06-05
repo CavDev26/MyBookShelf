@@ -10,7 +10,7 @@ struct MyBooksView2: View {
     @State private var isExpanded = false
     @State var filterSheet = false
     @Namespace private var searchNamespace
-    
+
     @Query(sort: \Book.name, order: .forward) var books: [Book]
     
     var body: some View {

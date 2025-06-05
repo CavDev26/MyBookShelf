@@ -26,7 +26,7 @@ struct HomeView: View {
                     ScrollView(.vertical, showsIndicators: false) {
                         yourProgressView(books: books, gridSpacing: gridSpacing, columnCount: columnCount)
                         challengesPreview()
-                        NavigationLink(destination: BookSearchDebugView(), label: {
+                        /*NavigationLink(destination: BookSearchDebugView(), label: {
                             RoundedRectangle(cornerRadius: 10)
                                 .fill(.blue)
                                 .overlay{
@@ -34,7 +34,7 @@ struct HomeView: View {
                                         .foregroundColor(.white)
                                 }
                                 .frame(width: 100, height: 100)
-                        })
+                        })*/
                     }
                 }
             }
