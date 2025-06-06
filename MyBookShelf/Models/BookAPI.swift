@@ -16,6 +16,9 @@ struct BookAPI: Identifiable, Codable, Hashable {
     let mainCategory: String?
     let averageRating: Double?
     let ratingsCount: Int?
+    var detectedGenre: BookGenre {
+        BookGenre.detect(from: categories)
+    }
 
     // proprietà personalizzate
     var readingStatus: ReadingStatus = .unread
@@ -74,4 +77,79 @@ struct ImageLinks: Codable {
 
 struct BooksAPIResponse: Codable {
     let items: [BookItem]?
+}
+
+enum BookGenre: String, CaseIterable {
+    case fantasy
+    case sciFi
+    case horror
+    case romance
+    case mystery
+    case thriller
+    case biography
+    case history
+    case selfHelp
+    case philosophy
+    case poetry
+    case comics
+    case manga
+    case youngAdult
+    case children
+    case classics
+    case education
+    case unknown
+}
+extension BookGenre {
+    static func from(apiCategory category: String) -> BookGenre {
+        let lower = category.lowercased()
+
+        if lower.contains("sci-fi") || lower.contains("science fiction") {
+            return .sciFi
+        } else if lower.contains("fantasy") {
+            return .fantasy
+        } else if lower.contains("horror") {
+            return .horror
+        } else if lower.contains("romance") {
+            return .romance
+        } else if lower.contains("mystery") || lower.contains("crime") {
+            return .mystery
+        } else if lower.contains("thriller") || lower.contains("suspense") {
+            return .thriller
+        } else if lower.contains("biography") || lower.contains("memoir") {
+            return .biography
+        } else if lower.contains("history") {
+            return .history
+        } else if lower.contains("self-help") || lower.contains("self improvement") {
+            return .selfHelp
+        } else if lower.contains("philosophy") {
+            return .philosophy
+        } else if lower.contains("poetry") {
+            return .poetry
+        } else if lower.contains("comic") {
+            return .comics
+        } else if lower.contains("manga") {
+            return .manga
+        } else if lower.contains("young adult") || lower.contains("ya") {
+            return .youngAdult
+        } else if lower.contains("children") || lower.contains("kids") {
+            return .children
+        } else if lower.contains("classic") {
+            return .classics
+        } else if lower.contains("education") || lower.contains("textbook") {
+            return .education
+        } else {
+            return .unknown
+        }
+    }
+
+    static func detect(from categories: [String]?) -> BookGenre {
+        guard let categories = categories else { return .unknown }
+        for cat in categories {
+            let genre = from(apiCategory: cat)
+            if genre != .unknown {
+                return genre
+            }
+        }
+        return .unknown
+    }
 }

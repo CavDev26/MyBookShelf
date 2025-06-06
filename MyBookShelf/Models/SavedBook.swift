@@ -16,6 +16,9 @@ class SavedBook {
     var mainCategory: String?
     var averageRating: Double?
     var ratingsCount: Int?
+    var detectedGenre: BookGenre {
+        BookGenre.detect(from: categories)
+    }
 
     // Personalizzati
     var readingStatus: ReadingStatus

@@ -85,6 +85,8 @@ struct BookDetailsView: View {
                                 .padding(.horizontal, 8)
                             //.foregroundColor(.white)
                             
+                            Text("Genre: \(book.detectedGenre.rawValue.capitalized)")
+                            
                             HStack(spacing: 4) {
                                 Image(systemName: "star.fill")
                                 Text("4.2 (123)")

@@ -31,7 +31,7 @@ struct GenresView: View {
                     ScrollView {
                         VStack(spacing: 1) {
                             ForEach(genres, id: \.self) { genre in
-                                NavigationLink(destination: PlaceHolderView()) {
+                                NavigationLink(destination: SingleSearchView()) {
                                     HStack {
                                         Text(genre)
                                             .font(.system(size: 17, weight: .regular, design: .serif))

@@ -1,58 +1,7 @@
-import SwiftUI
+import SwiftUICore
 import SwiftData
-
-struct TestView: View {
-    @Environment(\.modelContext) private var context
-    @Query var savedBooks: [SavedBook]
-    
-    var body: some View {
-        NavigationStack {
-            VStack {
-                NavigationLink(destination: BookSearchDebugView()) {
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(.blue)
-                        .overlay {
-                            Text("test per api")
-                                .foregroundColor(.white)
-                        }
-                        .frame(width: 100, height: 100)
-                }
-
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("Saved Books:")
-                            .font(.headline)
-
-                        ForEach(savedBooks) { book in
-                            HStack {
-                                if let urlString = book.coverURL, let url = URL(string: urlString) {
-                                    AsyncImageView(
-                                        urlString: book.coverURL//,
-                                        //width: 60,
-                                        //height: 90,
-                                        //cornerRadius: 6
-                                    )
-                                }
-
-                                VStack(alignment: .leading) {
-                                    Text(book.title)
-                                        .font(.headline)
-                                    Text(book.authors.joined(separator: ", "))
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
-                                }
-                            }
-                        }
-                    }
-                    .padding()
-                }
-            }
-        }
-    }
-}
-
-
-struct BookSearchDebugView: View {
+import SwiftUI
+struct BookgenredebugView: View {
     @Environment(\.modelContext) private var context
     @StateObject private var viewModel = BookSearchViewModel()
     @State private var searchText = ""
@@ -62,12 +11,11 @@ struct BookSearchDebugView: View {
         NavigationStack {
             VStack {
                 HStack {
-                    TextField("Search by title, author, or ISBN", text: $searchText)
-                        .textFieldStyle(.roundedBorder)
+                    Text("click to search genre books")
                         .padding(.horizontal)
 
                     Button("Search") {
-                        viewModel.searchBooks(query: searchText)
+                        viewModel.searchBooksByGenre(genre: "fiction")
                     }
                     .buttonStyle(.borderedProminent)
                     .padding(.trailing)
@@ -172,6 +120,6 @@ struct BookSearchDebugView: View {
     
     //container.mainContext.insert(example)
 
-    return TestView()
+    return BookgenredebugView()
         .modelContainer(container)
 }
