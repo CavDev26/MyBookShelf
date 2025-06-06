@@ -27,10 +27,10 @@ struct TestView: View {
                             HStack {
                                 if let urlString = book.coverURL, let url = URL(string: urlString) {
                                     AsyncImageView(
-                                        urlString: book.coverURL,
-                                        width: 60,
-                                        height: 90,
-                                        cornerRadius: 6
+                                        urlString: book.coverURL//,
+                                        //width: 60,
+                                        //height: 90,
+                                        //cornerRadius: 6
                                     )
                                 }
 

@@ -10,7 +10,8 @@ struct MyBooksView2: View {
     @State private var isExpanded = false
     @State var filterSheet = false
     @Namespace private var searchNamespace
-
+    @Binding var selectedTab: Int
+    
     //@Query(sort: \Book.name, order: .forward) var books: [Book]
     @Query(sort: \SavedBook.title, order: .forward) var books: [SavedBook]
     
@@ -30,7 +31,7 @@ struct MyBooksView2: View {
                     }
                     ZStack {
                         if isViewGrid {
-                            BookListViewGrid(books: books)
+                            BookListViewGrid(books: books, selectedTab: $selectedTab)
                                 .transition(.opacity.combined(with: .scale))
                         } else {
                             BookListViewList(books: books)
@@ -136,6 +137,8 @@ struct TopBarButtonStyle: ViewModifier {
 
 
 #Preview {
-    MyBooksView2().modelContainer(PreviewData.makeModelContainer())
+    @Previewable @State var selectedTab = 1
+    return MyBooksView2(selectedTab: $selectedTab)
+        .modelContainer(PreviewData2.makeModelContainer())
 }
 

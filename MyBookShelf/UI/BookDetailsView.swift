@@ -11,6 +11,7 @@ struct BookDetailsView: View {
     @State private var showNavTitle = false
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.dismiss) var dismiss
+    //@Binding var selectedTab: Int
     
     
     var body: some View {
@@ -35,11 +36,12 @@ struct BookDetailsView: View {
                            
                             if let urlString = book.coverURL, let url = URL(string: urlString) {
                                 AsyncImageView(
-                                    urlString: book.coverURL,
-                                    width: 60,
-                                    height: 90,
-                                    cornerRadius: 6
+                                    urlString: book.coverURL//,
                                 )
+                                .frame(width: 180, height: 230)
+                                .cornerRadius(8)
+                                .shadow(radius: 10)
+                                .padding()
                             }
                             /*AsyncImage(url: book.imageUrl) { phase in
                                 switch phase {
@@ -209,6 +211,8 @@ struct RoundImage: View {
 }
 
 #Preview {
-    MyBooksView2().modelContainer(PreviewData.makeModelContainer())
+    @Previewable @State var selectedTab = 1
+    return MyBooksView2(selectedTab: $selectedTab)
+        .modelContainer(PreviewData2.makeModelContainer())
 }
 

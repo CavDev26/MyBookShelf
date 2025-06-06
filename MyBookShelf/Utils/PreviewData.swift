@@ -56,6 +56,7 @@ enum PreviewData2 {
     static func makeModelContainer(
         for entities: [any PersistentModel.Type] = [SavedBook.self],
         withSampleData: Bool = true
+
     ) -> ModelContainer {
         // Create container
         let config = ModelConfiguration(isStoredInMemoryOnly: true)

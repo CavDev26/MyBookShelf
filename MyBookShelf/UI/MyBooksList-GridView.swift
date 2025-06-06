@@ -3,7 +3,9 @@ import SwiftUI
 
 struct BookListViewGrid: View {
     var books: [SavedBook]
+    @Environment(\.colorScheme) var colorScheme
     //var books: [Book]
+    @Binding var selectedTab: Int
     @State var showAddBookSheet = false
 
     var body: some View {
@@ -24,23 +26,48 @@ struct BookListViewGrid: View {
         .overlay(alignment: .center) {
             if books.isEmpty {
                 ContentUnavailableView(
-                    label: { Label("No books", systemImage: "map") },
-                    description: {
-                        Text("Add a new book to see your list.")
-                    },
+                    label: { Label("No books", systemImage: "books.vertical.fill") },
                     actions: {
-                        Button(action: {
+                        
+                        Button {
+                            selectedTab = 2
+                        } label: {
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(colorScheme == .dark ? Color.backgroundColorDark2 : Color.backgroundColorLight)
+                                .frame(width: 100, height: 50)
+                                .overlay {
+                                    Text("Add a new book!")
+                                        .foregroundColor(colorScheme == .dark ? .white : .black)
+                                }
+                        }
+                        .padding()
+                        
+                        
+                        /*NavigationLink(
+                            destination: AddBooksView()
+                        ) {
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(colorScheme == .dark ? Color.backgroundColorDark2 : Color.backgroundColorLight)
+                                .frame(width: 100, height: 50)
+                                .overlay {
+                                    Text("Add a new book!")
+                                        .foregroundColor(colorScheme == .dark ? .white : .black)
+                                }
+                        }
+                        //.navigationBarBackButtonHidden(true)
+                        .padding()*/
+                        /*Button(action: {
                             showAddBookSheet = true
                         }) {
                             Text("Add book")
-                        }
+                        }*/
                     }
                 )
             }
         }
-        .sheet(isPresented: $showAddBookSheet) {
+        /*.sheet(isPresented: $showAddBookSheet) {
             AddBookSheet()
-        }
+        }*/
     }
 }
 
@@ -84,4 +111,10 @@ struct BookListViewList: View {
             AddBookSheet()
         }
     }
+}
+
+#Preview {
+    @Previewable @State var selectedTab = 1
+    return MyBooksView2(selectedTab: $selectedTab)
+        .modelContainer(PreviewData2.makeModelContainer())
 }

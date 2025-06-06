@@ -27,14 +27,14 @@ struct BlankBookPlaceHolderView: View {
                     .multilineTextAlignment(.center)
                     .foregroundColor(.secondary)
                     .lineLimit(2)
-                    .frame(height: 32)
+                    .frame(height: 44)
             }
         }
     }
 }
 
 #Preview {
-    HomeView().modelContainer(PreviewData.makeModelContainer())
+    HomeView().modelContainer(PreviewData2.makeModelContainer())
 
     //BlankBookPlaceHolderView()
 }

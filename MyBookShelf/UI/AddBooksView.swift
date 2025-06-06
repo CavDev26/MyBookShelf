@@ -24,6 +24,7 @@ struct AddBooksView: View {
                 }
             }
         }
+        .navigationBarBackButtonHidden(true)
     }
 }
 

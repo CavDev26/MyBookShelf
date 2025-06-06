@@ -149,21 +149,21 @@ struct yourProgressView: View {
                         destination: BookDetailsView(book: book)
                     ) {
                         BookListItemGrid(book: book, showStatus: true)
-                            .aspectRatio(2/4, contentMode: .fit)
+                            .aspectRatio(2/4, contentMode: .fill)
                             .padding(.horizontal)
-                            .padding(.vertical, 8)
+                            //.padding(.vertical, 8)
                     }
                 }
             }
             BlankBookPlaceHolderView()
                 .aspectRatio(2/4, contentMode: .fill)
                 .padding(.horizontal)
-                .padding(.vertical, 8)
+                //.padding(.vertical, 8)
         }
     }
 }
 
 
 #Preview {
-    HomeView().modelContainer(PreviewData.makeModelContainer())
+    HomeView().modelContainer(PreviewData2.makeModelContainer())
 }

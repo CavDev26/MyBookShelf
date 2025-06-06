@@ -18,44 +18,39 @@ struct BookListItemGrid: View {
     
     var body: some View {
         VStack {
-            ZStack(alignment: .topLeading){
-                Color.clear
-                Text(book.title)
-                //Text(book.name)
-                    .padding(-5)
-                    .foregroundColor(.white)
-                    .multilineTextAlignment(.leading)
-            }
-            .padding()
-            .overlay(alignment: .bottomTrailing) {
-                
-                if let urlString = book.coverURL, let url = URL(string: urlString) {
-                    AsyncImageView(
-                        urlString: book.coverURL,
-                        width: 60,
-                        height: 90,
-                        cornerRadius: 6
-                    )
+            VStack {
+                ZStack(alignment: .topLeading){
+                    Color.clear
+                    Text(book.title)
+                    //Text(book.name)
+                        .padding(-5)
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.leading)
+                }.padding()
+                ZStack(alignment: .bottomTrailing) {
+                    if(!showStatus) {
+                        Triangle()
+                            .frame(width: 60, height: 60)
+                            .foregroundColor(readingStatusColor)
+                            .offset(x: 60)
+                    }
                 }
-                /*AsyncImage(
-                    url: book.imageUrl,
-                    content: { image in image.resizable() },
-                    placeholder: { ProgressView().tint(.terracottaDarkIcons) }
-                )*/
-                if(!showStatus) {
-                    Triangle()
-                        .frame(width: 60, height: 60)
-                        .foregroundColor(readingStatusColor)
-                        .offset(x: 60, y: 60)
+            }
+            .background {
+                ZStack(alignment: .bottomTrailing) {
+                    if let urlString = book.coverURL, let url = URL(string: urlString) {
+                        AsyncImageView(
+                            urlString: book.coverURL
+                        )
+                    }
                 }
             }
             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-            
+            .shadow(color: Color.black.opacity(showStatus ? 0 : 0.3), radius: 4, x: 5, y: 4)
             if(showStatus) {
                 progressViewBook(book: book)
             }
         }
-        .shadow(color: Color.black.opacity(showStatus ? 0 : 0.3), radius: 4, x: 5, y: 4)
     }
 }
 
@@ -80,21 +75,24 @@ struct BookListItemList: View {
             
             if let urlString = book.coverURL, let url = URL(string: urlString) {
                 AsyncImageView(
-                    urlString: book.coverURL,
-                    width: 60,
-                    height: 90,
-                    cornerRadius: 6
+                    urlString: book.coverURL//,
+                    //width: 60,
+                    //height: 90,
+                    //cornerRadius: 6
                 )
+                .aspectRatio(1, contentMode: .fill)
+                .frame(width: 60, height: 90)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
             }
             
-           /* AsyncImage(
-                url: book.imageUrl,
-                content: { image in image.resizable() },
-                placeholder: { ProgressView().tint(.blue) }
-            )
-            .aspectRatio(1, contentMode: .fill)
-            .frame(width: 60, height: 60)
-            .clipShape(RoundedRectangle(cornerRadius: 12))*/
+            /* AsyncImage(
+             url: book.imageUrl,
+             content: { image in image.resizable() },
+             placeholder: { ProgressView().tint(.blue) }
+             )
+             .aspectRatio(1, contentMode: .fill)
+             .frame(width: 60, height: 60)
+             .clipShape(RoundedRectangle(cornerRadius: 12))*/
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(book.title)
@@ -132,7 +130,7 @@ struct progressViewBook: View {
     @State var size: CGSize = .zero
     var book: SavedBook
     //var book: Book
-
+    
     var progress: CGFloat {
         
         guard book.pageCount! > 0 else { return 0 }
@@ -140,7 +138,7 @@ struct progressViewBook: View {
         return CGFloat(book.pagesRead) / CGFloat(book.pageCount!)
         //return CGFloat(book.pagesRead) / CGFloat(book.pages)
     }
-
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             // Custom progress bar
@@ -149,20 +147,20 @@ struct progressViewBook: View {
                     .fill(Color.gray.opacity(0.2))
                     .frame(height: 8)
                     .saveSize(in: $size)
-
+                
                 Capsule()
                     .fill(Color.terracottaDarkIcons)
                     .frame(width: progress * size.width, height: 8)
-            }
-
+            }.padding(.top)
+            
             HStack(spacing: 8) {
                 Text("\(Int(progress * 100))%")
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .padding(.trailing, 10)
-
+                
                 //Spacer()
-
+                
                 Button(action: {
                     //aggiorna in processo
                 }) {
@@ -183,6 +181,7 @@ struct progressViewBook: View {
 
 
 #Preview {
-    HomeView().modelContainer(PreviewData.makeModelContainer())
-    //MyBooksView2().modelContainer(PreviewData.makeModelContainer())
+    @Previewable @State var selectedTab = 1
+    return MyBooksView2(selectedTab: $selectedTab)
+        .modelContainer(PreviewData2.makeModelContainer())
 }

@@ -2,23 +2,28 @@ import SwiftUI
 
 struct ContentView: View {
     @Environment(\.colorScheme) var colorScheme
+    @State private var selectedTab = 0
     
     var body: some View {
         ZStack {
             //Color(colorScheme == .dark ? .black : .white)
             //.ignoresSafeArea()
-            TabView {
+            TabView (selection: $selectedTab){
                 HomeView()
                     .tabItem { Label("Home", systemImage: "house.fill") }
+                    .tag(0)
                 
-                MyBooksView2()
+                MyBooksView2(selectedTab: $selectedTab)
                     .tabItem { Label("My Books", systemImage: "books.vertical") }
+                    .tag(1)
                 
                 AddBooksView()
                     .tabItem { Label("Add", systemImage: "plus") }
+                    .tag(2)
                 
                 ProfileView()
                     .tabItem { Label("Profile", systemImage: "person.crop.circle") }
+                    .tag(3)
                 TestView()
                     .tabItem { Label("TEST", systemImage: "seettings") }
             }
@@ -53,5 +58,5 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView().modelContainer(PreviewData.makeModelContainer())
+    ContentView().modelContainer(PreviewData2.makeModelContainer())
 }

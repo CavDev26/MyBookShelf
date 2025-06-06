@@ -2,9 +2,9 @@ import SwiftUI
 
 struct AsyncImageView: View {
     let urlString: String?
-    let width: CGFloat
-    let height: CGFloat
-    let cornerRadius: CGFloat
+    //let width: CGFloat
+    //let height: CGFloat
+    //let cornerRadius: CGFloat
 
     @State private var image: Image? = nil
     @State private var isLoading = false
@@ -14,13 +14,9 @@ struct AsyncImageView: View {
             if let image = image {
                 image
                     .resizable()
-                    .scaledToFill()
-                    .frame(width: width, height: height)
-                    .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+                    .aspectRatio(contentMode: .fill)
             } else {
                 Color.gray.opacity(0.3)
-                    .frame(width: width, height: height)
-                    .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
                     .onAppear {
                         loadImage()
                     }
