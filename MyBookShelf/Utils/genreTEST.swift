@@ -1,4 +1,4 @@
-import SwiftUICore
+/*import SwiftUICore
 import SwiftData
 import SwiftUI
 struct BookgenredebugView: View {
@@ -123,3 +123,4 @@ struct BookgenredebugView: View {
     return BookgenredebugView()
         .modelContainer(container)
 }
+*/

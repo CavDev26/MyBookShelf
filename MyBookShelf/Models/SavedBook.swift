@@ -16,9 +16,6 @@ class SavedBook {
     var mainCategory: String?
     var averageRating: Double?
     var ratingsCount: Int?
-    /*var detectedGenre: [BookGenre] {
-        BookGenre.detectAll(from: categories, description: bookDescription)
-    }*/
 
     // Personalizzati
     var readingStatus: ReadingStatus
@@ -73,17 +70,6 @@ struct IndustryIdentifierModel: Codable, Hashable {
     var type: String
     var identifier: String
 }
-
-/*@Model
-class IndustryIdentifierModel {
-    var type: String
-    var identifier: String
-
-    init(type: String, identifier: String) {
-        self.type = type
-        self.identifier = identifier
-    }
-}*/
 
 extension SavedBook {
     convenience init(from book: BookAPI) {

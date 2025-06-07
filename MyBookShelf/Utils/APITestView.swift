@@ -17,23 +17,20 @@ struct TestView: View {
                         }
                         .frame(width: 100, height: 100)
                 }
-
+                
                 ScrollView {
                     VStack(alignment: .leading, spacing: 10) {
                         Text("Saved Books:")
                             .font(.headline)
-
+                        
                         ForEach(savedBooks) { book in
                             HStack {
                                 if let urlString = book.coverURL, let url = URL(string: urlString) {
                                     AsyncImageView(
                                         urlString: book.coverURL//,
-                                        //width: 60,
-                                        //height: 90,
-                                        //cornerRadius: 6
                                     )
                                 }
-
+                                
                                 VStack(alignment: .leading) {
                                     Text(book.title)
                                         .font(.headline)
@@ -54,10 +51,10 @@ struct TestView: View {
 
 struct BookSearchDebugView: View {
     @Environment(\.modelContext) private var context
-    @StateObject private var viewModel = BookSearchViewModel()
+    @StateObject private var viewModel = CombinedGenreSearchViewModel()
+    //@StateObject private var viewModel = BookSearchViewModel()
     @State private var searchText = ""
-    @Environment(\.dismiss) var dismiss
-
+    
     var body: some View {
         NavigationStack {
             VStack {
@@ -65,7 +62,7 @@ struct BookSearchDebugView: View {
                     TextField("Search by title, author, or ISBN", text: $searchText)
                         .textFieldStyle(.roundedBorder)
                         .padding(.horizontal)
-
+                    
                     Button("Search") {
                         viewModel.searchBooks(query: searchText)
                     }
@@ -73,65 +70,33 @@ struct BookSearchDebugView: View {
                     .padding(.trailing)
                 }
                 .padding(.top)
-
+                
                 if viewModel.isLoading {
                     ProgressView()
                         .padding()
                 }
-
-                /*List(viewModel.searchResults) { book in
-                    VStack(alignment: .leading, spacing: 6) {
-                        HStack {
-                            if let urlString = book.coverURL, let url = URL(string: urlString) {
-                                AsyncImage(url: url) { image in
-                                    image.resizable().scaledToFill()
-                                } placeholder: {
-                                    Color.gray.opacity(0.3)
+                let books = viewModel.searchResults
+                ScrollView {
+                    SearchResultList(books: books)
+                    if !viewModel.isLoading {
+                        Button {
+                            viewModel.loadMoreSearchResults()
+                        } label: {
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color.terracotta)
+                                .overlay{
+                                    Text("Load More")
+                                        .foregroundColor(.white)
                                 }
-                                .frame(width: 60, height: 90)
-                                .clipShape(RoundedRectangle(cornerRadius: 6))
-                            }
-
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(book.title)
-                                    .font(.headline)
-
-                                Text(book.authors.joined(separator: ", "))
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                                
-                                Text("Generi rilevati:\(book.detectedGenres)")
-                                    .font(.caption2)
-                                Spacer()
-                                if let cat = book.categories {
-                                    ForEach(cat, id: \.self) { c in
-                                        Text(c)
-                                            .font(.caption2)
-                                    }
-                                    /*Text("Cat: \(cat)")
-                                        .font(.caption2)*/
-                                }
-
-                                Button("Add to My Library") {
-                                    let saved = SavedBook(from: book)
-                                    context.insert(saved)
-
-                                    DispatchQueue.main.async {
-                                        do {
-                                            try context.save()
-                                            print("✅ Saved: \(saved.title)")
-                                            dismiss()
-                                        } catch {
-                                            print("❌ Save error: \(error)")
-                                        }
-                                    }
-                                }
-                                .font(.caption)
-                                .buttonStyle(.borderedProminent)
-                            }
+                                .frame(width: 150, height: 50, alignment: .center)
+                                .shadow(radius: 8)
                         }
+                        .padding()
+                    } else {
+                        ProgressView()
+                            .padding()
                     }
-                }*/
+                }
             }
             .navigationTitle("Book Search (Debug)")
         }
@@ -139,11 +104,10 @@ struct BookSearchDebugView: View {
 }
 
 
-
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(for: SavedBook.self, configurations: config)
-
+    
     return TestView()
         .modelContainer(container)
 }

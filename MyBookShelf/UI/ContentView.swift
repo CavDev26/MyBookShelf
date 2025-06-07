@@ -25,7 +25,7 @@ struct ContentView: View {
                     .tabItem { Label("Profile", systemImage: "person.crop.circle") }
                     .tag(3)
                 TestView()
-                    .tabItem { Label("TEST", systemImage: "seettings") }
+                    .tabItem { Label("TEST", systemImage: "settings") }
             }
             .tint(colorScheme == .dark ? .terracottaDarkIcons
                   : .peachColorIcons
