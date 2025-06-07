@@ -1,18 +1,10 @@
-//
-//  GenresView.swift
-//  MyBookShelf
-//
-//  Created by Lorenzo Cavallucci on 05/06/25.
-//
-
 import SwiftUI
-
 
 struct GenresView: View {
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.dismiss) var dismiss
-
-    let genres = ["Fantasy", "Sci-Fi", "Mystery", "Romance", "Historical", "Thriller", "Horror"]
+    @StateObject private var viewModel = BookSearchViewModel()
+    let genres = BookGenre.allCases.filter { $0 != .unknown }
 
     var body: some View {
         
@@ -31,9 +23,9 @@ struct GenresView: View {
                     ScrollView {
                         VStack(spacing: 1) {
                             ForEach(genres, id: \.self) { genre in
-                                NavigationLink(destination: SingleSearchView()) {
+                                NavigationLink(destination: SingleSearchView(genre: genre)) {
                                     HStack {
-                                        Text(genre)
+                                        Text(formatGenreName(genre))
                                             .font(.system(size: 17, weight: .regular, design: .serif))
                                             .foregroundColor(colorScheme == .dark ? .white : .black)
                                         Spacer()
@@ -51,6 +43,13 @@ struct GenresView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
+    }
+    
+    func formatGenreName(_ genre: BookGenre) -> String {
+        let raw = genre.rawValue
+        return raw
+            .replacingOccurrences(of: "([a-z])([A-Z])", with: "$1 $2", options: .regularExpression)
+            .capitalized
     }
 }
 

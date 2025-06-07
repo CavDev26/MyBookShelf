@@ -20,9 +20,12 @@ class BookSearchViewModel: ObservableObject {
         
         if let genre = genre, !genre.isEmpty {
             fullQuery = "subject:\(genre)"
+            //fullQuery = "\(genre)+subject"
         }
 
         guard let encodedQuery = fullQuery.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else { return }
+       
+        //let urlString = "https://www.googleapis.com/books/v1/volumes?q=$genre+subject&maxResults=40"
         let urlString = "https://www.googleapis.com/books/v1/volumes?q=\(encodedQuery)&maxResults=40"
         guard let url = URL(string: urlString) else { return }
         isLoading = true

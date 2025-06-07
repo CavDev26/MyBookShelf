@@ -6,14 +6,15 @@ struct SingleSearchView: View {
     @StateObject private var viewModel = BookSearchViewModel()
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) var dismiss
+    let genre: BookGenre
 
     
     var body: some View {
-        Button("Search") {
+        /*Button("Search") {
             viewModel.searchBooksByGenre(genre: "fiction")
         }
         .buttonStyle(.borderedProminent)
-        .padding(.trailing)
+        .padding(.trailing)*/
         List(viewModel.searchResults) { book in
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
@@ -76,10 +77,17 @@ struct SingleSearchView: View {
                 }
             }
         }
+        .navigationTitle("\(genre.rawValue.capitalized) Books")
+        .onAppear {
+            viewModel.searchBooksByGenre(genre: genre.googleSubject)
+        }
     }
 }
     
 #Preview {
+    AddBooksView()
+    
+    /*
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(for: SavedBook.self, configurations: config)
 
@@ -103,6 +111,6 @@ struct SingleSearchView: View {
     //container.mainContext.insert(example)
 
     return SingleSearchView()
-        .modelContainer(container)
+        .modelContainer(container)*/
 }
     

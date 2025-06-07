@@ -114,9 +114,17 @@ struct BookSearchDebugView: View {
                                     Text("Pages: \(pageCount)")
                                         .font(.caption2)
                                 }*/
+                                
+                                Text("Generi rilevati:\(book.detectedGenres)")
+                                    .font(.caption2)
+                                Spacer()
                                 if let cat = book.categories {
-                                    Text("Cat: \(cat)")
-                                        .font(.caption2)
+                                    ForEach(cat, id: \.self) { c in
+                                        Text(c)
+                                            .font(.caption2)
+                                    }
+                                    /*Text("Cat: \(cat)")
+                                        .font(.caption2)*/
                                 }
                                 
                                 //Text("Genre: \(book.detectedGenre.rawValue.capitalized)")
