@@ -3,19 +3,16 @@ import SwiftData
 import SwiftUI
 
 struct SingleSearchView: View {
-    @StateObject private var viewModel = BookSearchViewModel()
+    @StateObject private var viewModel = CombinedGenreSearchViewModel()
+    //@StateObject private var viewModel = BookSearchViewModel()
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) var dismiss
     let genre: BookGenre
 
     
     var body: some View {
-        /*Button("Search") {
-            viewModel.searchBooksByGenre(genre: "fiction")
-        }
-        .buttonStyle(.borderedProminent)
-        .padding(.trailing)*/
-        List(viewModel.searchResults) { book in
+        List(viewModel.searchResults/*.filter { $0.detectedGenres.contains(genre)
+        }*/) { book in
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     if let urlString = book.coverURL, let url = URL(string: urlString) {
@@ -36,27 +33,13 @@ struct SingleSearchView: View {
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                         
-                        /*if let publisher = Optional(book.publisher) {
-                         Text("Publisher: \(publisher)")
-                         .font(.caption)
-                         }
-                         
-                         if let date = book.publishedDate {
-                         Text("Published: \(date)")
-                         .font(.caption2)
-                         }
-                         
-                         if let pageCount = book.pageCount {
-                         Text("Pages: \(pageCount)")
-                         .font(.caption2)
-                         }*/
                         if let cat = book.categories {
-                            Text("Cat: \(cat)")
-                                .font(.caption2)
+                            ForEach(cat, id: \.self) { c in
+                                Text(c)
+                                    .font(.caption2)
+                            }
                         }
-                        
-                        //Text("Genre: \(book.detectedGenre.rawValue.capitalized)")
-                        
+                                                
                         Button("Add to My Library") {
                             let saved = SavedBook(from: book)
                             context.insert(saved)
@@ -79,38 +62,18 @@ struct SingleSearchView: View {
         }
         .navigationTitle("\(genre.rawValue.capitalized) Books")
         .onAppear {
-            viewModel.searchBooksByGenre(genre: genre.googleSubject)
+            viewModel.searchByGenreSmart(genre: genre.rawValue)
+            //viewModel.searchBooksByGenre(genre: genre.googleSubject)
+        }
+        if !viewModel.isLoading {
+            Button("Carica altri risultati") {
+                viewModel.loadMore()
+            }
         }
     }
 }
     
 #Preview {
     AddBooksView()
-    
-    /*
-    let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: SavedBook.self, configurations: config)
-
-    // Dati di esempio
-    /*let example = SavedBook(
-        id: "preview-id",
-        title: "The Swift Adventure",
-        authors: ["Jane Appleseed"],
-        publisher: "Cupertino Books",
-        coverURL: "https://via.placeholder.com/150",
-        pageCount: 320,
-        bookDescription: "Un viaggio attraverso Swift e SwiftUI.",
-        publishedDate: "2024-01-01",
-        industryIdentifiers: [],
-        categories: ["Programming"],
-        mainCategory: "Development",
-        averageRating: 4.5,
-        ratingsCount: 42
-    )*/
-    
-    //container.mainContext.insert(example)
-
-    return SingleSearchView()
-        .modelContainer(container)*/
 }
     

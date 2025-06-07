@@ -15,9 +15,10 @@ struct BookAPI: Identifiable, Codable, Hashable {
     let mainCategory: String?
     let averageRating: Double?
     let ratingsCount: Int?
-    var detectedGenres: [BookGenre] {
+    
+    /*var detectedGenres: [BookGenre] {
         BookGenre.detectAll(from: categories, description: description)
-    }
+    }*/
 
     // proprietà personalizzate
     var readingStatus: ReadingStatus = .unread
@@ -78,10 +79,47 @@ struct BooksAPIResponse: Codable {
 }
 
 enum BookGenre: String, CaseIterable {
-    case fiction, sciFi, horror, romance, mystery, thriller, biography, history, selfHelp, philosophy, poetry, comics, manga, youngAdult, children, classics, education, unknown
+    case love = "love"
+    case scienceFiction = "science-fiction"
+    case fantasy = "fantasy"
+    case horror = "horror"
+    case mystery = "mystery"
+    case historicalFiction = "historical-fiction"
+    case thriller = "thriller"
+    case romance = "romance"
+    case poetry = "poetry"
+    case youngAdult = "young-adult"
+    case children = "children"
+    case pictureBooks = "picture-books"
+    case biography = "biographies"
+    case history = "history"
+    case science = "science"
+    case mathematics = "mathematics"
+    case psychology = "psychology"
+    case philosophy = "philosophy"
+    case religion = "religion"
+    case cooking = "cooking"
+    case health = "health"
+    case selfHelp = "self-help"
+    case education = "education"
+    case art = "art"
+    case music = "music"
+    case photography = "photography"
+    case animals = "animals"
+    case cats = "cats"
+    case dogs = "dogs"
+    case sports = "sports"
+    case travel = "travel"
+    case computers = "computers"
+    case programming = "programming"
+    case textbooks = "textbooks"
+    case unknown = "unknown"
+    
+    
+    /*case fiction, sciFi, horror, romance, mystery, thriller, biography, history, selfHelp, philosophy, poetry, comics, manga, youngAdult, children, classics, education, unknown*/
 }
 
-extension BookGenre {
+/*extension BookGenre {
     static func from(apiCategory category: String) -> BookGenre {
         let lower = category.lowercased()
         if lower.contains("sci-fi") || lower.contains("science fiction") {
@@ -123,7 +161,7 @@ extension BookGenre {
         }
     }
 
-    static func detectAll(from categories: [String]?, description: String?) -> [BookGenre] {
+    /*static func detectAll(from categories: [String]?, description: String?) -> [BookGenre] {
         var detected: Set<BookGenre> = []
 
         if let categories = categories {
@@ -142,7 +180,7 @@ extension BookGenre {
                 .sciFi: ["space", "alien", "aliens", "robot", "robots", "sci-fi", "science fiction", "future", "futuristic", "technology", "cyborg", "android", "interstellar", "spaceship", "galaxy", "universo", "spazio", "futuro", "tecnologia", "robotico", "intelligenza artificiale", "cyberpunk"],
                 .romance: ["love", "romance", "relationship", "relationships", "affair", "affairs", "passion", "heart", "hearts", "kiss", "kisses", "wedding", "marriage", "couple", "dating", "innamorati", "amore", "cuore", "cuori", "relazione", "relazioni", "matrimonio", "sposi", "fidanzati", "passione", "bacio", "baci"],
                 .mystery: ["mystery", "mysteries", "detective", "murder", "crime", "investigation", "whodunit", "clue", "suspect", "case", "mistero", "omicidio", "indagine", "indagini", "crimine", "delitto", "sospetto", "detective", "enigma"],
-                .thriller: ["thriller", "suspense", "conspiracy", "espionage", "spy", "chase", "danger", "plot", "intensity", "adrenaline", "pericolo", "cospirazione", "spionaggio", "fuga", "rincorsa", "tensione", "trama", "azione", "intenso"],
+                .thriller: ["thriller", "suspense", "conspiracy", "espionage", "spy", "chase", "danger", "plot", "intensity", "adrenaline", "pericolo", "cospirazione", "spionaggio", "fuga", "rincorsa", "tensione", "trama", "azione", "intenso", "death", "morte", "sangue", "blood"],
                 .biography: ["biography", "memoir", "life of", "autobiography", "story of", "real life", "personal history", "true story", "biografia", "memorie", "vita di", "autobiografia", "storia vera", "racconto di vita", "personaggio reale"],
                 .history: ["history", "historical", "past", "ancient", "civilization", "empire", "war", "wars", "battle", "timeline", "storia", "storico", "antico", "civiltà", "battaglia", "guerra", "imperi", "cronologia", "passato", "medioevo"],
                 .selfHelp: ["self-help", "motivation", "inspiration", "personal growth", "guide", "coaching", "wellness", "happiness", "mental health", "auto-aiuto", "motivazione", "ispirazione", "crescita personale", "benessere", "felicità", "salute mentale", "guida"],
@@ -164,10 +202,10 @@ extension BookGenre {
         }
 
         return detected.isEmpty ? [.unknown] : Array(detected)
-    }
-}
+    }*/
+}*/
 
-extension BookGenre {
+/*extension BookGenre {
     var googleSubject: String {
         switch self {
         case .sciFi: return "sciFi"
@@ -190,4 +228,4 @@ extension BookGenre {
         case .unknown: return ""
         }
     }
-}
+}*/

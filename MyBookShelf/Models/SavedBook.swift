@@ -16,9 +16,9 @@ class SavedBook {
     var mainCategory: String?
     var averageRating: Double?
     var ratingsCount: Int?
-    var detectedGenre: [BookGenre] {
+    /*var detectedGenre: [BookGenre] {
         BookGenre.detectAll(from: categories, description: bookDescription)
-    }
+    }*/
 
     // Personalizzati
     var readingStatus: ReadingStatus

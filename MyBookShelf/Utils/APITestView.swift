@@ -79,7 +79,7 @@ struct BookSearchDebugView: View {
                         .padding()
                 }
 
-                List(viewModel.searchResults) { book in
+                /*List(viewModel.searchResults) { book in
                     VStack(alignment: .leading, spacing: 6) {
                         HStack {
                             if let urlString = book.coverURL, let url = URL(string: urlString) {
@@ -99,21 +99,6 @@ struct BookSearchDebugView: View {
                                 Text(book.authors.joined(separator: ", "))
                                     .font(.subheadline)
                                     .foregroundColor(.secondary)
-
-                                /*if let publisher = Optional(book.publisher) {
-                                    Text("Publisher: \(publisher)")
-                                        .font(.caption)
-                                }
-
-                                if let date = book.publishedDate {
-                                    Text("Published: \(date)")
-                                        .font(.caption2)
-                                }
-
-                                if let pageCount = book.pageCount {
-                                    Text("Pages: \(pageCount)")
-                                        .font(.caption2)
-                                }*/
                                 
                                 Text("Generi rilevati:\(book.detectedGenres)")
                                     .font(.caption2)
@@ -126,8 +111,6 @@ struct BookSearchDebugView: View {
                                     /*Text("Cat: \(cat)")
                                         .font(.caption2)*/
                                 }
-                                
-                                //Text("Genre: \(book.detectedGenre.rawValue.capitalized)")
 
                                 Button("Add to My Library") {
                                     let saved = SavedBook(from: book)
@@ -148,7 +131,7 @@ struct BookSearchDebugView: View {
                             }
                         }
                     }
-                }
+                }*/
             }
             .navigationTitle("Book Search (Debug)")
         }
@@ -160,25 +143,6 @@ struct BookSearchDebugView: View {
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(for: SavedBook.self, configurations: config)
-
-    // Dati di esempio
-    /*let example = SavedBook(
-        id: "preview-id",
-        title: "The Swift Adventure",
-        authors: ["Jane Appleseed"],
-        publisher: "Cupertino Books",
-        coverURL: "https://via.placeholder.com/150",
-        pageCount: 320,
-        bookDescription: "Un viaggio attraverso Swift e SwiftUI.",
-        publishedDate: "2024-01-01",
-        industryIdentifiers: [],
-        categories: ["Programming"],
-        mainCategory: "Development",
-        averageRating: 4.5,
-        ratingsCount: 42
-    )*/
-    
-    //container.mainContext.insert(example)
 
     return TestView()
         .modelContainer(container)
