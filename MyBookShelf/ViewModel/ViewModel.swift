@@ -1,4 +1,5 @@
 import Foundation
+import AVFoundation
 import SwiftUICore
 import Combine
 
@@ -281,4 +282,58 @@ class BookSearchViewModel: ObservableObject {
             }
         }.resume()
     }*/
+}
+
+
+
+
+
+
+
+
+
+
+
+final class ScannerViewModel: NSObject, ObservableObject, AVCaptureMetadataOutputObjectsDelegate {
+    @Published var scannedCode: String?
+    
+    private let session = AVCaptureSession()
+    private let metadataOutput = AVCaptureMetadataOutput()
+    
+    func startScanning() {
+        guard let videoDevice = AVCaptureDevice.default(for: .video),
+              let videoInput = try? AVCaptureDeviceInput(device: videoDevice),
+              session.canAddInput(videoInput),
+              session.canAddOutput(metadataOutput)
+        else {
+            return
+        }
+
+        session.addInput(videoInput)
+        session.addOutput(metadataOutput)
+        metadataOutput.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
+        metadataOutput.metadataObjectTypes = [.ean13, .qr] // EAN = ISBN, QR = optional
+
+        DispatchQueue.global(qos: .userInitiated).async {
+            self.session.startRunning()
+        }    }
+
+    func stopScanning() {
+        session.stopRunning()
+    }
+
+    func metadataOutput(_ output: AVCaptureMetadataOutput,
+                        didOutput metadataObjects: [AVMetadataObject],
+                        from connection: AVCaptureConnection) {
+        guard let metadata = metadataObjects.first as? AVMetadataMachineReadableCodeObject,
+              let stringValue = metadata.stringValue else {
+            return
+        }
+        scannedCode = stringValue
+        stopScanning()
+    }
+
+    func getSession() -> AVCaptureSession {
+        return session
+    }
 }

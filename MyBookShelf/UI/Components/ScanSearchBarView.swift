@@ -7,6 +7,8 @@ struct ScanSearchBarView: View {
     @State var navigated = false
     @State var scanview = false
     @State var searchInLibrary: Bool
+    @StateObject private var viewModel = CombinedGenreSearchViewModel()
+
     
     var body: some View {
         
@@ -47,42 +49,44 @@ struct ScanSearchBarView: View {
         .cornerRadius(22)
         */
         
-        
-        HStack(spacing: 8) {
-            Image(systemName: "magnifyingglass")
-                .foregroundColor(colorScheme == .dark ? .white : .black)
-            
-            TextField(!searchInLibrary ? "Search" : "Search your books...", text: $searchText)
-                .textFieldStyle(.plain)
-                .autocapitalization(.none)
-                //.foregroundColor(.black)
-                .disableAutocorrection(true)
-                .overlay(
-                    Image(systemName: "x.circle")
-                        .padding()
-                        .offset(x: 10)
-                        .foregroundColor(colorScheme == .dark ? .white : .black)
-                        .opacity(searchText.isEmpty ? 0.0 : 1.0)
-                        .onTapGesture {
-                            UIApplication.shared.endEditing()
-                            searchText = ""
-                        }, alignment: .trailing
-                )
-            if (scan) {
-                Image(systemName: "barcode.viewfinder")
+        HStack {
+            HStack(spacing: 8) {
+                Image(systemName: "magnifyingglass")
                     .foregroundColor(colorScheme == .dark ? .white : .black)
-                //.opacity(searchText.isEmpty ? 1.0 : 0.0)
-                    .onTapGesture {
-                        scanview.toggle()
-                    }
-                NavigationLink("", destination: ScanView(), isActive: $scanview)
+                
+                TextField(!searchInLibrary ? "Search" : "Search your books...", text: $searchText)
+                    .textFieldStyle(.plain)
+                    .autocapitalization(.none)
+                //.foregroundColor(.black)
+                    .disableAutocorrection(true)
+                    .overlay(
+                        Image(systemName: "x.circle")
+                            .padding()
+                            .offset(x: 10)
+                            .foregroundColor(colorScheme == .dark ? .white : .black)
+                            .opacity(searchText.isEmpty ? 0.0 : 1.0)
+                            .onTapGesture {
+                                UIApplication.shared.endEditing()
+                                searchText = ""
+                            }, alignment: .trailing
+                    )
+                if (scan) {
+                    Image(systemName: "barcode.viewfinder")
+                        .foregroundColor(colorScheme == .dark ? .white : .black)
+                    //.opacity(searchText.isEmpty ? 1.0 : 0.0)
+                        .onTapGesture {
+                            scanview.toggle()
+                        }
+                    //NavigationLink("", destination: ScanView(), isActive: $scanview)
+                }
             }
+            //.font(.headline)
+            .padding(10)
+            .frame(height: 44)
+            .background(colorScheme == .dark ? Color.backgroundColorDark : Color.lightColorApp)
+            .cornerRadius(22)
         }
-        //.font(.headline)
-        .padding(10)
-        .frame(height: 44)
-        .background(colorScheme == .dark ? Color.backgroundColorDark : Color.lightColorApp)
-        .cornerRadius(22)
+        
         /*.background(
             RoundedRectangle(cornerRadius: 25)
                 .fill(.gray).opacity(scan ? 0.6 : 1.0)

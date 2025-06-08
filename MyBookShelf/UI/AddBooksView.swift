@@ -3,9 +3,13 @@ import SwiftUI
 
 struct AddBooksView: View {
     @Environment(\.colorScheme) var colorScheme
-    //@State private var searchText: String = ""
+    @State private var isSearching = false
+    @StateObject private var viewModel = CombinedGenreSearchViewModel()
+    @State private var searchText: String = ""
     let columnCount: Int = 3
     let gridSpacing: CGFloat = -20.0
+    @State var scanview = false
+
     
     var body: some View {
         NavigationStack {
@@ -14,14 +18,40 @@ struct AddBooksView: View {
                     .ignoresSafeArea()
                 VStack {
                     TopNavBar{
-                        ScanSearchBarView(scan: true, searchInLibrary: false)
+                        DiscoverSearchBarView(
+                            searchText: $searchText,
+                            isSearching: $isSearching,
+                            viewModel: viewModel,
+                            scanview: $scanview
+                        )
                     }
-                    ScrollView(.vertical) {
-                        genreDiscoverView(gridSpacing: gridSpacing, columnCount: columnCount)
-                        topPicksDiscoverView()
-                        addBookManuallyView()
+                    if isSearching {
+                        if viewModel.isLoading {
+                            ProgressView().padding()
+                        } else {
+                            ScrollView {
+                                SearchResultList(books: viewModel.searchResults)
+                            }
+                        }
+                    } else {
+                        ScrollView {
+                            genreDiscoverView(gridSpacing: gridSpacing, columnCount: columnCount)
+                            topPicksDiscoverView()
+                            addBookManuallyView()
+                        }
                     }
                 }
+
+                /*VStack {
+                 TopNavBar{
+                 ScanSearchBarView(scan: true, searchInLibrary: false)
+                 }
+                 ScrollView(.vertical) {
+                 genreDiscoverView(gridSpacing: gridSpacing, columnCount: columnCount)
+                 topPicksDiscoverView()
+                 addBookManuallyView()
+                 }
+                 }*/
             }
         }
         .navigationBarBackButtonHidden(true)
@@ -30,11 +60,11 @@ struct AddBooksView: View {
 
 struct addBookManuallyView: View {
     @State private var showSheet = false
-
+    
     var body: some View {
         Button {
             showSheet.toggle()
-            }
+        }
         label: {
             RoundedRectangle(cornerRadius: 10)
                 .fill(Color.blue)
@@ -65,47 +95,47 @@ struct manualAddSheet: View {
         VStack(spacing: 20) {
             Text("Add a book - Manually")
             /*Text(goalName)
-                .font(.headline)
-                .padding(.top, 30)
-            TextField("Books you want to read", text: $tempGoal)
-                            .padding()
-                            .background(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .fill(colorScheme == .dark ? Color(white: 0.15) : Color(white: 0.9))
-                            )
-                            .foregroundColor(colorScheme == .dark ? .white : .black)
-                            .keyboardType(.numberPad)
-                            .padding(.horizontal)
-            
-            Button("Save") {
-                if let newGoal = Int(tempGoal), newGoal > 0 {
-                    goal = newGoal
-                    showSheet = false
-                    tempGoal = ""
-                }
-            }
-            .font(.system(size: 17, weight: .semibold))
-            .padding(.horizontal, 32)
-            .padding(.vertical, 12)
-            .background(Color.terracotta)
-            .foregroundColor(.white)
-            .clipShape(RoundedRectangle(cornerRadius: 10))
-            //.buttonStyle(.borderedProminent)
-            Spacer()
-        }
-        .padding()
-        .padding(.top, 30)
-        .onAppear {
-            if let goal {
-                tempGoal = "\(goal)"
-            }*/
+             .font(.headline)
+             .padding(.top, 30)
+             TextField("Books you want to read", text: $tempGoal)
+             .padding()
+             .background(
+             RoundedRectangle(cornerRadius: 10)
+             .fill(colorScheme == .dark ? Color(white: 0.15) : Color(white: 0.9))
+             )
+             .foregroundColor(colorScheme == .dark ? .white : .black)
+             .keyboardType(.numberPad)
+             .padding(.horizontal)
+             
+             Button("Save") {
+             if let newGoal = Int(tempGoal), newGoal > 0 {
+             goal = newGoal
+             showSheet = false
+             tempGoal = ""
+             }
+             }
+             .font(.system(size: 17, weight: .semibold))
+             .padding(.horizontal, 32)
+             .padding(.vertical, 12)
+             .background(Color.terracotta)
+             .foregroundColor(.white)
+             .clipShape(RoundedRectangle(cornerRadius: 10))
+             //.buttonStyle(.borderedProminent)
+             Spacer()
+             }
+             .padding()
+             .padding(.top, 30)
+             .onAppear {
+             if let goal {
+             tempGoal = "\(goal)"
+             }*/
         }
     }
 }
 
 struct topPicksDiscoverView: View {
     @Environment(\.colorScheme) var colorScheme
-
+    
     var body: some View {
         NavigationLink(
             destination: PlaceHolderView()
@@ -133,7 +163,7 @@ struct topPicksDiscoverView: View {
 
 struct genreDiscoverView: View {
     @Environment(\.colorScheme) var colorScheme
-    let genreImages = ["Scifi", "ComicsManga", "Horror", "Crime", "Fantasy", "Classics"]
+    let genreImages = ["Scifi", "Comics", "Horror", "Mistery", "Fantasy", "Classics"]
     var gridSpacing: CGFloat
     var columnCount: Int
     
@@ -155,8 +185,9 @@ struct genreDiscoverView: View {
         
         LazyVGrid(columns: Array(repeating: .init(.flexible(), spacing: gridSpacing), count: columnCount), spacing: gridSpacing) {
             ForEach (genreImages, id: \.self) { imageName in
+                let genre = BookGenre.fromImageName(imageName)
                 NavigationLink(
-                    destination: PlaceHolderView()
+                    destination: SingleSearchView(genre: genre)
                 ) {
                     genreView(imageName: imageName)
                 }

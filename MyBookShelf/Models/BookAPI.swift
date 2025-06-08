@@ -109,5 +109,20 @@ enum BookGenre: String, CaseIterable {
     case computers = "computers"
     case programming = "programming"
     case textbooks = "textbooks"
+    case literature = "literature"
     case unknown = "unknown"
+}
+
+extension BookGenre {
+    static func fromImageName(_ imageName: String) -> BookGenre {
+        switch imageName.lowercased() {
+        case "scifi": return .scienceFiction
+        case "comics": return .art
+        case "horror": return .horror
+        case "mistery": return .mystery
+        case "fantasy": return .fantasy
+        case "classics": return .literature
+        default: return .unknown
+        }
+    }
 }
