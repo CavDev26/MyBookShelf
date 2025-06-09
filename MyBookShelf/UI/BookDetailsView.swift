@@ -3,69 +3,35 @@ import MapKit
 import UIKit
 import CoreImage
 
-struct BookDetailsView: View {
-    var book: SavedBook
-    //var book: Book
+struct BookDetailsView<T: BookRepresentable>: View {
+    var book: T
     @State private var dominantColor: Color = .gray.opacity(0.2)
     @State private var titleOffset: CGFloat = .infinity
     @State private var showNavTitle = false
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.dismiss) var dismiss
-    //@Binding var selectedTab: Int
-    
-    
+
     var body: some View {
         ZStack(alignment: .top) {
-            //dominantColor.ignoresSafeArea()
             Color(colorScheme == .dark ? Color.backgroundColorDark : Color.lightColorApp)
                 .ignoresSafeArea()
-            
+
             GeometryReader { outerGeo in
                 ScrollView {
                     VStack(spacing: 0) {
                         ZStack {
-                            /*RoundedRectangle(cornerRadius: 20)
-                             .fill(dominantColor)
-                             .frame(height: 300)
-                             .animation(.easeInOut(duration: 0.3), value: dominantColor)
-                             .ignoresSafeArea()*/
-                            /*dominantColor
-                             .frame(height: 300)
-                             .animation(.easeInOut(duration: 0.3), value: dominantColor)*/
-                            
-                           
                             if let urlString = book.coverURL, let url = URL(string: urlString) {
-                                AsyncImageView(
-                                    urlString: book.coverURL//,
-                                )
-                                .frame(width: 180, height: 230)
-                                .cornerRadius(8)
-                                .shadow(radius: 10)
-                                .padding()
+                                AsyncImageView(urlString: urlString)
+                                    .frame(width: 180, height: 230)
+                                    .cornerRadius(8)
+                                    .shadow(radius: 10)
+                                    .padding()
                             }
-                            /*AsyncImage(url: book.imageUrl) { phase in
-                                switch phase {
-                                case .success(let image):
-                                    image
-                                        .resizable()
-                                        .frame(width: 180, height: 230)
-                                        .cornerRadius(8)
-                                        .shadow(radius: 10)
-                                case .failure(_):
-                                    Image(systemName: "book")
-                                default:
-                                    ProgressView()
-                                }
-                            }.padding()*/
                         }
-                        
-                        
-                        
+
                         VStack(alignment: .center, spacing: 8) {
                             Text(book.title)
-                            //Text(book.name)
                                 .font(.system(size: 30, weight: .semibold, design: .serif))
-                            //.foregroundColor(.white)
                                 .background(
                                     GeometryReader { geo in
                                         Color.clear
@@ -79,59 +45,51 @@ struct BookDetailsView: View {
                                             }
                                     }
                                 )
-                            Text(book.bookDescription ?? "Non ho desc")
-                            //Text(book.tripDescription)
-                                .font(.system(size: 20, weight: .light, design: .serif))
-                                .padding(.horizontal, 8)
-                            //.foregroundColor(.white)
-                            
-                            //DA AGGIUNNGERE
-                            //Text("Genre: \(book.detectedGenre.capitalized)")
-                            
+
+                            //if let desc = book.bookDescription {
+                            Text(book.descriptionText ?? "non ho desc")
+                                    .font(.system(size: 20, weight: .light, design: .serif))
+                                    .padding(.horizontal, 8)
+                            //}
+
                             HStack(spacing: 4) {
                                 Image(systemName: "star.fill")
                                 Text("4.2 (123)")
-                                Text("• \(book.pageCount)")
-                                //Text("• \(book.pages)")
+                                //if let pages = book.pageCount {
+                                    Text("• \(book.pageCount) pages")
+                                //}
                             }
                             .font(.caption)
-                            //.foregroundColor(.white)
                         }
-                        
+
                         HStack(spacing: 16) {
                             Button("Sample") {
                             }
                             .buttonStyle(.borderedProminent)
-                            
-                            Button("Buy for \(book.pageCount)") {
-                            //Button("Buy for \(book.pages)") {
+
+                            Button("Buy") {
                             }
                             .buttonStyle(.bordered)
                         }.padding()
-                        
+
                         Divider().padding(.vertical)
-                        
+
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Description")
                                 .font(.system(size: 30, weight: .semibold, design: .serif))
-                            //.foregroundColor(.white)
                                 .bold()
-                            ForEach(0..<10) { _ in
-                                Text(book.bookDescription ?? "No desc")
-                                //Text(book.tripDescription)
-                                //.foregroundColor(.white)
+                            ForEach(0..<10, id: \.self) { _ in
+                                Text("Prova\n\n\n\n\n")
                             }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal)
-                        
                     }
                     .frame(maxWidth: .infinity)
                 }
                 .onAppear {
                     let coverURL = URL(string: book.coverURL ?? "")
                     fetchDominantColor(from: coverURL) { color in
-                    //fetchDominantColor(from: book.imageUrl) { color in
                         dominantColor = color
                     }
                 }
@@ -149,29 +107,27 @@ struct BookDetailsView: View {
                     }
                     ToolbarItem(placement: .principal) {
                         Text(book.title)
-                        //Text(book.name)
                             .font(.system(size: 20, weight: .semibold, design: .serif))
                             .opacity(showNavTitle ? 1 : 0)
                             .animation(.easeInOut(duration: 0.25), value: showNavTitle)
                             .foregroundColor(.white)
                     }
                 }
-                //.toolbarBackground(Color.backgroundColorLight, for: .navigationBar)
                 .toolbarBackground(dominantColor, for: .navigationBar)
                 .toolbarBackgroundVisibility(.visible, for: .navigationBar)
                 .navigationBarBackButtonHidden(true)
             }
         }
     }
-    
+
     func fetchDominantColor(from url: URL?, completion: @escaping (Color) -> Void) {
         guard let url = url else { return }
         URLSession.shared.dataTask(with: url) { data, _, _ in
             guard let data = data,
                   let uiImage = UIImage(data: data) else { return }
-            
+
             let color = uiImage.suitableBackgroundColor()
-            
+
             DispatchQueue.main.async {
                 completion(color)
             }
@@ -179,17 +135,16 @@ struct BookDetailsView: View {
     }
 }
 
-
 struct MapArea: View {
     var location: CLLocationCoordinate2D
-    
+
     var body: some View {
         let region = MKCoordinateRegion(
             center: location,
             span: MKCoordinateSpan(latitudeDelta: 0.2, longitudeDelta: 0.2)
         )
         let cameraPosition = MapCameraPosition.region(region)
-        
+
         Map(position: .constant(cameraPosition))
             .allowsHitTesting(false)
     }
@@ -197,7 +152,7 @@ struct MapArea: View {
 
 struct RoundImage: View {
     var url: URL?
-    
+
     var body: some View {
         ZStack {
             Rectangle().fill(.blue.opacity(0.2))

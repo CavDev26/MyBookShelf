@@ -6,30 +6,69 @@ struct ScanView: View {
     @StateObject private var scanner = ScannerViewModel()
     @Binding var searchText: String
     @State var lastSearchText: String
-
+    @State private var scannedBook: BookAPI? = nil
+    @StateObject private var vm = CombinedGenreSearchViewModel()
+    @Environment(\.modelContext) private var context
+    @State private var lastScannedISBN: String? = nil
 
     var body: some View {
         ZStack {
             ScannerPreview(scanner: scanner)
                 .ignoresSafeArea()
 
-            VStack(alignment: .center) {
-                
+            VStack {
                 Image(systemName: "viewfinder.rectangular")
                     .resizable()
-                    .frame(width: 200, height: 80)
+                    .scaledToFit()
+                    .opacity(0.4)
+                    .padding()
+
+                Spacer()
             }
 
-            if let scannedCode = scanner.scannedCode {
+            if let book = scannedBook {
                 VStack {
                     Spacer()
-                    Text("Scanned: \(scannedCode)")
-                        .font(.headline)
-                        .padding()
-                        .background(.ultraThinMaterial)
-                        .cornerRadius(10)
-                        .padding(.bottom, 40)
+                    VStack(spacing: 12) {
+                        if let urlString = book.coverURL, let url = URL(string: urlString) {
+                            AsyncImage(url: url) { image in
+                                image.resizable().scaledToFit()
+                            } placeholder: {
+                                Color.gray.opacity(0.3)
+                            }
+                            .frame(height: 120)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                        }
+
+                        Text(book.title)
+                            .font(.headline)
+                        Text(book.authors.joined(separator: ", "))
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+
+                        Button {
+                            let saved = SavedBook(from: book)
+                            try? context.insert(saved)
+                            try? context.save()
+                            print("✅ Aggiunto libro: \(book.title)")
+
+                            //scannedBook = nil
+                        } label: {
+                            Text("Aggiungi alla libreria")
+                                .foregroundColor(.white)
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .background(Color.terracotta)
+                                .cornerRadius(10)
+                        }
+                    }
+                    .padding()
+                    .background(.ultraThinMaterial)
+                    .cornerRadius(16)
+                    .padding()
                 }
+                .transition(.move(edge: .bottom))
+                .animation(.easeInOut, value: scannedBook)
             }
         }
         .customNavigationTitle("Stai scannerizzando boss")
@@ -40,16 +79,31 @@ struct ScanView: View {
             scanner.stopScanning()
         }
         .onChange(of: scanner.scannedCode) { code in
-            if let isbn = code {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                    searchText = isbn
-                    lastSearchText = ""
-                    dismiss()
-                }
+            guard let isbn = code else { return }
+
+            // ✅ Evita fetch se ISBN è già mostrato
+            if isbn == lastScannedISBN {
+                print("ℹ️ ISBN già mostrato, nessuna fetch")
+                return
+            }
+
+            lastScannedISBN = isbn
+            fetchBookForScanner(for: isbn)
+        }
+    }
+
+    func fetchBookForScanner(for isbn: String) {
+        vm.searchBooks(query: isbn, reset: true) { success in
+            if success, let book = vm.searchResults.first {
+                scannedBook = book
+            } else {
+                print("❌ Nessun libro trovato per ISBN: \(isbn)")
+                scannedBook = nil
             }
         }
     }
 }
+
 
 struct ScannerPreview: UIViewControllerRepresentable {
     @ObservedObject var scanner: ScannerViewModel
@@ -77,4 +131,3 @@ class ScannerPreviewController: UIViewController {
         previewLayer.frame = view.bounds
     }
 }
-

@@ -119,6 +119,122 @@ class CombinedGenreSearchViewModel: ObservableObject {
             searchResults = []
         }
 
+        loadMoreSearchResults(completion: completion)
+    }
+
+    func loadMoreSearchResults(completion: ((Bool) -> Void)? = nil) {
+        guard !isLoading else {
+            print("⚠️ Already loading")
+            completion?(false)
+            return
+        }
+
+        guard !currentQuery.isEmpty else {
+            print("❌ No current query set")
+            completion?(false)
+            return
+        }
+
+        isLoading = true
+
+        let encodedQuery = currentQuery.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+        let urlString = "https://www.googleapis.com/books/v1/volumes?q=\(encodedQuery)&startIndex=\(currentStartIndex)&maxResults=\(pageSize)"
+        print("🌐 Requesting: \(urlString)")
+
+        guard let url = URL(string: urlString) else {
+            print("❌ Invalid URL")
+            isLoading = false
+            completion?(false)
+            return
+        }
+
+        URLSession.shared.dataTask(with: url) { data, _, error in
+            defer {
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                }
+            }
+
+            if let error = error {
+                print("❌ Request error: \(error)")
+                completion?(false)
+                return
+            }
+
+            guard let data = data else {
+                print("❌ No data received")
+                completion?(false)
+                return
+            }
+
+            do {
+                let decoded = try JSONDecoder().decode(BooksAPIResponse.self, from: data)
+                let newBooks = (decoded.items ?? []).map { BookAPI(from: $0) }
+
+                DispatchQueue.main.async {
+                    if !newBooks.isEmpty {
+                        self.searchResults.append(contentsOf: newBooks)
+                        self.currentStartIndex += self.pageSize
+                        print("📚 Added \(newBooks.count) new books (total: \(self.searchResults.count))")
+                        completion?(true)
+                    } else {
+                        completion?(false)
+                    }
+                }
+            } catch {
+                print("❌ Decoding error: \(error)")
+                completion?(false)
+            }
+        }.resume()
+    }
+    
+    
+    
+     func fetchBookScannerOnly(for isbn: String) {
+         //let group = DispatchGroup()
+         //var newBooks: [BookAPI] = []
+            guard let url = URL(string: "https://www.googleapis.com/books/v1/volumes?q=isbn:\(isbn)") else { return }
+
+            URLSession.shared.dataTask(with: url) { data, _, error in
+                guard let data = data, error == nil else { return }
+                do {
+                    let decoded = try JSONDecoder().decode(BooksAPIResponse.self, from: data)
+                    let newBooks = (decoded.items ?? []).map { BookAPI(from: $0) }
+
+                    DispatchQueue.main.async {
+                        if !newBooks.isEmpty {
+                            self.searchResults.append(contentsOf: newBooks)
+                            self.currentStartIndex += self.pageSize
+                            print("📚 Added \(newBooks.count) new books (total: \(self.searchResults.count))")
+                        }
+                    }
+                } catch {
+                    print("❌ Decoding error: \(error)")
+                }
+            }.resume()
+        }
+    
+    
+    
+    
+    
+    
+    
+    
+    /*func searchBooks(query: String, reset: Bool = true, completion: ((Bool) -> Void)? = nil) {
+        guard !query.isEmpty else {
+            completion?(false)
+            return
+        }
+
+        print("🔍 Ricerca per query: \(query), reset: \(reset)")
+
+        if reset {
+            currentQuery = query
+            currentStartIndex = 0
+            searchResults = []
+        }
+
         isLoading = true
 
         let encodedQuery = currentQuery.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
@@ -222,7 +338,7 @@ class CombinedGenreSearchViewModel: ObservableObject {
                 print("❌ Decoding error: \(error)")
             }
         }.resume()
-    }
+    }*/
 }
 
 // MARK: - Open Library Models
@@ -253,6 +369,15 @@ final class ScannerViewModel: NSObject, ObservableObject, AVCaptureMetadataOutpu
         }
     }
 
+    func resetScan() {
+        scannedCode = nil
+        DispatchQueue.global(qos: .userInitiated).async {
+            if !self.session.isRunning {
+                self.session.startRunning()
+            }
+        }
+    }
+    
     func stopScanning() {
         session.stopRunning()
     }
@@ -291,6 +416,6 @@ final class ScannerViewModel: NSObject, ObservableObject, AVCaptureMetadataOutpu
             return
         }
         scannedCode = stringValue
-        stopScanning()
+        //stopScanning()
     }
 }

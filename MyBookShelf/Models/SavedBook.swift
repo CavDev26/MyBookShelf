@@ -12,12 +12,11 @@ class SavedBook {
     var bookDescription: String?
     var publishedDate: String?
     var industryIdentifiers: [IndustryIdentifierModel]
-    var categories: [String]
+    var categories: [String]?
     var mainCategory: String?
     var averageRating: Double?
     var ratingsCount: Int?
 
-    // Personalizzati
     var readingStatus: ReadingStatus
     var pagesRead: Int
     var userNotes: String
@@ -33,7 +32,7 @@ class SavedBook {
         bookDescription: String?,
         publishedDate: String?,
         industryIdentifiers: [IndustryIdentifierModel],
-        categories: [String],
+        categories: [String]?,
         mainCategory: String?,
         averageRating: Double?,
         ratingsCount: Int?,
