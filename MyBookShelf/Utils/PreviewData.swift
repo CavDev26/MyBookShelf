@@ -8,7 +8,7 @@ enum PreviewData2 {
             title: "The Swift Adventure",
             authors: ["Jane Appleseed"],
             publisher: "Cupertino Books",
-            coverURL: "https://upload.wikimedia.org/wikipedia/commons/a/a1/La_rocca_malatestiana_di_Cesena.jpg",
+            coverURL: "https://play.google.com/books/publisher/content/images/frontcover/330pEQAAQBAJ?fife=w480-h690",
             pageCount: 320,
             bookDescription: "Un viaggio attraverso Swift e SwiftUI.",
             publishedDate: "2024-01-01",

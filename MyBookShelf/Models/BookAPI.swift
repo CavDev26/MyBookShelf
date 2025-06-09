@@ -15,7 +15,7 @@ struct BookAPI: Identifiable, Codable, Hashable {
     let mainCategory: String?
     let averageRating: Double?
     let ratingsCount: Int?
-
+    
     // proprietà personalizzate
     var readingStatus: ReadingStatus = .unread
     var pagesRead: Int? = nil
@@ -29,6 +29,8 @@ extension BookAPI {
         self.title = item.volumeInfo.title
         self.authors = item.volumeInfo.authors ?? []
         self.publisher = item.volumeInfo.publisher ?? "Unknown"
+        //self.coverURL = item.volumeInfo.bestCoverURL()?
+            //.absoluteString.replacingOccurrences(of: "http://", with: "https://")
         self.coverURL = item.volumeInfo.imageLinks?.thumbnail?.replacingOccurrences(of: "http://", with: "https://")
         self.pageCount = item.volumeInfo.pageCount
         self.description = item.volumeInfo.description
@@ -61,13 +63,37 @@ struct VolumeInfo: Codable {
     let ratingsCount: Int?
 }
 
+/*extension VolumeInfo {
+    func bestCoverURL() -> URL? {
+        guard let links = self.imageLinks else { return nil }
+        if let x = links.extraLarge ?? links.large ?? links.medium ?? links.small{
+            
+            print("sto facendo gl iextralarge ecc \(x)")
+            return URL(string: x)
+        }
+        if let thumb = links.thumbnail {
+            print("sto facendo la thumb")
+
+            let hiRes = thumb
+                .replacingOccurrences(of: "zoom=1", with: "zoom=10") + "&fife=w800-h1200"
+            return URL(string: hiRes.isEmpty ? thumb : hiRes)
+        }
+        return nil
+    }
+}*/
+
 struct IndustryIdentifier: Codable, Equatable, Hashable {
     let type: String
     let identifier: String
 }
 
 struct ImageLinks: Codable {
+    let smallThumbnail: String?
     let thumbnail: String?
+    let small: String?
+    let medium: String?
+    let large: String?
+    let extraLarge: String?
 }
 
 struct BooksAPIResponse: Codable {

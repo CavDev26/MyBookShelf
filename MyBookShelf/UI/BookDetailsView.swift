@@ -22,7 +22,7 @@ struct BookDetailsView<T: BookRepresentable>: View {
                         ZStack {
                             if let urlString = book.coverURL, let url = URL(string: urlString) {
                                 AsyncImageView(urlString: urlString)
-                                    .frame(width: 180, height: 230)
+                                    .frame(width: 180, height: 280)
                                     .cornerRadius(8)
                                     .shadow(radius: 10)
                                     .padding()
@@ -119,7 +119,7 @@ struct BookDetailsView<T: BookRepresentable>: View {
             }
         }
     }
-
+    
     func fetchDominantColor(from url: URL?, completion: @escaping (Color) -> Void) {
         guard let url = url else { return }
         URLSession.shared.dataTask(with: url) { data, _, _ in
