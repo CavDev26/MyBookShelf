@@ -10,14 +10,13 @@ struct AddBooksView: View {
     let gridSpacing: CGFloat = -20.0
     @State var scanview = false
 
-    
     var body: some View {
         NavigationStack {
             ZStack(alignment: .top) {
                 Color(colorScheme == .dark ? Color.backgroundColorDark : Color.lightColorApp)
                     .ignoresSafeArea()
                 VStack {
-                    TopNavBar{
+                    TopNavBar {
                         DiscoverSearchBarView(
                             searchText: $searchText,
                             isSearching: $isSearching,
@@ -26,11 +25,43 @@ struct AddBooksView: View {
                         )
                     }
                     if isSearching {
-                        if viewModel.isLoading {
+                        if viewModel.isLoading && viewModel.searchResults.isEmpty {
                             ProgressView().padding()
                         } else {
-                            ScrollView {
-                                SearchResultList(books: viewModel.searchResults)
+                            ScrollViewReader { scrollProxy in
+                                ScrollView {
+                                    VStack {
+                                        SearchResultList(books: viewModel.searchResults)
+
+                                        if !viewModel.isLoading {
+                                            Button {
+                                                let oldCount = viewModel.searchResults.count
+                                                let lastID = viewModel.searchResults.last?.id ?? UUID().uuidString
+                                                viewModel.searchBooks(query: searchText, reset: false) { didLoadNew in
+                                                    if didLoadNew {
+                                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                                                            withAnimation {
+                                                                scrollProxy.scrollTo(lastID, anchor: .top)
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            } label: {
+                                                RoundedRectangle(cornerRadius: 8)
+                                                    .fill(Color.terracotta)
+                                                    .overlay {
+                                                        Text("Load More")
+                                                            .foregroundColor(.white)
+                                                    }
+                                                    .frame(width: 150, height: 50, alignment: .center)
+                                                    .shadow(radius: 8)
+                                            }
+                                            .padding()
+                                        } else {
+                                            ProgressView().padding()
+                                        }
+                                    }
+                                }
                             }
                         }
                     } else {
@@ -41,22 +72,12 @@ struct AddBooksView: View {
                         }
                     }
                 }
-
-                /*VStack {
-                 TopNavBar{
-                 ScanSearchBarView(scan: true, searchInLibrary: false)
-                 }
-                 ScrollView(.vertical) {
-                 genreDiscoverView(gridSpacing: gridSpacing, columnCount: columnCount)
-                 topPicksDiscoverView()
-                 addBookManuallyView()
-                 }
-                 }*/
             }
         }
         .navigationBarBackButtonHidden(true)
     }
 }
+
 
 struct addBookManuallyView: View {
     @State private var showSheet = false

@@ -1,4 +1,5 @@
 import SwiftData
+import Foundation
 
 enum PreviewData2 {
     static let sampleBooks2 = [

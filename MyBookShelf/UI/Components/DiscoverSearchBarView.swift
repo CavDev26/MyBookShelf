@@ -7,6 +7,7 @@ struct DiscoverSearchBarView: View {
     @ObservedObject var viewModel: CombinedGenreSearchViewModel
     @Binding var scanview: Bool
     @Environment(\.colorScheme) var colorScheme
+    @State private var lastSearchText: String = ""
 
     var body: some View {
         HStack {
@@ -23,12 +24,14 @@ struct DiscoverSearchBarView: View {
                             withAnimation(.easeInOut) {
                                 isSearching = !newValue.isEmpty
                             }
-                            if !newValue.isEmpty {
-                                viewModel.searchBooks(query: newValue)
+
+                            if !newValue.isEmpty && newValue != lastSearchText {
+                                viewModel.searchBooks(query: newValue, reset: true)
+                                lastSearchText = newValue
                             }
                         }
 
-                    if !searchText.isEmpty {
+                    /*if !searchText.isEmpty {
                         Image(systemName: "x.circle")
                             .padding(.trailing, 10)
                             .foregroundColor(colorScheme == .dark ? .white : .black)
@@ -36,17 +39,19 @@ struct DiscoverSearchBarView: View {
                             .onTapGesture {
                                 withAnimation {
                                     searchText = ""
+                                    lastSearchText = ""
                                     viewModel.searchResults = []
                                     isSearching = false
                                 }
                             }
-                    }
+                    }*/
                 }
                 .animation(.easeInOut(duration: 0.25), value: searchText.isEmpty)
 
                 // ✅ Passiamo searchText in binding
                 NavigationLink(
-                    destination: ScanView(searchText: $searchText),
+                    destination: ScanView(searchText: $searchText, lastSearchText: lastSearchText)
+                        .id(UUID()), // 👈 forza una nuova istanza ogni volta,
                     isActive: $scanview
                 ) {
                     Image(systemName: "barcode.viewfinder")
@@ -67,6 +72,7 @@ struct DiscoverSearchBarView: View {
                 Button {
                     withAnimation {
                         searchText = ""
+                        lastSearchText = ""
                         isSearching = false
                         viewModel.searchResults = []
                         UIApplication.shared.endEditing()

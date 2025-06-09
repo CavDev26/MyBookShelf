@@ -7,6 +7,7 @@
 
 import SwiftUICore
 import UIKit
+import SwiftUI
 
 struct Triangle: Shape {
     func path(in rect: CGRect) -> Path {
@@ -155,5 +156,39 @@ extension Image {
             }
         }
         return nil
+    }
+}
+
+
+
+
+
+
+
+struct CustomNavigationTitleModifier: ViewModifier {
+    var title: String
+    var color: Color
+    @Environment(\.colorScheme) var colorScheme
+
+    func body(content: Content) -> some View {
+        content
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("\(title)")
+
+                        .font(.system(size: 18, weight: .semibold, design: .serif))
+                }
+            }
+            .navigationTitle("\(title)")
+            .toolbarBackground(Color(colorScheme == .dark ? Color.backgroundColorDark : Color.backgroundColorLight)
+                .opacity(1) // se si abbassa, rimane l'effetto glossy sotto
+            )
+            .toolbarBackground(.visible, for: .navigationBar)
+    }
+}
+
+extension View {
+    func customNavigationTitle(_ title: String, color: Color = .white) -> some View {
+        self.modifier(CustomNavigationTitleModifier(title: title, color: color))
     }
 }

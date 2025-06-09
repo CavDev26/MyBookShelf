@@ -17,20 +17,23 @@ class CombinedGenreSearchViewModel: ObservableObject {
     
     
     private var currentStartIndex: Int = 0
-    private var currentQuery: String = ""
+    var currentQuery: String = ""
     private let pageSize: Int = 20
     
-    func loadMore(batchSize: Int = 30) {
-        guard !isLoading else {
-            return
-        }
+    func loadMore(batchSize: Int = 30, completion: (() -> Void)? = nil) {
+        guard !isLoading else { return }
         guard loadedCount < allTitles.count else {
+            completion?()
             return
         }
+
         let nextBatch = Array(allTitles.dropFirst(loadedCount).prefix(batchSize))
         loadedCount += nextBatch.count
         isLoading = true
-        fetchBooksFromGoogle(titles: nextBatch)
+
+        fetchBooksFromGoogle(titles: nextBatch) {
+            completion?()
+        }
     }
     
     func searchByGenreSmart(genre: String) {
@@ -70,10 +73,10 @@ class CombinedGenreSearchViewModel: ObservableObject {
         }.resume()
     }
     
-    private func fetchBooksFromGoogle(titles: [String]) {
+    private func fetchBooksFromGoogle(titles: [String], completion: @escaping () -> Void) {
         let group = DispatchGroup()
         var books: [BookAPI] = []
-        
+
         for title in titles {
             group.enter()
             let query = "intitle:\(title)"
@@ -85,10 +88,7 @@ class CombinedGenreSearchViewModel: ObservableObject {
             }
             URLSession.shared.dataTask(with: url) { data, _, _ in
                 defer { group.leave() }
-                guard let data = data else {
-                    return
-                }
-                
+                guard let data = data else { return }
                 if let decoded = try? JSONDecoder().decode(BooksAPIResponse.self, from: data),
                    let item = decoded.items?.first {
                     let book = BookAPI(from: item)
@@ -96,22 +96,77 @@ class CombinedGenreSearchViewModel: ObservableObject {
                 }
             }.resume()
         }
-        
+
         group.notify(queue: .main) {
             self.searchResults.append(contentsOf: books)
             self.isLoading = false
+            completion()
         }
     }
     
     
-    
-    
-    func searchBooks(query: String) {
-        print("🔍 Starting new search: \(query)")
-        currentQuery = query
-        currentStartIndex = 0
-        searchResults = []
-        loadMoreSearchResults()
+    func searchBooks(query: String, reset: Bool = true, completion: ((Bool) -> Void)? = nil) {
+        guard !query.isEmpty else {
+            completion?(false)
+            return
+        }
+
+        print("🔍 Ricerca per query: \(query), reset: \(reset)")
+
+        if reset {
+            currentQuery = query
+            currentStartIndex = 0
+            searchResults = []
+        }
+
+        isLoading = true
+
+        let encodedQuery = currentQuery.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+        let urlString = "https://www.googleapis.com/books/v1/volumes?q=\(encodedQuery)&startIndex=\(currentStartIndex)&maxResults=\(pageSize)"
+
+        guard let url = URL(string: urlString) else {
+            isLoading = false
+            completion?(false)
+            return
+        }
+
+        URLSession.shared.dataTask(with: url) { data, _, error in
+            defer {
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                }
+            }
+
+            if let error = error {
+                print("❌ Request error: \(error)")
+                completion?(false)
+                return
+            }
+
+            guard let data = data else {
+                completion?(false)
+                return
+            }
+
+            do {
+                let decoded = try JSONDecoder().decode(BooksAPIResponse.self, from: data)
+                let newBooks = (decoded.items ?? []).map { BookAPI(from: $0) }
+
+                DispatchQueue.main.async {
+                    if !newBooks.isEmpty {
+                        self.searchResults.append(contentsOf: newBooks)
+                        self.currentStartIndex += self.pageSize
+                        print("📚 Aggiunti \(newBooks.count) nuovi libri")
+                        completion?(true)
+                    } else {
+                        completion?(false)
+                    }
+                }
+            } catch {
+                print("❌ Decoding error: \(error)")
+                completion?(false)
+            }
+        }.resume()
     }
 
     func loadMoreSearchResults() {
@@ -168,42 +223,6 @@ class CombinedGenreSearchViewModel: ObservableObject {
             }
         }.resume()
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    func searchBooks2(query: String) {
-        
-        guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else { return }
-        let urlString = "https://www.googleapis.com/books/v1/volumes?q=\(encodedQuery)"
-
-        guard let url = URL(string: urlString) else { return }
-        isLoading = true
-
-        URLSession.shared.dataTask(with: url) { data, response, error in
-            DispatchQueue.main.async {
-                self.isLoading = false
-            }
-
-            guard let data = data else { return }
-
-            do {
-                let decoded = try JSONDecoder().decode(BooksAPIResponse.self, from: data)
-                DispatchQueue.main.async {
-                    self.searchResults = (decoded.items ?? []).map { BookAPI(from: $0) }
-                }
-            } catch {
-                print("Decoding error: \(error)")
-            }
-        }.resume()
-    }
-    
 }
 
 // MARK: - Open Library Models
@@ -216,91 +235,29 @@ struct OpenLibraryWork: Codable {
 }
 
 
-
-
-class BookSearchViewModel: ObservableObject {
-    @Published var searchResults: [BookAPI] = []
-    @Published var isLoading = false
-    
-  
-    /*func searchBooksByGenre(query: String = "", genre: String? = nil) {
-        var fullQuery = query
-        
-        if let genre = genre, !genre.isEmpty {
-            fullQuery = "subject:\(genre)"
-        }
-
-        guard let encodedQuery = fullQuery.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else { return }
-       
-        let urlString = "https://www.googleapis.com/books/v1/volumes?q=\(encodedQuery)&maxResults=40"
-        guard let url = URL(string: urlString) else { return }
-        isLoading = true
-
-        URLSession.shared.dataTask(with: url) { data, response, error in
-            DispatchQueue.main.async {
-                self.isLoading = false
-            }
-
-            guard let data = data else { return }
-
-            do {
-                let decoded = try JSONDecoder().decode(BooksAPIResponse.self, from: data)
-                DispatchQueue.main.async {
-                    
-                    self.searchResults = (decoded.items ?? [])
-                        .map { BookAPI(from: $0) }
-                }
-            } catch {
-                print("Decoding error: \(error)")
-            }
-        }.resume()
-    }*/
-    
-
-    
-    /*func searchBooks(query: String) {
-        guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else { return }
-        let urlString = "https://www.googleapis.com/books/v1/volumes?q=\(encodedQuery)"
-
-        guard let url = URL(string: urlString) else { return }
-        isLoading = true
-
-        URLSession.shared.dataTask(with: url) { data, response, error in
-            DispatchQueue.main.async {
-                self.isLoading = false
-            }
-
-            guard let data = data else { return }
-
-            do {
-                let decoded = try JSONDecoder().decode(BooksAPIResponse.self, from: data)
-                DispatchQueue.main.async {
-                    self.searchResults = (decoded.items ?? []).map { BookAPI(from: $0) }
-                }
-            } catch {
-                print("Decoding error: \(error)")
-            }
-        }.resume()
-    }*/
-}
-
-
-
-
-
-
-
-
-
-
-
 final class ScannerViewModel: NSObject, ObservableObject, AVCaptureMetadataOutputObjectsDelegate {
     @Published var scannedCode: String?
-    
+
     private let session = AVCaptureSession()
     private let metadataOutput = AVCaptureMetadataOutput()
-    
+    private var isConfigured = false  // ✅
+
     func startScanning() {
+        if !isConfigured {
+            configureSession()
+        }
+        DispatchQueue.global(qos: .userInitiated).async {
+            if !self.session.isRunning {
+                self.session.startRunning()
+            }
+        }
+    }
+
+    func stopScanning() {
+        session.stopRunning()
+    }
+
+    private func configureSession() {
         guard let videoDevice = AVCaptureDevice.default(for: .video),
               let videoInput = try? AVCaptureDeviceInput(device: videoDevice),
               session.canAddInput(videoInput),
@@ -312,14 +269,18 @@ final class ScannerViewModel: NSObject, ObservableObject, AVCaptureMetadataOutpu
         session.addInput(videoInput)
         session.addOutput(metadataOutput)
         metadataOutput.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
-        metadataOutput.metadataObjectTypes = [.ean13, .qr] // EAN = ISBN, QR = optional
+        metadataOutput.metadataObjectTypes = [.ean13, .qr]
+        isConfigured = true
+    }
 
-        DispatchQueue.global(qos: .userInitiated).async {
-            self.session.startRunning()
-        }    }
+    func restartIfNeeded() {
+        if !session.isRunning {
+            startScanning()
+        }
+    }
 
-    func stopScanning() {
-        session.stopRunning()
+    func getSession() -> AVCaptureSession {
+        return session
     }
 
     func metadataOutput(_ output: AVCaptureMetadataOutput,
@@ -331,9 +292,5 @@ final class ScannerViewModel: NSObject, ObservableObject, AVCaptureMetadataOutpu
         }
         scannedCode = stringValue
         stopScanning()
-    }
-
-    func getSession() -> AVCaptureSession {
-        return session
     }
 }

@@ -3,7 +3,7 @@ import SwiftUI
 struct GenresView: View {
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.dismiss) var dismiss
-    @StateObject private var viewModel = BookSearchViewModel()
+    //@StateObject private var viewModel = BookSearchViewModel()
     let genres = BookGenre.allCases.filter { $0 != .unknown }
 
     var body: some View {
@@ -13,13 +13,13 @@ struct GenresView: View {
                 Color(colorScheme == .dark ? Color.backgroundColorDark : Color.lightColorApp)
                     .ignoresSafeArea()
                 VStack {
-                    TopNavBar {
+                    /*TopNavBar {
                         Button(action: { dismiss() }) {
                             Image(systemName: "chevron.left")
                                 .font(.system(size: 18, weight: .semibold))
                                 .foregroundColor(colorScheme == .dark ? .white : .black)
                         }.frame(maxWidth: .infinity, alignment: .leading)
-                    }
+                    }*/
                     ScrollView {
                         VStack(spacing: 1) {
                             ForEach(genres, id: \.self) { genre in
@@ -42,7 +42,7 @@ struct GenresView: View {
                 }
             }
         }
-        .navigationBarBackButtonHidden(true)
+        .customNavigationTitle("Genres")
     }
     
     func formatGenreName(_ genre: BookGenre) -> String {
@@ -54,5 +54,5 @@ struct GenresView: View {
 }
 
 #Preview {
-    GenresView()
+    AddBooksView()
 }
