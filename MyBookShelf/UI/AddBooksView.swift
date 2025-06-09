@@ -222,7 +222,7 @@ struct genreView: View {
     var body: some View {
         Image(imageName)
             .resizable()
-            .aspectRatio(contentMode: .fit) // mantiene il rapporto originale
+            .aspectRatio(contentMode: .fit)
             .cornerRadius(12)
             .clipped()
             .shadow(radius: 4)

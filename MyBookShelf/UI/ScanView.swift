@@ -18,20 +18,6 @@ struct ScanView: View {
                 Image(systemName: "viewfinder.rectangular")
                     .resizable()
                     .frame(width: 200, height: 80)
-                
-                /*HStack {
-                    Spacer()
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .resizable()
-                            .frame(width: 32, height: 32)
-                            .foregroundColor(.white)
-                            .padding()
-                    }
-                }
-                Spacer()*/
             }
 
             if let scannedCode = scanner.scannedCode {
@@ -49,14 +35,12 @@ struct ScanView: View {
         .customNavigationTitle("Stai scannerizzando boss")
         .onAppear {
             scanner.restartIfNeeded()
-            //scanner.startScanning()
         }
         .onDisappear {
             scanner.stopScanning()
         }
         .onChange(of: scanner.scannedCode) { code in
             if let isbn = code {
-                //searchText = ""  // forza il cambiamento per triggerare onChange anche se stesso ISBN
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                     searchText = isbn
                     lastSearchText = ""

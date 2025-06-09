@@ -47,11 +47,9 @@ struct DiscoverSearchBarView: View {
                     }*/
                 }
                 .animation(.easeInOut(duration: 0.25), value: searchText.isEmpty)
-
-                // ✅ Passiamo searchText in binding
                 NavigationLink(
                     destination: ScanView(searchText: $searchText, lastSearchText: lastSearchText)
-                        .id(UUID()), // 👈 forza una nuova istanza ogni volta,
+                        .id(UUID()),
                     isActive: $scanview
                 ) {
                     Image(systemName: "barcode.viewfinder")
