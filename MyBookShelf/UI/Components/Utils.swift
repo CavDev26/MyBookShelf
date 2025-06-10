@@ -107,6 +107,7 @@ extension Color {
     static let lightColorApp = Color(red: 244/255, green: 238/255, blue: 224/255)
     static let peachColorIcons = Color(red: 200/255, green: 120/255, blue: 60/255)
     static let terracottaDarkIcons = Color(red: 180/255, green: 100/255, blue: 50/255) // #B46432
+    static let pastelGreen = Color(red: 0.76, green: 0.89, blue: 0.78)
     
 }
 

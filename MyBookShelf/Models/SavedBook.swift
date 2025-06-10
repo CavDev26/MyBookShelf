@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUICore
 import SwiftData
 
 @Model
@@ -62,7 +63,23 @@ class SavedBook {
 }
 
 enum ReadingStatus: String, Codable, CaseIterable {
-    case read, unread, reading
+    case read, reading, unread
+    
+    var color: Color {
+        switch self {
+        case .unread: return .unreadColor
+        case .reading: return .readingColor
+        case .read: return .readColor
+        }
+    }
+
+    var iconName: String {
+        switch self {
+        case .unread: return "book.closed"
+        case .reading: return "book.fill"
+        case .read: return "book.closed.fill"
+        }
+    }
 }
 
 struct IndustryIdentifierModel: Codable, Hashable {
