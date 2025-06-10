@@ -21,11 +21,10 @@ struct BookListItemGrid: View {
             VStack {
                 ZStack(alignment: .topLeading){
                     Color.clear
-                    Text(book.title)
-                    //Text(book.name)
-                        .padding(-5)
-                        .foregroundColor(.white)
-                        .multilineTextAlignment(.leading)
+                    //Text(book.title)
+                      //.padding(-5)
+                        //.foregroundColor(.white)
+                        //.multilineTextAlignment(.leading)
                 }.padding()
                 ZStack(alignment: .bottomTrailing) {
                     if(!showStatus) {

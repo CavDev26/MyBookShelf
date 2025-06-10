@@ -50,7 +50,7 @@ struct TopNavBar<Content: View>: View {
     init(@ViewBuilder content: () -> Content) {
         self.content = content()
     }
-
+    
     var body: some View {
         HStack(spacing: 12) {
             content
@@ -68,7 +68,7 @@ struct TopNavBar<Content: View>: View {
 
 struct GlossyOverlay: View {
     @State private var animate = false
-
+    
     var body: some View {
         GeometryReader { geo in
             Rectangle()
@@ -87,7 +87,7 @@ struct GlossyOverlay: View {
                 .rotationEffect(.degrees(25))
                 .offset(x: animate ? geo.size.width : -geo.size.width)
                 .animation(.linear(duration: 2.5), value: animate)
-                //.repeatForever(autoreverses: false), value: animate)
+            //.repeatForever(autoreverses: false), value: animate)
                 .onAppear { animate = true }
         }
         .blendMode(.screen) // 👈 riflesso più naturale
@@ -117,12 +117,12 @@ extension UIImage {
         
         
         guard let cgImage = self.cgImage else { return .black }
-
+        
         let ciImage = CIImage(cgImage: cgImage)
         let context = CIContext()
         guard let filter = CIFilter(name: "CIAreaAverage", parameters: [kCIInputImageKey: ciImage]),
               let outputImage = filter.outputImage else { return .black }
-
+        
         var bitmap = [UInt8](repeating: 0, count: 4)
         context.render(outputImage,
                        toBitmap: &bitmap,
@@ -130,20 +130,20 @@ extension UIImage {
                        bounds: CGRect(x: 0, y: 0, width: 1, height: 1),
                        format: .RGBA8,
                        colorSpace: CGColorSpaceCreateDeviceRGB())
-
+        
         // Calcolo del colore medio
         let red = Double(bitmap[0]) / 255
         let green = Double(bitmap[1]) / 255
         let blue = Double(bitmap[2]) / 255
-
+        
         // Converti in luminosità percepita
         let brightness = 0.299 * red + 0.587 * green + 0.114 * blue
-
+        
         // Se troppo chiaro, scurisci artificialmente
         if brightness > 0.7 {
             return Color(red: red * 0.4, green: green * 0.4, blue: blue * 0.4)
         }
-
+        
         // Se già scuro, mantienilo
         return Color(red: red, green: green, blue: blue)
     }
@@ -170,13 +170,13 @@ struct CustomNavigationTitleModifier: ViewModifier {
     var title: String
     var color: Color
     @Environment(\.colorScheme) var colorScheme
-
+    
     func body(content: Content) -> some View {
         content
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     Text("\(title)")
-
+                    
                         .font(.system(size: 18, weight: .semibold, design: .serif))
                 }
             }
@@ -191,5 +191,70 @@ struct CustomNavigationTitleModifier: ViewModifier {
 extension View {
     func customNavigationTitle(_ title: String, color: Color = .white) -> some View {
         self.modifier(CustomNavigationTitleModifier(title: title, color: color))
+    }
+}
+
+
+
+public struct Shimmer: ViewModifier {
+    
+    @State var isInitialState: Bool = true
+    
+    public func body(content: Content) -> some View {
+        content
+            .mask {
+                LinearGradient(
+                    gradient: .init(colors: [.black.opacity(0.4), .black, .black.opacity(0.4)]),
+                    startPoint: (isInitialState ? .init(x: -0.3, y: -0.3) : .init(x: 1, y: 1)),
+                    endPoint: (isInitialState ? .init(x: 0, y: 0) : .init(x: 1.3, y: 1.3))
+                )
+            }
+            .animation(.linear(duration: 1.5).delay(0.25).repeatForever(autoreverses: false), value: isInitialState)
+            .onAppear() {
+                isInitialState = false
+            }
+    }
+}
+
+
+extension View {
+    func shimmering() -> some View {
+        self.modifier(Shimmer())
+    }
+}
+
+
+struct SearchResultListPreview: View {
+    var body: some View {
+        ForEach (0..<6) { i in
+            HStack(alignment: .top, spacing: 12) {
+                
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color.gray.opacity(0.3))
+                    .frame(width: 60, height: 100)
+                    .redacted(reason: .placeholder)
+                    .shimmering()
+                
+                VStack(alignment: .leading, spacing: 6) {
+                    Spacer()
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(Color.gray.opacity(0.3))
+                        .frame(height: 20)
+                        .frame(maxWidth: .infinity)
+                        .shimmering()
+                }
+                .padding(.top, 4)
+            }
+            .frame(maxWidth: .infinity)
+            .shimmering()
+            .padding()
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color(.systemBackground))
+                    .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+            )
+            .padding(.horizontal)
+        }
+        .padding(.top, 8)
     }
 }

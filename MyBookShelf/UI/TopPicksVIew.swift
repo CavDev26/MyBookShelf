@@ -1,33 +1,29 @@
 import SwiftUICore
-import SwiftData
 import SwiftUI
 
-struct SingleSearchView: View {
-    @StateObject private var viewModel = CombinedGenreSearchViewModel()
-    @Environment(\.modelContext) private var context
-    @Environment(\.dismiss) var dismiss
-    let genre: BookGenre
+
+struct TopPicksVIew: View {
+    @ObservedObject var viewModel: CombinedGenreSearchViewModel
     @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
         ZStack(alignment: .top) {
             Color(colorScheme == .dark ? Color.backgroundColorDark : Color.lightColorApp)
                 .ignoresSafeArea()
-            
             ScrollViewReader { scrollProxy in
+                
                 ScrollView {
                     VStack {
-                        if viewModel.searchResults.isEmpty {
+                        if viewModel.searchResultsBS.isEmpty {
                             SearchResultListPreview()
-
                         }
-                        SearchResultList(books: viewModel.searchResults)
+                        SearchResultList(books: viewModel.searchResultsBS)
                         if !viewModel.isLoading {
                             Button {
-                                let lastID = viewModel.searchResults.last?.id ?? UUID().uuidString
-                                let oldCount = viewModel.searchResults.count
-                                viewModel.loadMore(topPicks: false) {
-                                    let didLoadNew = viewModel.searchResults.count > oldCount
+                                let lastID = viewModel.searchResultsBS.last?.id ?? UUID().uuidString
+                                let oldCount = viewModel.searchResultsBS.count
+                                viewModel.loadMore(topPicks: true) {
+                                    let didLoadNew = viewModel.searchResultsBS.count > oldCount
                                     if didLoadNew {
                                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
                                             withAnimation {
@@ -48,23 +44,19 @@ struct SingleSearchView: View {
                             }
                             .padding()
                         } else {
-                           // ProgressView()
-                                //.padding()
+                            
+                            //ProgressView()
+                            //.padding()
                         }
+                        
                     }
                     .padding(.top)
                 }
             }
         }
-        .customNavigationTitle("\(genre.rawValue.capitalized) Books")
-        .onAppear {
-            if viewModel.searchResults.isEmpty {
-                viewModel.searchByGenreSmart(genre: genre.rawValue)
-            }
-        }
+        .customNavigationTitle("Best Sellers")
     }
 }
 #Preview {
     AddBooksView()
 }
-

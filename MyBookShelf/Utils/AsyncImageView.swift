@@ -57,7 +57,8 @@ struct AsyncImageView: View {
             } else {
                 ZStack {
                     Color.gray.opacity(0.3)
-                    ProgressView()
+                        .shimmering()
+                    //ProgressView()
                 }
                 .onAppear {
                     loadImage(highQuality: true)

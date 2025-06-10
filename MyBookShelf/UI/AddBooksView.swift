@@ -9,7 +9,7 @@ struct AddBooksView: View {
     let columnCount: Int = 3
     let gridSpacing: CGFloat = -20.0
     @State var scanview = false
-
+    
     var body: some View {
         NavigationStack {
             ZStack(alignment: .top) {
@@ -27,12 +27,13 @@ struct AddBooksView: View {
                     if isSearching {
                         if viewModel.isLoading && viewModel.searchResults.isEmpty {
                             ProgressView().padding()
+                            
                         } else {
                             ScrollViewReader { scrollProxy in
-                                ScrollView {
+                                ScrollView(showsIndicators: false) {
                                     VStack {
                                         SearchResultList(books: viewModel.searchResults)
-
+                                        
                                         if !viewModel.isLoading {
                                             Button {
                                                 let oldCount = viewModel.searchResults.count
@@ -65,9 +66,9 @@ struct AddBooksView: View {
                             }
                         }
                     } else {
-                        ScrollView {
+                        ScrollView(showsIndicators: false) {
                             genreDiscoverView(gridSpacing: gridSpacing, columnCount: columnCount)
-                            topPicksDiscoverView()
+                            topPicksDiscoverView(viewModel: viewModel)
                             addBookManuallyView()
                         }
                     }
@@ -154,33 +155,67 @@ struct manualAddSheet: View {
     }
 }
 
+
 struct topPicksDiscoverView: View {
     @Environment(\.colorScheme) var colorScheme
+    @ObservedObject var viewModel: CombinedGenreSearchViewModel
     
     var body: some View {
-        NavigationLink(
-            destination: PlaceHolderView()
-        ) {
-            HStack {
-                Text("Discover our Top picks")
-                    .font(.system(size: 18, weight: .semibold, design: .serif))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .foregroundColor(colorScheme == .dark ? .white : .black)
-                Image(systemName: "chevron.right")
-                    .foregroundColor(colorScheme == .dark ? .white : .black)
-                    .font(.system(size: 18, weight: .semibold))
-            }.padding(.top)
-                .padding(.horizontal)
-        }
-        ScrollView(.horizontal) {
-            HStack {
-                ForEach (0..<6) { i in
-                    RoundedRectangle(cornerSize: .zero).frame(width: 100, height: 100).padding()
+        VStack(alignment: .leading, spacing: 8) {
+            NavigationLink(destination: TopPicksVIew(viewModel: viewModel)) {
+                HStack {
+                    Text("Discover our top picks")
+                        .font(.system(size: 18, weight: .semibold, design: .serif))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .foregroundColor(colorScheme == .dark ? .white : .black)
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(colorScheme == .dark ? .white : .black)
+                        .font(.system(size: 18, weight: .semibold))
+                }.padding(.top)
+                    .padding(.horizontal)
+            }
+            
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
+                    if viewModel.searchResultsBS.isEmpty {
+                        ForEach(0..<10, id: \.self) { _ in
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color.gray.opacity(0.3))
+                                .frame(width: 100, height: 150)
+                                .redacted(reason: .placeholder)
+                                .shimmering()
+                        }
+                    } else {
+                        ForEach(viewModel.searchResultsBS.prefix(10)) { book in
+                            NavigationLink {
+                                BookDetailsView(book: book)
+                            } label: {
+                                if let urlString = book.coverURL {
+                                    AsyncImageView(urlString: urlString)
+                                        .frame(width: 100, height: 150)
+                                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                                } else {
+                                    noBookCoverUrlView()
+                                }
+                            }
+                        }
+                    }
                 }
+                .padding(.horizontal)
+                .padding(.bottom)
+            }
+            .padding(.top)
+            
+        }
+        .padding(.top)
+        .onAppear {
+            if viewModel.searchResultsBS.isEmpty {
+                viewModel.searchByBestSeller()
             }
         }
     }
 }
+
 
 struct genreDiscoverView: View {
     @Environment(\.colorScheme) var colorScheme
