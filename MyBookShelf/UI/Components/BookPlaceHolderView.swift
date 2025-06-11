@@ -12,9 +12,7 @@ struct BlankBookPlaceHolderView: View {
                         .fill(colorScheme == .dark ? Color.terracottaDarkIcons : Color.peachColorIcons)
                         .shadow(color: .black.opacity(0.2), radius: 4, x: 4, y: 3)
                         .opacity(0.85)
-                    
                     GlossyOverlay()
-                    
                     Image(systemName: "plus")
                         .resizable()
                         .scaledToFit()
@@ -27,7 +25,8 @@ struct BlankBookPlaceHolderView: View {
                     .multilineTextAlignment(.center)
                     .foregroundColor(.secondary)
                     .lineLimit(2)
-                    .frame(height: 44)
+                    .padding(.top, 3)
+                    .padding(.bottom)
             }
         }
     }
@@ -35,6 +34,4 @@ struct BlankBookPlaceHolderView: View {
 
 #Preview {
     HomeView().modelContainer(PreviewData2.makeModelContainer())
-
-    //BlankBookPlaceHolderView()
 }

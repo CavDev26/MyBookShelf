@@ -4,7 +4,6 @@ import SwiftUI
 struct MyBooksView2: View {
     
     @Environment(\.colorScheme) var colorScheme
-    //@StateObject private var vm = ViewModel()
     @Environment(\.modelContext) private var modelContext
     @State var isViewGrid: Bool = true
     @State private var isExpanded = false
@@ -12,7 +11,6 @@ struct MyBooksView2: View {
     @Namespace private var searchNamespace
     @Binding var selectedTab: Int
     
-    //@Query(sort: \Book.name, order: .forward) var books: [Book]
     @Query(sort: \SavedBook.title, order: .forward) var books: [SavedBook]
     
     
@@ -21,7 +19,6 @@ struct MyBooksView2: View {
             ZStack(alignment: .top) {
                 Color(colorScheme == .dark ? Color.backgroundColorDark : Color.lightColorApp)
                     .ignoresSafeArea()
-                
                 VStack {
                     ZStack(alignment: .top) {
                         TopNavBar {

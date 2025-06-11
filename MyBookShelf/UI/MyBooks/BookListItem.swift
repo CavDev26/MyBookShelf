@@ -3,52 +3,33 @@ import _SwiftData_SwiftUI
 
 struct BookListItemGrid: View {
     var book: SavedBook
-    //var book: Book
     var showStatus: Bool
-    var readingStatusColor: Color {
-        switch book.readingStatus{
-        case .reading:
-            return .readingColor
-        case .read:
-            return .readColor
-        case .unread:
-            return .unreadColor
-        }
-    }
     
     var body: some View {
-        VStack {
+        GeometryReader { geometry in
             VStack {
                 ZStack(alignment: .topLeading){
                     Color.clear
-                    //Text(book.title)
-                      //.padding(-5)
-                        //.foregroundColor(.white)
-                        //.multilineTextAlignment(.leading)
-                }.padding()
+                }
                 ZStack(alignment: .bottomTrailing) {
                     if(!showStatus) {
                         Triangle()
                             .frame(width: 60, height: 60)
-                            .foregroundColor(readingStatusColor)
+                            .foregroundColor(book.readingStatus.color)
                             .offset(x: 60)
                     }
                 }
             }
             .background {
-                ZStack(alignment: .bottomTrailing) {
-                    if let urlString = book.coverURL, let url = URL(string: urlString) {
-                        AsyncImageView(
-                            urlString: book.coverURL
-                        )
+                    if let urlString = book.coverURL {
+                        AsyncImageView(urlString: urlString)
+                            
+                    } else {
+                        noBookCoverUrlView(width: geometry.size.width, height: geometry.size.height, bookTitle: book.title)
                     }
-                }
             }
             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
             .shadow(color: Color.black.opacity(showStatus ? 0 : 0.3), radius: 4, x: 5, y: 4)
-            if(showStatus) {
-                progressViewBook(book: book)
-            }
         }
     }
 }
@@ -56,70 +37,23 @@ struct BookListItemGrid: View {
 
 struct BookListItemList: View {
     var book: SavedBook
-    //var book: Book
-    
-    var readingStatusColor: Color {
-        switch book.readingStatus {
-        case .reading:
-            return .readingColor
-        case .read:
-            return .readColor
-        case .unread:
-            return .unreadColor
-        }
-    }
     
     var body: some View {
-        HStack(alignment: .center, spacing: 16) {
-            
-            if let urlString = book.coverURL, let url = URL(string: urlString) {
-                AsyncImageView(
-                    urlString: book.coverURL//,
-                    //width: 60,
-                    //height: 90,
-                    //cornerRadius: 6
-                )
-                .aspectRatio(1, contentMode: .fill)
-                .frame(width: 60, height: 90)
-                .clipShape(RoundedRectangle(cornerRadius: 10))
-            }
-            
-            /* AsyncImage(
-             url: book.imageUrl,
-             content: { image in image.resizable() },
-             placeholder: { ProgressView().tint(.blue) }
-             )
-             .aspectRatio(1, contentMode: .fill)
-             .frame(width: 60, height: 60)
-             .clipShape(RoundedRectangle(cornerRadius: 12))*/
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(book.title)
-                //Text(book.name)
-                    .font(.headline)
-                    .foregroundColor(.primary)
-                Text(book.bookDescription ?? "No Description")
-                //Text(book.tripDescription)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .lineLimit(1)
-                Text(book.publishedDate ?? "No date")
-                //Text(book.date, format: Date.FormatStyle().day().month(.wide))
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            
+        HStack(alignment: .center, spacing: 12) {
+            BookRowDetailsView(book: book)
             Spacer()
-            
-            Circle()
-                .fill(readingStatusColor)
-                .frame(width: 12, height: 12)
         }
         .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color(.systemBackground))
-                .shadow(color: .black.opacity(0.06), radius: 4, x: 2, y: 2)
+        .background (
+            ZStack(alignment: .bottomTrailing) {
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(Color(.systemBackground))
+                    .shadow(color: .black.opacity(0.06), radius: 4, x: 2, y: 2)
+                Circle()
+                    .fill(book.readingStatus.color)
+                    .frame(width: 15, height: 15)
+                    .padding()
+            }
         )
         .padding(.vertical, 4)
     }
@@ -128,19 +62,15 @@ struct BookListItemList: View {
 struct progressViewBook: View {
     @State var size: CGSize = .zero
     var book: SavedBook
-    //var book: Book
     
     var progress: CGFloat {
         
         guard book.pageCount! > 0 else { return 0 }
-        //guard book.pages > 0 else { return 0 }
         return CGFloat(book.pagesRead) / CGFloat(book.pageCount!)
-        //return CGFloat(book.pagesRead) / CGFloat(book.pages)
     }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            // Custom progress bar
             ZStack(alignment: .leading) {
                 Capsule()
                     .fill(Color.gray.opacity(0.2))
@@ -156,18 +86,17 @@ struct progressViewBook: View {
                 Text("\(Int(progress * 100))%")
                     .font(.caption)
                     .foregroundColor(.secondary)
-                    .padding(.trailing, 10)
+                    //.padding(.trailing, 10)
                 
-                //Spacer()
                 
                 Button(action: {
                     //aggiorna in processo
                 }) {
                     Text("Update")
                         .font(.caption)
-                        .lineLimit(1)                // Blocca il testo su una sola riga
-                        .minimumScaleFactor(0.5)     // Riduce il font fino al 50% se necessario
-                        .padding(.horizontal, 8)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
+                        //.padding(.horizontal, 8)
                         .padding(.vertical, 4)
                         .background(Color.terracottaDarkIcons.opacity(0.15))
                         .foregroundColor(.terracottaDarkIcons)

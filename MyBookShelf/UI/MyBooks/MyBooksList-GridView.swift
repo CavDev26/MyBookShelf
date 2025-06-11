@@ -4,7 +4,6 @@ import SwiftUI
 struct BookListViewGrid: View {
     var books: [SavedBook]
     @Environment(\.colorScheme) var colorScheme
-    //var books: [Book]
     @Binding var selectedTab: Int
     @State var showAddBookSheet = false
 
@@ -18,7 +17,7 @@ struct BookListViewGrid: View {
                     NavigationLink(
                         destination: BookDetailsView(book: book)
                     ) {
-                        BookListItemGrid(book: book, showStatus: false).aspectRatio(2/3, contentMode: .fit).padding(.horizontal).padding(.vertical, 8)
+                        BookListItemGrid(book: book, showStatus: false).aspectRatio(2/3, contentMode: .fill).padding(.horizontal).padding(.vertical, 8)
                     }
                 }
             }
@@ -41,39 +40,15 @@ struct BookListViewGrid: View {
                                 }
                         }
                         .padding()
-                        
-                        
-                        /*NavigationLink(
-                            destination: AddBooksView()
-                        ) {
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(colorScheme == .dark ? Color.backgroundColorDark2 : Color.backgroundColorLight)
-                                .frame(width: 100, height: 50)
-                                .overlay {
-                                    Text("Add a new book!")
-                                        .foregroundColor(colorScheme == .dark ? .white : .black)
-                                }
-                        }
-                        //.navigationBarBackButtonHidden(true)
-                        .padding()*/
-                        /*Button(action: {
-                            showAddBookSheet = true
-                        }) {
-                            Text("Add book")
-                        }*/
                     }
                 )
             }
         }
-        /*.sheet(isPresented: $showAddBookSheet) {
-            AddBookSheet()
-        }*/
     }
 }
 
 struct BookListViewList: View {
     var books: [SavedBook]
-    //var books: [Book]
     @State var showAddBookSheet = false
     var body: some View {
         let columnCount: Int = 1
@@ -85,7 +60,7 @@ struct BookListViewList: View {
                     NavigationLink(
                         destination: BookDetailsView(book: book)
                     ) {
-                        BookListItemList(book: book).aspectRatio(contentMode: .fit).padding(.horizontal).padding(.vertical, 6)
+                        BookListItemList(book: book).aspectRatio(contentMode: .fill).padding(.horizontal).padding(.vertical, 2)
                     }
                 }
             }

@@ -12,8 +12,13 @@ struct SearchResultList: View {
     
     @Query var savedBooks: [SavedBook]
     
+    var savedBookIDs: Set<String> {
+        Set(savedBooks.map { $0.id })
+    }
+    
+    
     var body: some View {
-        let savedBookIDs = Set(savedBooks.map { $0.id })
+        //let savedBookIDs = Set(savedBooks.map { $0.id })
         
         NavigationStack {
             VStack(spacing: 12) {
@@ -79,88 +84,88 @@ struct SearchResultList: View {
                         
                         
                         /*HStack(alignment: .top, spacing: 12) {
-                            if let urlString = book.coverURL {
-                                AsyncImageView(urlString: urlString)
-                                    .frame(width: 60, height: 100)
-                                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                            } else {
-                                noBookCoverUrlView()
-                            }
-                            
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text(book.title)
-                                    .font(.system(size: 16, weight: .semibold))
-                                    .foregroundColor(.primary)
-                                    .lineLimit(1)
-                                
-                                Text(book.authors.joined(separator: ", "))
-                                    .font(.system(size: 13))
-                                    .foregroundColor(.secondary)
-                                    .lineLimit(1)
-                                
-                                Text(book.publisher == "Unknown" ? " " : book.publisher)
-                                    .font(.system(size: 13))
-                                    .foregroundColor(.secondary)
-                                    .lineLimit(1)
-                                
-                                let isSaved = savedBookIDs.contains(book.id)
-                                
-                                HStack(spacing: 8) {
-                                    Button(action: {
-                                        if !isSaved {
-                                            let saved = SavedBook(from: book)
-                                            context.insert(saved)
-                                            withAnimation(.easeInOut(duration: 0.3)) {
-                                                DispatchQueue.main.async {
-                                                    do {
-                                                        try context.save()
-                                                        print("✅ Saved: \(saved.title)")
-                                                    } catch {
-                                                        print("❌ Save error: \(error)")
-                                                    }
-                                                }
-                                            }
-                                        } else {
-                                            if let existing = savedBooks.first(where: { $0.id == book.id }) {
-                                                bookToRemove = existing
-                                                showRemoveAlert = true
-                                            }
-                                        }
-                                    }) {
-                                        addBookButtonView(isSaved: isSaved)
-                                    }
-                                    if let existing = savedBooks.first(where: { $0.id == book.id }) {
-                                        Menu {
-                                            ForEach(ReadingStatus.allCases, id: \.self) { status in
-                                                Button {
-                                                    withAnimation {
-                                                        existing.readingStatus = status
-                                                        do {
-                                                            try context.save()
-                                                            print("📖 Updated to \(status.rawValue)")
-                                                        } catch {
-                                                            print("❌ Error saving status: \(error)")
-                                                        }
-                                                    }
-                                                } label: {
-                                                    Label(status.rawValue.capitalized, systemImage: status.iconName)
-                                                }
-                                            }
-                                        } label: {
-                                            Circle()
-                                                .fill(existing.readingStatus.color)
-                                                .frame(width: 20, height: 20)
-                                                .overlay(
-                                                    Circle().stroke(Color.primary.opacity(0.2), lineWidth: 1)
-                                                )
-                                                .animation(.easeInOut(duration: 0.25), value: existing.readingStatus)
-                                        }
-                                        .menuOrder(.fixed)
-                                    }
-                                }
-                            }
-                            .padding(.top, 4)
-                        }*/
+                         if let urlString = book.coverURL {
+                         AsyncImageView(urlString: urlString)
+                         .frame(width: 60, height: 100)
+                         .clipShape(RoundedRectangle(cornerRadius: 8))
+                         } else {
+                         noBookCoverUrlView()
+                         }
+                         
+                         VStack(alignment: .leading, spacing: 6) {
+                         Text(book.title)
+                         .font(.system(size: 16, weight: .semibold))
+                         .foregroundColor(.primary)
+                         .lineLimit(1)
+                         
+                         Text(book.authors.joined(separator: ", "))
+                         .font(.system(size: 13))
+                         .foregroundColor(.secondary)
+                         .lineLimit(1)
+                         
+                         Text(book.publisher == "Unknown" ? " " : book.publisher)
+                         .font(.system(size: 13))
+                         .foregroundColor(.secondary)
+                         .lineLimit(1)
+                         
+                         let isSaved = savedBookIDs.contains(book.id)
+                         
+                         HStack(spacing: 8) {
+                         Button(action: {
+                         if !isSaved {
+                         let saved = SavedBook(from: book)
+                         context.insert(saved)
+                         withAnimation(.easeInOut(duration: 0.3)) {
+                         DispatchQueue.main.async {
+                         do {
+                         try context.save()
+                         print("✅ Saved: \(saved.title)")
+                         } catch {
+                         print("❌ Save error: \(error)")
+                         }
+                         }
+                         }
+                         } else {
+                         if let existing = savedBooks.first(where: { $0.id == book.id }) {
+                         bookToRemove = existing
+                         showRemoveAlert = true
+                         }
+                         }
+                         }) {
+                         addBookButtonView(isSaved: isSaved)
+                         }
+                         if let existing = savedBooks.first(where: { $0.id == book.id }) {
+                         Menu {
+                         ForEach(ReadingStatus.allCases, id: \.self) { status in
+                         Button {
+                         withAnimation {
+                         existing.readingStatus = status
+                         do {
+                         try context.save()
+                         print("📖 Updated to \(status.rawValue)")
+                         } catch {
+                         print("❌ Error saving status: \(error)")
+                         }
+                         }
+                         } label: {
+                         Label(status.rawValue.capitalized, systemImage: status.iconName)
+                         }
+                         }
+                         } label: {
+                         Circle()
+                         .fill(existing.readingStatus.color)
+                         .frame(width: 20, height: 20)
+                         .overlay(
+                         Circle().stroke(Color.primary.opacity(0.2), lineWidth: 1)
+                         )
+                         .animation(.easeInOut(duration: 0.25), value: existing.readingStatus)
+                         }
+                         .menuOrder(.fixed)
+                         }
+                         }
+                         }
+                         .padding(.top, 4)
+                         }//da commentare fino a questa*/
                     }
                     .padding()
                     .background(
