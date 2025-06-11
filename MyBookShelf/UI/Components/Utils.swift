@@ -113,9 +113,7 @@ extension Color {
 
 extension UIImage {
     func suitableBackgroundColor() -> Color {
-        
-        
-        
+  
         guard let cgImage = self.cgImage else { return .black }
         
         let ciImage = CIImage(cgImage: cgImage)
@@ -256,5 +254,14 @@ struct SearchResultListPreview: View {
             .padding(.horizontal)
         }
         .padding(.top, 8)
+    }
+}
+
+
+
+
+extension UIApplication {
+    func endEditing() {
+        sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil) //to dismiss the keyboard
     }
 }
