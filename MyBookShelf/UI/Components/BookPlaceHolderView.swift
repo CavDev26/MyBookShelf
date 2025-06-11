@@ -2,10 +2,12 @@ import SwiftUI
 
 struct BlankBookPlaceHolderView: View {
     @Environment(\.colorScheme) var colorScheme
+    @Binding var selectedTab: Int
 
     var body: some View {
-        
-        NavigationLink(destination: PlaceHolderView()) {
+        Button {
+            selectedTab = 1
+        }label: {
             VStack(spacing: 8) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 8)
@@ -33,5 +35,6 @@ struct BlankBookPlaceHolderView: View {
 }
 
 #Preview {
-    HomeView().modelContainer(PreviewData2.makeModelContainer())
+    @Previewable @State var selectedTab = 0
+    HomeView(selectedTab: $selectedTab).modelContainer(PreviewData2.makeModelContainer())
 }

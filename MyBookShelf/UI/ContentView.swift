@@ -9,7 +9,7 @@ struct ContentView: View {
             //Color(colorScheme == .dark ? .black : .white)
             //.ignoresSafeArea()
             TabView (selection: $selectedTab){
-                HomeView()
+                HomeView(selectedTab: $selectedTab)
                     .tabItem { Label("Home", systemImage: "house.fill") }
                     .tag(0)
                 

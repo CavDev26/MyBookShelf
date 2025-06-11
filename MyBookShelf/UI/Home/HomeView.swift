@@ -6,7 +6,9 @@ struct HomeView: View {
     @Environment(\.colorScheme) var colorScheme
     let columnCount: Int = 3
     let gridSpacing: CGFloat = 20.0
-    @Query(sort: \SavedBook.title, order: .forward) var books: [SavedBook]
+    //@Query(sort: \SavedBook.title, order: .forward) var books: [SavedBook]
+    var books: [SavedBook] = []
+    @Binding var selectedTab: Int
     
     var body: some View {
         NavigationStack {
@@ -24,7 +26,7 @@ struct HomeView: View {
                         }
                     }
                     ScrollView(.vertical, showsIndicators: false) {
-                        yourProgressView(books: books, gridSpacing: gridSpacing, columnCount: columnCount)
+                        yourProgressView(books: books, gridSpacing: gridSpacing, columnCount: columnCount, selectedTab: $selectedTab)
                         challengesPreview()
                     }
                 }
@@ -115,7 +117,7 @@ struct yourProgressView: View {
     var books: [SavedBook]
     var gridSpacing: CGFloat
     var columnCount: Int
-
+    @Binding var selectedTab: Int
     
     var body: some View {
         VStack{
@@ -139,15 +141,16 @@ struct yourProgressView: View {
                             NavigationLink(
                                 destination: BookDetailsView(book: book)
                             ) {
-                                    BookListItemGrid(book: book, showStatus: true)
-                                        .aspectRatio(2/3, contentMode: .fill)
+                                BookListItemGrid(book: book, showStatus: true)
+                                    .aspectRatio(2/3, contentMode: .fill)
                             }
                             progressViewBook(book: book)
+                                .padding(.top, -10)
                         }
                     }
                 }
                 if books.isEmpty {
-                    BlankBookPlaceHolderView()
+                    BlankBookPlaceHolderView(selectedTab: $selectedTab)
                         .aspectRatio(2/4, contentMode: .fill)
                 }
             }
@@ -158,5 +161,6 @@ struct yourProgressView: View {
 
 
 #Preview {
-    HomeView().modelContainer(PreviewData2.makeModelContainer())
+    @Previewable @State var selectedTab = 0
+    HomeView(selectedTab: $selectedTab).modelContainer(PreviewData2.makeModelContainer())
 }
