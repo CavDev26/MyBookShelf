@@ -5,7 +5,7 @@ struct AddBooksView: View {
     @Environment(\.colorScheme) var colorScheme
     @State private var isSearching = false
     @StateObject private var viewModel = CombinedGenreSearchViewModel()
-    @State private var searchText: String = ""
+    //@State private var searchText: String = ""
     let columnCount: Int = 3
     let gridSpacing: CGFloat = -20.0
     @State var scanview = false
@@ -18,7 +18,7 @@ struct AddBooksView: View {
                 VStack {
                     TopNavBar {
                         DiscoverSearchBarView(
-                            searchText: $searchText,
+                            //searchText: $searchText,
                             isSearching: $isSearching,
                             viewModel: viewModel,
                             scanview: $scanview
@@ -33,33 +33,8 @@ struct AddBooksView: View {
                                 ScrollView(showsIndicators: false) {
                                     VStack {
                                         SearchResultList(books: viewModel.searchResults)
-                                        
-                                        if !viewModel.isLoading {
-                                            Button {
-                                                let oldCount = viewModel.searchResults.count
-                                                let lastID = viewModel.searchResults.last?.id ?? UUID().uuidString
-                                                viewModel.searchBooks(query: searchText, reset: false) { didLoadNew in
-                                                    if didLoadNew {
-                                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                                                            withAnimation {
-                                                                scrollProxy.scrollTo(lastID, anchor: .top)
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            } label: {
-                                                RoundedRectangle(cornerRadius: 8)
-                                                    .fill(Color.terracotta)
-                                                    .overlay {
-                                                        Text("Load More")
-                                                            .foregroundColor(.white)
-                                                    }
-                                                    .frame(width: 150, height: 50, alignment: .center)
-                                                    .shadow(radius: 8)
-                                            }
-                                            .padding()
-                                        } else {
-                                            ProgressView().padding()
+                                        if viewModel.loadedCount < viewModel.allTitles.count {
+                                            LoadMoreButtonView(viewModel: viewModel, scrollProxy: scrollProxy, topPicks: false)
                                         }
                                     }
                                 }
@@ -195,7 +170,7 @@ struct topPicksDiscoverView: View {
                                         .frame(width: 100, height: 150)
                                         .clipShape(RoundedRectangle(cornerRadius: 8))
                                 } else {
-                                    noBookCoverUrlView()
+                                    noBookCoverUrlView(width: 100, height: 150, bookTitle: book.title)
                                 }
                             }
                         }

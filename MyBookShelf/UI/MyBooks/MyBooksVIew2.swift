@@ -54,7 +54,8 @@ struct TopBarView: View {
     var searchNamespace: Namespace.ID
     @Binding var filterSheet: Bool
     @Environment(\.colorScheme) var colorScheme
-    @StateObject private var vm = ViewModel()
+    @StateObject private var vm = CombinedGenreSearchViewModel()
+
     
     var body: some View {
         if isExpanded {

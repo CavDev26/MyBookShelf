@@ -2,7 +2,7 @@ import SwiftUI
 import SwiftUICore
 
 struct DiscoverSearchBarView: View {
-    @Binding var searchText: String
+    //@Binding var searchText: String
     @Binding var isSearching: Bool
     @ObservedObject var viewModel: CombinedGenreSearchViewModel
     @Binding var scanview: Bool
@@ -16,7 +16,18 @@ struct DiscoverSearchBarView: View {
                     .foregroundColor(colorScheme == .dark ? .white : .black)
 
                 ZStack(alignment: .trailing) {
-                    TextField("Search", text: $searchText)
+                    
+                    TextField("Search", text: $viewModel.searchText)
+                        .textFieldStyle(.plain)
+                        .autocapitalization(.none)
+                        .disableAutocorrection(true)
+                        .onChange(of: viewModel.searchText) { newValue in
+                            withAnimation(.easeInOut) {
+                                isSearching = !newValue.isEmpty
+                            }
+                        }
+                    
+                    /*TextField("Search", text: $searchText)
                         .textFieldStyle(.plain)
                         .autocapitalization(.none)
                         .disableAutocorrection(true)
@@ -29,7 +40,12 @@ struct DiscoverSearchBarView: View {
                                 viewModel.searchBooks(query: newValue, reset: true)
                                 lastSearchText = newValue
                             }
-                        }
+                        }*/
+                    
+                    
+                    
+                    
+                    
 
                     /*if !searchText.isEmpty {
                         Image(systemName: "x.circle")
@@ -46,9 +62,9 @@ struct DiscoverSearchBarView: View {
                             }
                     }*/
                 }
-                .animation(.easeInOut(duration: 0.25), value: searchText.isEmpty)
+                .animation(.easeInOut(duration: 0.25), value: viewModel.searchText.isEmpty)
                 NavigationLink(
-                    destination: ScanView(searchText: $searchText, lastSearchText: lastSearchText)
+                    destination: ScanView(searchText: $viewModel.searchText, lastSearchText: lastSearchText)
                         .id(UUID()),
                     isActive: $scanview
                 ) {
@@ -69,7 +85,7 @@ struct DiscoverSearchBarView: View {
             if isSearching {
                 Button {
                     withAnimation {
-                        searchText = ""
+                        viewModel.searchText = ""
                         lastSearchText = ""
                         isSearching = false
                         viewModel.searchResults = []

@@ -18,10 +18,67 @@ struct SearchResultList: View {
         NavigationStack {
             VStack(spacing: 12) {
                 ForEach(books) { book in
+                    let isSaved = savedBookIDs.contains(book.id)
                     NavigationLink {
                         BookDetailsView(book: book)
                     } label: {
-                        HStack(alignment: .top, spacing: 12) {
+                        BookRowView(
+                            book: book,
+                            isSaved: isSaved,
+                            savedBook: savedBooks.first(where: { $0.id == book.id }),
+                            onSaveTapped: {
+                                if !isSaved {
+                                    let saved = SavedBook(from: book)
+                                    context.insert(saved)
+                                    withAnimation(.easeInOut(duration: 0.3)) {
+                                        DispatchQueue.main.async {
+                                            do {
+                                                try context.save()
+                                                print("✅ Saved: \(saved.title)")
+                                            } catch {
+                                                print("❌ Save error: \(error)")
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    if let existing = savedBooks.first(where: { $0.id == book.id }) {
+                                        bookToRemove = existing
+                                        showRemoveAlert = true
+                                    }
+                                }
+                            },
+                            onDeleteTapped: {
+                                if let book = bookToRemove {
+                                    context.delete(book)
+                                    do {
+                                        try context.save()
+                                        print("🗑️ Removed: \(book.title)")
+                                    } catch {
+                                        print("❌ Delete error: \(error)")
+                                    }
+                                }
+                            },
+                            onStatusChange: { status in
+                                if let existing = savedBooks.first(where: { $0.id == book.id }) {
+                                    withAnimation {
+                                        existing.readingStatus = status
+                                        do {
+                                            try context.save()
+                                            print("📖 Updated to \(status.rawValue)")
+                                        } catch {
+                                            print("❌ Error saving status: \(error)")
+                                        }
+                                    }
+                                }
+                            }
+                        )
+                        
+                        
+                        
+                        
+                        
+                        
+                        /*HStack(alignment: .top, spacing: 12) {
                             if let urlString = book.coverURL {
                                 AsyncImageView(urlString: urlString)
                                     .frame(width: 60, height: 100)
@@ -103,7 +160,7 @@ struct SearchResultList: View {
                                 }
                             }
                             .padding(.top, 4)
-                        }
+                        }*/
                     }
                     .padding()
                     .background(
@@ -160,21 +217,74 @@ struct addBookButtonView: View {
     }
 }
 
-struct noBookCoverUrlView : View {
+
+struct BookRowView: View {
+    let book: BookAPI
+    let isSaved: Bool
+    let savedBook: SavedBook?
+    let onSaveTapped: () -> Void
+    let onDeleteTapped: () -> Void
+    let onStatusChange: (ReadingStatus) -> Void
+    
     var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color.gray.opacity(0.2))
-                .frame(width: 60, height: 100)
-                .shadow(radius: 2)
-            Image(systemName: "book.closed")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 24, height: 24)
-                .foregroundColor(.gray)
+        HStack(alignment: .top, spacing: 12) {
+            if let urlString = book.coverURL {
+                AsyncImageView(urlString: urlString)
+                    .frame(width: 60, height: 100)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+            } else {
+                noBookCoverUrlView(width: 60, height: 100, bookTitle: book.title)
+            }
+            
+            VStack(alignment: .leading, spacing: 6) {
+                Text(book.title)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.primary)
+                    .lineLimit(1)
+                
+                Text(book.authors.joined(separator: ", "))
+                    .font(.system(size: 13))
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+                
+                Text(book.publisher == "Unknown" ? " " : book.publisher)
+                    .font(.system(size: 13))
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+                
+                HStack(spacing: 8) {
+                    Button(action: onSaveTapped) {
+                        addBookButtonView(isSaved: isSaved)
+                    }
+                    
+                    if let existing = savedBook {
+                        Menu {
+                            ForEach(ReadingStatus.allCases, id: \.self) { status in
+                                Button {
+                                    onStatusChange(status)
+                                } label: {
+                                    Label(status.rawValue.capitalized, systemImage: status.iconName)
+                                }
+                            }
+                        } label: {
+                            Circle()
+                                .fill(existing.readingStatus.color)
+                                .frame(width: 20, height: 20)
+                                .overlay(
+                                    Circle().stroke(Color.primary.opacity(0.2), lineWidth: 1)
+                                )
+                                .animation(.easeInOut(duration: 0.25), value: existing.readingStatus)
+                        }
+                        .menuOrder(.fixed)
+                    }
+                }
+            }
+            .padding(.top, 4)
         }
     }
 }
+
+
 #Preview {
     AddBooksView()
 }

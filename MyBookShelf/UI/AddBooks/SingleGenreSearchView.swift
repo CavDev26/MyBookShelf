@@ -20,36 +20,11 @@ struct SingleSearchView: View {
                         if viewModel.searchResults.isEmpty {
                             SearchResultListPreview()
 
-                        }
-                        SearchResultList(books: viewModel.searchResults)
-                        if !viewModel.isLoading {
-                            Button {
-                                let lastID = viewModel.searchResults.last?.id ?? UUID().uuidString
-                                let oldCount = viewModel.searchResults.count
-                                viewModel.loadMore(topPicks: false) {
-                                    let didLoadNew = viewModel.searchResults.count > oldCount
-                                    if didLoadNew {
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                                            withAnimation {
-                                                scrollProxy.scrollTo(lastID, anchor: .top)
-                                            }
-                                        }
-                                    }
-                                }
-                            } label: {
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(Color.terracotta)
-                                    .overlay {
-                                        Text("Load More")
-                                            .foregroundColor(.white)
-                                    }
-                                    .frame(width: 150, height: 50, alignment: .center)
-                                    .shadow(radius: 8)
-                            }
-                            .padding()
                         } else {
-                           // ProgressView()
-                                //.padding()
+                            SearchResultList(books: viewModel.searchResults)
+                            if viewModel.loadedCount < viewModel.allTitles.count {
+                                LoadMoreButtonView(viewModel: viewModel, scrollProxy: scrollProxy, topPicks: false)
+                            }
                         }
                     }
                     .padding(.top)

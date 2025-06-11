@@ -129,7 +129,7 @@ struct AsyncImageView: View {
     }
     
     
-
+    
     private func isPlaceholderImage(_ image: UIImage) -> Bool {
         guard let placeholderImage = UIImage(named: "placeholder"),
               let img1 = image.cgImage,
@@ -138,17 +138,17 @@ struct AsyncImageView: View {
               img1.height == img2.height else {
             return false
         }
-
+        
         let width = img1.width
         let height = img1.height
-
+        
         let bytesPerPixel = 4
         let bytesPerRow = bytesPerPixel * width
         let bitsPerComponent = 8
-
+        
         var data1 = [UInt8](repeating: 0, count: width * height * bytesPerPixel)
         var data2 = [UInt8](repeating: 0, count: width * height * bytesPerPixel)
-
+        
         guard let context1 = CGContext(data: &data1,
                                        width: width,
                                        height: height,
@@ -166,10 +166,44 @@ struct AsyncImageView: View {
         else {
             return false
         }
-
+        
         context1.draw(img1, in: CGRect(x: 0, y: 0, width: width, height: height))
         context2.draw(img2, in: CGRect(x: 0, y: 0, width: width, height: height))
-
+        
         return data1 == data2
     }
+}
+
+
+struct noBookCoverUrlView : View {
+    var width: CGFloat
+    var height: CGFloat
+    var bookTitle: String
+    
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 8)
+                .fill(Color.gray.opacity(0.2))
+                .frame(width: width, height: height)
+                .shadow(radius: 2)
+                .overlay {
+                    Text(bookTitle)
+                        .padding(.horizontal, width/10)
+                        .minimumScaleFactor(0.5)
+                        .frame(maxHeight: height/2)
+                        //.lineLimit(2)
+                        .foregroundColor(.black)
+                        .fontDesign(.serif)
+                }
+            RoundedRectangle(cornerRadius: 8)
+                .fill(Color.clear)
+                .frame(width: width*8.5/10, height: height*8.5/10)
+                .border(Color.gray, width: 1)
+        }
+    }
+}
+
+
+#Preview {
+    noBookCoverUrlView(width: 100, height: 150, bookTitle: "Il signore degli anelli")
 }

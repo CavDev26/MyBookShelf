@@ -3,18 +3,26 @@ import AVFoundation
 import SwiftUICore
 import Combine
 
-class ViewModel: ObservableObject {
-    @Published var searchText: String = ""
-    
-}
-
 class CombinedGenreSearchViewModel: ObservableObject {
     @Published var searchResults: [BookAPI] = []
     @Published var searchResultsBS: [BookAPI] = []
     @Published var isLoading = false
     private var cancellables = Set<AnyCancellable>()
-    private var allTitles: [String] = []
-    private var loadedCount: Int = 0
+    @Published var allTitles: [String] = []
+    @Published var loadedCount: Int = 0
+    @Published var searchText: String = ""
+
+    init() {
+        $searchText
+            .debounce(for: .milliseconds(500), scheduler: RunLoop.main)
+            .removeDuplicates()
+            .sink { [weak self] text in
+                guard let self, !text.isEmpty else { return }
+                print("⏱ Debounced search: \(text)")
+                self.searchBooks(query: text, reset: true)
+            }
+            .store(in: &cancellables)
+    }
     
     
     private var currentStartIndex: Int = 0
@@ -77,7 +85,6 @@ class CombinedGenreSearchViewModel: ObservableObject {
     private func fetchBooksFromGoogle(titles: [String], topPicks: Bool, completion: @escaping () -> Void) {
         let group = DispatchGroup()
         var books: [BookAPI] = []
-        //var topPicks: Bool
         
         for title in titles {
             group.enter()
@@ -232,7 +239,7 @@ class CombinedGenreSearchViewModel: ObservableObject {
     
     
     private func fetchTitlesFromOpenLibraryGeneric(completion: @escaping ([String]) -> Void) {
-        let urlString = "https://openlibrary.org/search.json?q=a&sort=readinglog&limit=50"
+        let urlString = "https://openlibrary.org/search.json?q=a&sort=readinglog&limit=100"
         
         guard let url = URL(string: urlString) else {
             completion([])
@@ -267,229 +274,8 @@ class CombinedGenreSearchViewModel: ObservableObject {
             }
         }
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    /*func fetchTrendingBooksFromMultipleQueries(completion: (() -> Void)? = nil) {
-        let commonQueries = ["a", "e", "i", "o", "u"]
-        var allTitlesSet = Set<String>()
-        let group = DispatchGroup()
-
-        self.searchResults = []
-        self.allTitles = []
-        self.loadedCount = 0
-        self.isLoading = true
-
-        for query in commonQueries {
-            group.enter()
-            let urlString = "https://openlibrary.org/search.json?q=\(query)&sort=readinglog&limit=50"
-
-            guard let url = URL(string: urlString) else {
-                group.leave()
-                continue
-            }
-
-            URLSession.shared.dataTask(with: url) { data, _, _ in
-                defer { group.leave() }
-                guard let data = data else { return }
-                do {
-                    let decoded = try JSONDecoder().decode(OpenLibrarySearchResponse.self, from: data)
-                    let titles = decoded.docs.map { $0.title }
-                    print("📘 Titoli estratti da OpenLibrary: \(titles.prefix(10))")
-                    titles.forEach { allTitlesSet.insert($0) }
-                } catch {
-                    print("❌ Decoding error for query \(query): \(error)")
-                }
-            }.resume()
-        }
-
-        group.notify(queue: .main) {
-            self.allTitles = Array(allTitlesSet).shuffled()
-            self.loadMore {
-                print("✅ Trending books caricati da query multiple: \(self.searchResults.count)")
-                completion?()
-            }
-        }
-    }*/
-    
-    
-    /*func fetchTrendingBooks(completion: (() -> Void)? = nil) {
-        searchResults = []
-        allTitles = []
-        loadedCount = 0
-        isLoading = true
-        
-        let urlString = "https://openlibrary.org/search.json?q=a&sort=readinglog&limit=50"
-        guard let url = URL(string: urlString) else {
-            self.isLoading = false
-            completion?()
-            return
-        }
-        
-        URLSession.shared.dataTask(with: url) { data, _, _ in
-            guard let data = data else {
-                DispatchQueue.main.async {
-                    self.isLoading = false
-                    completion?()
-                }
-                return
-            }
-            
-            do {
-                let decoded = try JSONDecoder().decode(OpenLibrarySearchResponse.self, from: data)
-                let titles = decoded.docs.map { $0.title }
-                print("📘 Titoli estratti da OpenLibrary: \(titles.prefix(10))")
-                
-                DispatchQueue.main.async {
-                    self.allTitles = titles
-                    self.loadedCount = 0
-                    self.loadMore {
-                        print("✅ Trending books caricati: \(self.searchResults.count)")
-                        completion?()
-                    }
-                }
-            } catch {
-                DispatchQueue.main.async {
-                    print("❌ Decoding error: \(error)")
-                    self.isLoading = false
-                    completion?()
-                }
-            }
-        }.resume()
-    }*/
-    
-    
-    
-    
-    
-    /*func searchBooks(query: String, reset: Bool = true, completion: ((Bool) -> Void)? = nil) {
-     guard !query.isEmpty else {
-     completion?(false)
-     return
-     }
-     
-     print("🔍 Ricerca per query: \(query), reset: \(reset)")
-     
-     if reset {
-     currentQuery = query
-     currentStartIndex = 0
-     searchResults = []
-     }
-     
-     isLoading = true
-     
-     let encodedQuery = currentQuery.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-     let urlString = "https://www.googleapis.com/books/v1/volumes?q=\(encodedQuery)&startIndex=\(currentStartIndex)&maxResults=\(pageSize)"
-     
-     guard let url = URL(string: urlString) else {
-     isLoading = false
-     completion?(false)
-     return
-     }
-     
-     URLSession.shared.dataTask(with: url) { data, _, error in
-     defer {
-     DispatchQueue.main.async {
-     self.isLoading = false
-     }
-     }
-     
-     if let error = error {
-     print("❌ Request error: \(error)")
-     completion?(false)
-     return
-     }
-     
-     guard let data = data else {
-     completion?(false)
-     return
-     }
-     
-     do {
-     let decoded = try JSONDecoder().decode(BooksAPIResponse.self, from: data)
-     let newBooks = (decoded.items ?? []).map { BookAPI(from: $0) }
-     
-     DispatchQueue.main.async {
-     if !newBooks.isEmpty {
-     self.searchResults.append(contentsOf: newBooks)
-     self.currentStartIndex += self.pageSize
-     print("📚 Aggiunti \(newBooks.count) nuovi libri")
-     completion?(true)
-     } else {
-     completion?(false)
-     }
-     }
-     } catch {
-     print("❌ Decoding error: \(error)")
-     completion?(false)
-     }
-     }.resume()
-     }
-     
-     func loadMoreSearchResults() {
-     guard !isLoading else {
-     print("⚠️ Already loading")
-     return
-     }
-     
-     guard !currentQuery.isEmpty else {
-     print("❌ No current query set")
-     return
-     }
-     
-     isLoading = true
-     
-     let encodedQuery = currentQuery.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-     let urlString = "https://www.googleapis.com/books/v1/volumes?q=\(encodedQuery)&startIndex=\(currentStartIndex)&maxResults=\(pageSize)"
-     print("🌐 Requesting: \(urlString)")
-     
-     guard let url = URL(string: urlString) else {
-     print("❌ Invalid URL")
-     isLoading = false
-     return
-     }
-     
-     URLSession.shared.dataTask(with: url) { data, _, error in
-     defer {
-     DispatchQueue.main.async {
-     self.isLoading = false
-     }
-     }
-     
-     if let error = error {
-     print("❌ Request error: \(error)")
-     return
-     }
-     
-     guard let data = data else {
-     print("❌ No data received")
-     return
-     }
-     
-     do {
-     let decoded = try JSONDecoder().decode(BooksAPIResponse.self, from: data)
-     let newBooks = (decoded.items ?? []).map { BookAPI(from: $0) }
-     
-     DispatchQueue.main.async {
-     self.searchResults.append(contentsOf: newBooks)
-     self.currentStartIndex += self.pageSize
-     print("📚 Added \(newBooks.count) new books (total: \(self.searchResults.count))")
-     }
-     } catch {
-     print("❌ Decoding error: \(error)")
-     }
-     }.resume()
-     }*/
 }
+
 struct OpenLibrarySearchResponse: Decodable {
     let docs: [OpenLibraryDoc]
 }
@@ -510,6 +296,12 @@ struct OpenLibrarySubjectResponse: Codable {
 struct OpenLibraryWork: Codable {
     let title: String
 }
+
+
+
+
+
+
 
 
 final class ScannerViewModel: NSObject, ObservableObject, AVCaptureMetadataOutputObjectsDelegate {
