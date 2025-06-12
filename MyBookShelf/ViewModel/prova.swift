@@ -1,5 +1,4 @@
-import Foundation
-import SwiftData
+/*import Foundation
 import AVFoundation
 import SwiftUICore
 import Combine
@@ -12,7 +11,7 @@ class CombinedGenreSearchViewModel: ObservableObject {
     @Published var allTitles: [String] = []
     @Published var loadedCount: Int = 0
     @Published var searchText: String = ""
-    
+
     init() {
         $searchText
             .debounce(for: .milliseconds(500), scheduler: RunLoop.main)
@@ -24,34 +23,33 @@ class CombinedGenreSearchViewModel: ObservableObject {
             }
             .store(in: &cancellables)
     }
-    
-    
+
     private var currentStartIndex: Int = 0
     var currentQuery: String = ""
     private let pageSize: Int = 20
-    
+
     func loadMore(topPicks: Bool, batchSize: Int = 30, completion: (() -> Void)? = nil) {
         guard !isLoading else { return }
         guard loadedCount < allTitles.count else {
             completion?()
             return
         }
-        
+
         let nextBatch = Array(allTitles.dropFirst(loadedCount).prefix(batchSize))
         loadedCount += nextBatch.count
         isLoading = true
-        
+
         fetchBooksFromGoogle(titles: nextBatch, topPicks: topPicks) {
             completion?()
         }
     }
-    
+
     func searchByGenreSmart(genre: String) {
         searchResults = []
         allTitles = []
         loadedCount = 0
         isLoading = false
-        
+
         fetchTitlesFromOpenLibrary(genre: genre) { titles in
             DispatchQueue.main.async {
                 self.allTitles = titles
@@ -59,11 +57,11 @@ class CombinedGenreSearchViewModel: ObservableObject {
             }
         }
     }
-    
+
     private func fetchTitlesFromOpenLibrary(genre: String, completion: @escaping ([String]) -> Void) {
         let genreQuery = genre.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
         let urlString = "https://openlibrary.org/subjects/\(genreQuery).json?limit=100"
-        
+
         guard let url = URL(string: urlString) else {
             completion([])
             return
@@ -82,49 +80,55 @@ class CombinedGenreSearchViewModel: ObservableObject {
             }
         }.resume()
     }
-    
+
     private func fetchBooksFromGoogle(titles: [String], topPicks: Bool, completion: @escaping () -> Void) {
         let group = DispatchGroup()
         var books: [BookAPI] = []
-        
+        let queue = DispatchQueue(label: "genre-enrich-queue", attributes: .concurrent)
+        let syncQueue = DispatchQueue(label: "book-append-queue")
+
         for title in titles {
             group.enter()
             let query = "intitle:\(title)"
             let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-            let urlString = "https://www.googleapis.com/books/v1/volumes?q=\(encoded)"
-            print("📡 Requesting Google API for: \(title)")
-            guard let url = URL(string: urlString) else {
+            guard let url = URL(string: "https://www.googleapis.com/books/v1/volumes?q=\(encoded)") else {
                 group.leave()
                 continue
             }
+
             URLSession.shared.dataTask(with: url) { data, _, _ in
-                defer { group.leave() }
-                guard let data = data else { return }
-                if let decoded = try? JSONDecoder().decode(BooksAPIResponse.self, from: data),
-                   let item = decoded.items?.first {
-                    let book = BookAPI(from: item)
-                    books.append(book)
+                guard let data = data,
+                      let decoded = try? JSONDecoder().decode(BooksAPIResponse.self, from: data),
+                      let item = decoded.items?.first else {
+                    group.leave()
+                    return
                 }
+
+                let book = BookAPI(from: item)
+
+                self.fetchGenreFromOpenLibrary(title: book.title) { genre in
+                    var enriched = book
+                    enriched.genre = genre
+
+                    syncQueue.async {
+                        books.append(enriched)
+                        group.leave()
+                    }
+                }
+
             }.resume()
         }
-        
+
         group.notify(queue: .main) {
-            DispatchQueue.main.async {
-                if topPicks {
-                    self.searchResultsBS.append(contentsOf: books)
-                } else {
-                    self.searchResults.append(contentsOf: books)
-                }
-                self.isLoading = false
-                completion()
+            if topPicks {
+                self.searchResultsBS.append(contentsOf: books)
+            } else {
+                self.searchResults.append(contentsOf: books)
             }
+            self.isLoading = false
+            completion()
         }
     }
-    
-    
-    
-    
-    
     
     func searchBooks(query: String, reset: Bool = true, completion: ((Bool) -> Void)? = nil) {
         guard !query.isEmpty else {
@@ -139,56 +143,56 @@ class CombinedGenreSearchViewModel: ObservableObject {
         }
         loadMoreSearchResults(completion: completion)
     }
-    
+
     func loadMoreSearchResults(completion: ((Bool) -> Void)? = nil) {
         guard !isLoading else {
             print("⚠️ Already loading")
             completion?(false)
             return
         }
-        
+
         guard !currentQuery.isEmpty else {
             print("❌ No current query set")
             completion?(false)
             return
         }
-        
+
         isLoading = true
-        
+
         let encodedQuery = currentQuery.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
         let urlString = "https://www.googleapis.com/books/v1/volumes?q=\(encodedQuery)&startIndex=\(currentStartIndex)&maxResults=\(pageSize)"
         print("🌐 Requesting: \(urlString)")
-        
+
         guard let url = URL(string: urlString) else {
             print("❌ Invalid URL")
             isLoading = false
             completion?(false)
             return
         }
-        
+
         URLSession.shared.dataTask(with: url) { data, _, error in
             defer {
                 DispatchQueue.main.async {
                     self.isLoading = false
                 }
             }
-            
+
             if let error = error {
                 print("❌ Request error: \(error)")
                 completion?(false)
                 return
             }
-            
+
             guard let data = data else {
                 print("❌ No data received")
                 completion?(false)
                 return
             }
-            
+
             do {
                 let decoded = try JSONDecoder().decode(BooksAPIResponse.self, from: data)
                 let newBooks = (decoded.items ?? []).map { BookAPI(from: $0) }
-                
+
                 DispatchQueue.main.async {
                     if !newBooks.isEmpty {
                         self.searchResults.append(contentsOf: newBooks)
@@ -205,22 +209,16 @@ class CombinedGenreSearchViewModel: ObservableObject {
             }
         }.resume()
     }
-    
-    
-    
-    
-    
+
     func fetchBookScannerOnly(for isbn: String) {
-        //let group = DispatchGroup()
-        //var newBooks: [BookAPI] = []
         guard let url = URL(string: "https://www.googleapis.com/books/v1/volumes?q=isbn:\(isbn)") else { return }
-        
+
         URLSession.shared.dataTask(with: url) { data, _, error in
             guard let data = data, error == nil else { return }
             do {
                 let decoded = try JSONDecoder().decode(BooksAPIResponse.self, from: data)
                 let newBooks = (decoded.items ?? []).map { BookAPI(from: $0) }
-                
+
                 DispatchQueue.main.async {
                     if !newBooks.isEmpty {
                         self.searchResults.append(contentsOf: newBooks)
@@ -233,18 +231,10 @@ class CombinedGenreSearchViewModel: ObservableObject {
             }
         }.resume()
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     private func fetchTitlesFromOpenLibraryGeneric(completion: @escaping ([String]) -> Void) {
         let urlString = "https://openlibrary.org/search.json?q=a&sort=readinglog&limit=100"
-        
+
         guard let url = URL(string: urlString) else {
             completion([])
             return
@@ -264,13 +254,13 @@ class CombinedGenreSearchViewModel: ObservableObject {
             }
         }.resume()
     }
-    
+
     func searchByBestSeller(completion: (() -> Void)? = nil) {
         searchResultsBS = []
         allTitles = []
         loadedCount = 0
         isLoading = false
-        
+
         fetchTitlesFromOpenLibraryGeneric() { titles in
             DispatchQueue.main.async {
                 self.allTitles = titles
@@ -282,7 +272,7 @@ class CombinedGenreSearchViewModel: ObservableObject {
     
     
     
-    func fetchGenreFromOpenLibrary(title: String, completion: @escaping ([BookGenre]?) -> Void) {
+    private func fetchGenreFromOpenLibrary(title: String, completion: @escaping (BookGenre?) -> Void) {
         let query = title.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
         let searchURL = URL(string: "https://openlibrary.org/search.json?title=\(query)&limit=1")!
 
@@ -290,7 +280,7 @@ class CombinedGenreSearchViewModel: ObservableObject {
             guard let data = data,
                   let decoded = try? JSONDecoder().decode(OpenLibrarySearchResponse.self, from: data),
                   let workKey = decoded.docs.first?.key else {
-                completion([.unknown])
+                completion(nil)
                 return
             }
 
@@ -299,49 +289,21 @@ class CombinedGenreSearchViewModel: ObservableObject {
                 guard let data = data,
                       let workDetails = try? JSONDecoder().decode(OpenLibraryWorkDetail.self, from: data),
                       let subjects = workDetails.subjects else {
-                    completion([.unknown])
+                    completion(nil)
                     return
                 }
-                let genres = subjects.compactMap { BookGenre.fromOpenLibrarySubject($0) }
-                completion(genres)
+                let genre = subjects.compactMap { BookGenre.fromOpenLibrarySubject($0) }.first
+                print("\nGeneri disponibili per \(title): \(subjects)")
+                print("genre scelto: \(genre)")
+
+                completion(genre)
             }.resume()
         }.resume()
     }
-    
-    
-    
-    
-    
-    
-    
-    func saveBook(_ book: BookAPI, context: ModelContext) {
-        let saved = SavedBook(from: book)
-        context.insert(saved)
-        do {
-            try context.save()
-            print("✅ Saved: \(saved.title)")
-        } catch {
-            print("❌ Save error: \(error)")
-        }
-
-        fetchGenreFromOpenLibrary(title: book.title) { genre in
-            guard let genre else { return }
-
-            DispatchQueue.main.async {
-                saved.genres = genre
-                do {
-                    try context.save()
-                    print("✅ Genre saved: \(genre)")
-                } catch {
-                    print("❌ Error saving genre: \(error)")
-                }
-            }
-        }
-    }
-    
-    
-    
 }
+
+
+
 
 struct OpenLibraryWorkDetail: Decodable {
     let subjects: [String]?
@@ -352,15 +314,14 @@ struct OpenLibraryDoc: Decodable {
     let key: String
     let subject: [String]?
 }
+
 struct OpenLibrarySearchResponse: Decodable {
     let docs: [OpenLibraryDoc]
 }
-
 struct OpenLibraryTrendingResponse: Codable {
     let works: [OpenLibraryWork]
 }
 
-// MARK: - Open Library Models
 struct OpenLibrarySubjectResponse: Codable {
     let works: [OpenLibraryWork]
 }
@@ -369,20 +330,13 @@ struct OpenLibraryWork: Codable {
     let title: String
 }
 
-
-
-
-
-
-
-
 final class ScannerViewModel: NSObject, ObservableObject, AVCaptureMetadataOutputObjectsDelegate {
     @Published var scannedCode: String?
-    
+
     private let session = AVCaptureSession()
     private let metadataOutput = AVCaptureMetadataOutput()
-    private var isConfigured = false  // ✅
-    
+    private var isConfigured = false
+
     func startScanning() {
         if !isConfigured {
             configureSession()
@@ -393,7 +347,7 @@ final class ScannerViewModel: NSObject, ObservableObject, AVCaptureMetadataOutpu
             }
         }
     }
-    
+
     func resetScan() {
         scannedCode = nil
         DispatchQueue.global(qos: .userInitiated).async {
@@ -402,11 +356,11 @@ final class ScannerViewModel: NSObject, ObservableObject, AVCaptureMetadataOutpu
             }
         }
     }
-    
+
     func stopScanning() {
         session.stopRunning()
     }
-    
+
     private func configureSession() {
         guard let videoDevice = AVCaptureDevice.default(for: .video),
               let videoInput = try? AVCaptureDeviceInput(device: videoDevice),
@@ -415,24 +369,24 @@ final class ScannerViewModel: NSObject, ObservableObject, AVCaptureMetadataOutpu
         else {
             return
         }
-        
+
         session.addInput(videoInput)
         session.addOutput(metadataOutput)
         metadataOutput.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
         metadataOutput.metadataObjectTypes = [.ean13, .qr]
         isConfigured = true
     }
-    
+
     func restartIfNeeded() {
         if !session.isRunning {
             startScanning()
         }
     }
-    
+
     func getSession() -> AVCaptureSession {
         return session
     }
-    
+
     func metadataOutput(_ output: AVCaptureMetadataOutput,
                         didOutput metadataObjects: [AVMetadataObject],
                         from connection: AVCaptureConnection) {
@@ -441,7 +395,6 @@ final class ScannerViewModel: NSObject, ObservableObject, AVCaptureMetadataOutpu
             return
         }
         scannedCode = stringValue
-        //stopScanning()
     }
 }
-
+*/

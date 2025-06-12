@@ -10,11 +10,14 @@ protocol BookRepresentable {
     var categories: [String]? { get }
     var averageRating: Double? { get }
     var ratingsCount: Int? { get }
+    var genres: [BookGenre]? { get }
 }
 
 // MARK: - Estensioni di conformità
 
 extension BookAPI: BookRepresentable {
+    var genres: [BookGenre]? {nil}
+    
     var descriptionText: String? { description }
 }
 

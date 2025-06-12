@@ -21,7 +21,7 @@ struct SingleSearchView: View {
                             SearchResultListPreview()
 
                         } else {
-                            SearchResultList(books: viewModel.searchResults)
+                            SearchResultList(viewModel: viewModel, books: viewModel.searchResults)
                             if viewModel.loadedCount < viewModel.allTitles.count {
                                 LoadMoreButtonView(viewModel: viewModel, scrollProxy: scrollProxy, topPicks: false)
                             }

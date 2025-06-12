@@ -21,16 +21,17 @@ struct BookAPI: Identifiable, Codable, Hashable {
     var pagesRead: Int? = nil
     var userNotes: String = ""
     var rating: Int? = nil
+    //var genre: BookGenre?
 }
 
 extension BookAPI {
-    init(from item: BookItem) {
+    init(from item: BookItem, genre: BookGenre = .unknown) {
         self.id = item.id
         self.title = item.volumeInfo.title
         self.authors = item.volumeInfo.authors ?? []
         self.publisher = item.volumeInfo.publisher ?? "Unknown"
         //self.coverURL = item.volumeInfo.bestCoverURL()?
-            //.absoluteString.replacingOccurrences(of: "http://", with: "https://")
+        //.absoluteString.replacingOccurrences(of: "http://", with: "https://")
         self.coverURL = item.volumeInfo.imageLinks?.thumbnail?.replacingOccurrences(of: "http://", with: "https://")
         self.pageCount = item.volumeInfo.pageCount
         self.description = item.volumeInfo.description
@@ -40,6 +41,7 @@ extension BookAPI {
         self.mainCategory = item.volumeInfo.mainCategory
         self.averageRating = item.volumeInfo.averageRating
         self.ratingsCount = item.volumeInfo.ratingsCount
+        //self.genre = genre
     }
 }
 
@@ -64,23 +66,23 @@ struct VolumeInfo: Codable {
 }
 
 /*extension VolumeInfo {
-    func bestCoverURL() -> URL? {
-        guard let links = self.imageLinks else { return nil }
-        if let x = links.extraLarge ?? links.large ?? links.medium ?? links.small{
-            
-            print("sto facendo gl iextralarge ecc \(x)")
-            return URL(string: x)
-        }
-        if let thumb = links.thumbnail {
-            print("sto facendo la thumb")
-
-            let hiRes = thumb
-                .replacingOccurrences(of: "zoom=1", with: "zoom=10") + "&fife=w800-h1200"
-            return URL(string: hiRes.isEmpty ? thumb : hiRes)
-        }
-        return nil
-    }
-}*/
+ func bestCoverURL() -> URL? {
+ guard let links = self.imageLinks else { return nil }
+ if let x = links.extraLarge ?? links.large ?? links.medium ?? links.small{
+ 
+ print("sto facendo gl iextralarge ecc \(x)")
+ return URL(string: x)
+ }
+ if let thumb = links.thumbnail {
+ print("sto facendo la thumb")
+ 
+ let hiRes = thumb
+ .replacingOccurrences(of: "zoom=1", with: "zoom=10") + "&fife=w800-h1200"
+ return URL(string: hiRes.isEmpty ? thumb : hiRes)
+ }
+ return nil
+ }
+ }*/
 
 struct IndustryIdentifier: Codable, Equatable, Hashable {
     let type: String
@@ -100,7 +102,7 @@ struct BooksAPIResponse: Codable {
     let items: [BookItem]?
 }
 
-enum BookGenre: String, CaseIterable {
+enum BookGenre: String, CaseIterable, Codable {
     case love = "love"
     case scienceFiction = "science-fiction"
     case fantasy = "fantasy"
@@ -151,4 +153,53 @@ extension BookGenre {
         default: return .unknown
         }
     }
+    
+    
+    
+    static func fromOpenLibrarySubject(_ subject: String) -> BookGenre? {
+        let normalized = subject.lowercased().replacingOccurrences(of: " ", with: "-")
+        
+        let mapping: [String: BookGenre] = [
+            "science-fiction": .scienceFiction,
+            "fantasy": .fantasy,
+            "horror": .horror,
+            "mystery": .mystery,
+            "historical-fiction": .historicalFiction,
+            "thriller": .thriller,
+            "romance": .romance,
+            "poetry": .poetry,
+            "young-adult": .youngAdult,
+            "children": .children,
+            "picture-books": .pictureBooks,
+            "biography": .biography,
+            "biographies": .biography,
+            "history": .history,
+            "science": .science,
+            "mathematics": .mathematics,
+            "psychology": .psychology,
+            "philosophy": .philosophy,
+            "religion": .religion,
+            "cooking": .cooking,
+            "health": .health,
+            "self-help": .selfHelp,
+            "education": .education,
+            "art": .art,
+            "music": .music,
+            "photography": .photography,
+            "animals": .animals,
+            "cats": .cats,
+            "dogs": .dogs,
+            "sports": .sports,
+            "travel": .travel,
+            "computers": .computers,
+            "programming": .programming,
+            "textbooks": .textbooks,
+            "literature": .literature,
+            "love": .love,
+            "unknown" : .unknown
+        ]
+        
+        return mapping[normalized]
+    }
+    
 }

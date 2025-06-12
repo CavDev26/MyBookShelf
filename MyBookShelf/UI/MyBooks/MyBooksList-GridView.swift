@@ -6,6 +6,7 @@ struct BookListViewGrid: View {
     @Environment(\.colorScheme) var colorScheme
     @Binding var selectedTab: Int
     @State var showAddBookSheet = false
+    @ObservedObject var viewModel: CombinedGenreSearchViewModel
 
     var body: some View {
         let columnCount: Int = 3
@@ -15,7 +16,7 @@ struct BookListViewGrid: View {
             LazyVGrid(columns: Array(repeating: .init(.flexible(), spacing: gridSpacing), count: columnCount), spacing: gridSpacing) {
                 ForEach(books) { book in
                     NavigationLink(
-                        destination: BookDetailsView(book: book)
+                        destination: BookDetailsView(book: book, viewModel: viewModel)
                     ) {
                         BookListItemGrid(book: book, showStatus: false).aspectRatio(2/3, contentMode: .fill).padding(.horizontal).padding(.vertical, 8)
                     }
@@ -50,6 +51,8 @@ struct BookListViewGrid: View {
 struct BookListViewList: View {
     var books: [SavedBook]
     @State var showAddBookSheet = false
+    @ObservedObject var viewModel: CombinedGenreSearchViewModel
+    
     var body: some View {
         let columnCount: Int = 1
         let gridSpacing: CGFloat = -20.0
@@ -58,7 +61,7 @@ struct BookListViewList: View {
             LazyVGrid(columns: Array(repeating: .init(.flexible(), spacing: gridSpacing), count: columnCount), spacing: gridSpacing) {
                 ForEach(books) { book in
                     NavigationLink(
-                        destination: BookDetailsView(book: book)
+                        destination: BookDetailsView(book: book, viewModel: viewModel)
                     ) {
                         BookListItemList(book: book).aspectRatio(contentMode: .fill).padding(.horizontal).padding(.vertical, 2)
                     }

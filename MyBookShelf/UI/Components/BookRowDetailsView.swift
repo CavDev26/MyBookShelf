@@ -11,6 +11,7 @@ struct BookRowDetailsView<T: BookRepresentable>: View {
             noBookCoverUrlView(width: 60, height: 100, bookTitle: book.title)
         }
         VStack(alignment: .leading, spacing: 4) {
+                        
             Text(book.title)
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.primary)

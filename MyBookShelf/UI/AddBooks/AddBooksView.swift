@@ -32,7 +32,7 @@ struct AddBooksView: View {
                             ScrollViewReader { scrollProxy in
                                 ScrollView(showsIndicators: false) {
                                     VStack {
-                                        SearchResultList(books: viewModel.searchResults)
+                                        SearchResultList(viewModel: viewModel, books: viewModel.searchResults)
                                         if viewModel.loadedCount < viewModel.allTitles.count {
                                             LoadMoreButtonView(viewModel: viewModel, scrollProxy: scrollProxy, topPicks: false)
                                         }
@@ -163,7 +163,7 @@ struct topPicksDiscoverView: View {
                     } else {
                         ForEach(viewModel.searchResultsBS.prefix(10)) { book in
                             NavigationLink {
-                                BookDetailsView(book: book)
+                                BookDetailsView(book: book, viewModel: viewModel)
                             } label: {
                                 if let urlString = book.coverURL {
                                     AsyncImageView(urlString: urlString)

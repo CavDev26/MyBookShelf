@@ -17,11 +17,13 @@ class SavedBook {
     var mainCategory: String?
     var averageRating: Double?
     var ratingsCount: Int?
+    var favourite: Bool
 
     var readingStatus: ReadingStatus
     var pagesRead: Int
     var userNotes: String
     var rating: Int?
+    var genres: [BookGenre]?
 
     init(
         id: String,
@@ -40,7 +42,9 @@ class SavedBook {
         readingStatus: ReadingStatus = .unread,
         pagesRead: Int = 0,
         userNotes: String = "",
-        rating: Int? = nil
+        rating: Int? = nil,
+        favourite: Bool = false,
+        genres: [BookGenre]?
     ) {
         self.id = id
         self.title = title
@@ -59,28 +63,41 @@ class SavedBook {
         self.pagesRead = pagesRead
         self.userNotes = userNotes
         self.rating = rating
+        self.favourite = favourite
+        self.genres = genres
     }
 }
 
 enum ReadingStatus: String, Codable, CaseIterable {
-    case read, reading, unread
-    
+    case all
+    case reading
+    case read
+    case unread
+
     var color: Color {
         switch self {
         case .unread: return .unreadColor
         case .reading: return .readingColor
         case .read: return .readColor
+        case .all: return .gray
         }
     }
-
     var iconName: String {
         switch self {
-        case .unread: return "book.closed"
-        case .reading: return "book.fill"
-        case .read: return "book.closed.fill"
+        case .all: return "square.grid.2x2"
+        case .reading: return "book"
+        case .read: return "checkmark.circle"
+        case .unread: return "circle"
         }
     }
+    static var assignableCases: [ReadingStatus] {
+        return [.reading, .read, .unread]
+    }
+    static var filterableCases: [ReadingStatus] {
+        return ReadingStatus.allCases
+    }
 }
+
 
 struct IndustryIdentifierModel: Codable, Hashable {
     var type: String
@@ -108,7 +125,9 @@ extension SavedBook {
             readingStatus: book.readingStatus,
             pagesRead: book.pagesRead ?? 0,
             userNotes: book.userNotes,
-            rating: book.rating
+            rating: book.rating,
+            favourite : false,
+            genres: nil
         )
     }
 }

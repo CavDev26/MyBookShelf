@@ -18,7 +18,9 @@ enum PreviewData2 {
             averageRating: 4.5,
             ratingsCount: 42,
             readingStatus: .read,
-            pagesRead: 320
+            pagesRead: 320,
+            favourite: true,
+            genres: nil
         ),
         SavedBook(
             id: "preview2-id",
@@ -35,7 +37,8 @@ enum PreviewData2 {
             averageRating: 4.5,
             ratingsCount: 42,
             readingStatus: .reading,
-            pagesRead: 30
+            pagesRead: 30,
+            genres: nil
         ),
         SavedBook(
             id: "preview3-id",
@@ -51,8 +54,64 @@ enum PreviewData2 {
             mainCategory: "Development",
             averageRating: 4.5,
             ratingsCount: 42,
-            readingStatus: .unread
-        )
+            readingStatus: .unread,
+            genres: nil
+        ),
+        SavedBook(
+            id: "preview4-id",
+            title: "il signore degli anelli",
+            authors: ["Jane Appleseed"],
+            publisher: "Cupertino Books",
+            coverURL: "https://play.google.com/books/publisher/content/images/frontcover/330pEQAAQBAJ?fife=w480-h690",
+            pageCount: 320,
+            bookDescription: "Un viaggio attraverso Swift e SwiftUI.",
+            publishedDate: "2024-01-01",
+            industryIdentifiers: [],
+            categories: ["Programming"],
+            mainCategory: "Development",
+            averageRating: 4.5,
+            ratingsCount: 42,
+            readingStatus: .read,
+            pagesRead: 320,
+            genres: nil
+        ),
+        SavedBook(
+            id: "preview5-id",
+            title: "lo hobbit",
+            authors: ["tolkien"],
+            publisher: "Cupertino Books",
+            coverURL: "https://play.google.com/books/publisher/content/images/frontcover/330pEQAAQBAJ?fife=w480-h690",
+            pageCount: 320,
+            bookDescription: "Un viaggio attraverso Swift e SwiftUI.",
+            publishedDate: "2024-01-01",
+            industryIdentifiers: [],
+            categories: ["Programming"],
+            mainCategory: "Development",
+            averageRating: 4.5,
+            ratingsCount: 42,
+            readingStatus: .read,
+            pagesRead: 320,
+            favourite: true,
+            genres: nil
+        ),
+        SavedBook(
+            id: "preview6-id",
+            title: "Dune",
+            authors: ["tolkien"],
+            publisher: "Cupertino Books",
+            coverURL: "https://play.google.com/books/publisher/content/images/frontcover/330pEQAAQBAJ?fife=w480-h690",
+            pageCount: 320,
+            bookDescription: "Un viaggio attraverso Swift e SwiftUI.",
+            publishedDate: "2024-01-01",
+            industryIdentifiers: [],
+            categories: ["Programming"],
+            mainCategory: "Development",
+            averageRating: 4.5,
+            ratingsCount: 42,
+            readingStatus: .read,
+            pagesRead: 320,
+            genres: nil
+        ),
     ]
     static func makeModelContainer(
         for entities: [any PersistentModel.Type] = [SavedBook.self],

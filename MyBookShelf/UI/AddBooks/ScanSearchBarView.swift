@@ -3,7 +3,7 @@ import SwiftUI
 struct ScanSearchBarView: View {
     var scan: Bool
     @Environment(\.colorScheme) var colorScheme
-    @State var searchText: String = ""
+    @Binding var searchText: String
     @State var navigated = false
     @State var scanview = false
     @State var searchInLibrary: Bool
@@ -97,5 +97,6 @@ struct ScanSearchBarView: View {
 }
 
 #Preview {
-    ScanSearchBarView(scan: true, searchInLibrary: false)
+    @Previewable @State var searchText: String = ""
+    ScanSearchBarView(scan: true, searchText: $searchText, searchInLibrary: false)
 }

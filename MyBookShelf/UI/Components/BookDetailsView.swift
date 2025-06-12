@@ -10,12 +10,17 @@ struct BookDetailsView<T: BookRepresentable>: View {
     @State private var showNavTitle = false
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.dismiss) var dismiss
+    
+    @ObservedObject var viewModel: CombinedGenreSearchViewModel
 
+    @State private var genres: [BookGenre]? = nil
+
+    
     var body: some View {
         ZStack(alignment: .top) {
             Color(colorScheme == .dark ? Color.backgroundColorDark : Color.lightColorApp)
                 .ignoresSafeArea()
-
+            
             GeometryReader { outerGeo in
                 ScrollView {
                     VStack(spacing: 0) {
@@ -28,7 +33,7 @@ struct BookDetailsView<T: BookRepresentable>: View {
                                     .padding()
                             }
                         }
-
+                        
                         VStack(alignment: .center, spacing: 8) {
                             Text(book.title)
                                 .font(.system(size: 30, weight: .semibold, design: .serif))
@@ -45,35 +50,60 @@ struct BookDetailsView<T: BookRepresentable>: View {
                                             }
                                     }
                                 )
-
+                            
+                            
+                            if let savedBook = book as? SavedBook {
+                                if let genres = savedBook.genres {
+                                    Text("Genres (savedbook): \(genres.map { $0.rawValue }.joined(separator: ", "))")
+                                        .font(.system(size: 16, weight: .semibold))
+                                        .foregroundColor(.primary)
+                                } else {
+                                    Text("Genres: None")
+                                        .foregroundColor(.secondary)
+                                }
+                            } else if book is BookAPI {
+                                if let genres = genres {
+                                    Text("Genres (Api book): \(genres.map { $0.rawValue }.joined(separator: ", "))")
+                                        .font(.system(size: 16, weight: .semibold))
+                                        .foregroundColor(.primary)
+                                } else {
+                                    ProgressView("Fetching genres...")
+                                        .onAppear {
+                                            viewModel.fetchGenreFromOpenLibrary(title: book.title) { fetched in
+                                                genres = fetched
+                                            }
+                                        }
+                                }
+                            }
+                            
                             //if let desc = book.bookDescription {
                             Text(book.descriptionText ?? "non ho desc")
-                                    .font(.system(size: 20, weight: .light, design: .serif))
-                                    .padding(.horizontal, 8)
+                                .font(.system(size: 20, weight: .light, design: .serif))
+                                .padding(.horizontal, 8)
                             //}
-
+                            
                             HStack(spacing: 4) {
                                 Image(systemName: "star.fill")
                                 Text("4.2 (123)")
                                 //if let pages = book.pageCount {
-                                    Text("• \(book.pageCount) pages")
+                                Text("• \(book.pageCount) pages")
                                 //}
                             }
                             .font(.caption)
                         }
-
+                        
                         HStack(spacing: 16) {
                             Button("Sample") {
                             }
                             .buttonStyle(.borderedProminent)
-
+                            
                             Button("Buy") {
                             }
                             .buttonStyle(.bordered)
                         }.padding()
-
+                        
                         Divider().padding(.vertical)
-
+                        
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Description")
                                 .font(.system(size: 30, weight: .semibold, design: .serif))
@@ -125,9 +155,9 @@ struct BookDetailsView<T: BookRepresentable>: View {
         URLSession.shared.dataTask(with: url) { data, _, _ in
             guard let data = data,
                   let uiImage = UIImage(data: data) else { return }
-
+            
             let color = uiImage.suitableBackgroundColor()
-
+            
             DispatchQueue.main.async {
                 completion(color)
             }
@@ -137,14 +167,14 @@ struct BookDetailsView<T: BookRepresentable>: View {
 
 struct MapArea: View {
     var location: CLLocationCoordinate2D
-
+    
     var body: some View {
         let region = MKCoordinateRegion(
             center: location,
             span: MKCoordinateSpan(latitudeDelta: 0.2, longitudeDelta: 0.2)
         )
         let cameraPosition = MapCameraPosition.region(region)
-
+        
         Map(position: .constant(cameraPosition))
             .allowsHitTesting(false)
     }
@@ -152,7 +182,7 @@ struct MapArea: View {
 
 struct RoundImage: View {
     var url: URL?
-
+    
     var body: some View {
         ZStack {
             Rectangle().fill(.blue.opacity(0.2))

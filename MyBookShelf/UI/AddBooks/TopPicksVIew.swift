@@ -17,7 +17,7 @@ struct TopPicksVIew: View {
                         if viewModel.searchResultsBS.isEmpty {
                             SearchResultListPreview()
                         } else {
-                            SearchResultList(books: viewModel.searchResultsBS)
+                            SearchResultList(viewModel: viewModel, books: viewModel.searchResultsBS)
                             if viewModel.loadedCount < viewModel.allTitles.count {
                                 LoadMoreButtonView(viewModel: viewModel, scrollProxy: scrollProxy, topPicks: true)
                             }

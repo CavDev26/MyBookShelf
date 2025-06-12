@@ -6,8 +6,6 @@ struct ContentView: View {
     
     var body: some View {
         ZStack {
-            //Color(colorScheme == .dark ? .black : .white)
-            //.ignoresSafeArea()
             TabView (selection: $selectedTab){
                 HomeView(selectedTab: $selectedTab)
                     .tabItem { Label("Home", systemImage: "house.fill") }

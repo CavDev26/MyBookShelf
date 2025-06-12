@@ -6,8 +6,8 @@ struct HomeView: View {
     @Environment(\.colorScheme) var colorScheme
     let columnCount: Int = 3
     let gridSpacing: CGFloat = 20.0
-    //@Query(sort: \SavedBook.title, order: .forward) var books: [SavedBook]
-    var books: [SavedBook] = []
+    @Query(sort: \SavedBook.title, order: .forward) var books: [SavedBook]
+    //var books: [SavedBook] = []
     @Binding var selectedTab: Int
     
     var body: some View {
@@ -118,7 +118,8 @@ struct yourProgressView: View {
     var gridSpacing: CGFloat
     var columnCount: Int
     @Binding var selectedTab: Int
-    
+    @StateObject private var viewModel = CombinedGenreSearchViewModel()
+
     var body: some View {
         VStack{
             HStack(spacing: 6) {
@@ -139,7 +140,7 @@ struct yourProgressView: View {
                     if (book.readingStatus == .reading) {
                         VStack {
                             NavigationLink(
-                                destination: BookDetailsView(book: book)
+                                destination: BookDetailsView(book: book, viewModel: viewModel)
                             ) {
                                 BookListItemGrid(book: book, showStatus: true)
                                     .aspectRatio(2/3, contentMode: .fill)
@@ -149,11 +150,10 @@ struct yourProgressView: View {
                         }
                     }
                 }
-                if books.isEmpty {
+                if books.count(where: { $0.readingStatus == .reading }) < 3 {
                     BlankBookPlaceHolderView(selectedTab: $selectedTab)
                         .aspectRatio(2/4, contentMode: .fill)
-                }
-            }
+                }            }
         }
         .padding(.horizontal)
     }

@@ -8,8 +8,9 @@ struct SearchResultList: View {
     @State private var showRemoveAlert = false
     @State private var bookToRemove: SavedBook? = nil
     
-    var books: [BookAPI]
+    @ObservedObject var viewModel: CombinedGenreSearchViewModel
     
+    var books: [BookAPI]
     @Query var savedBooks: [SavedBook]
     
     var savedBookIDs: Set<String> {
@@ -25,7 +26,7 @@ struct SearchResultList: View {
                 ForEach(books) { book in
                     let isSaved = savedBookIDs.contains(book.id)
                     NavigationLink {
-                        BookDetailsView(book: book)
+                        BookDetailsView(book: book, viewModel: viewModel)
                     } label: {
                         BookRowView(
                             book: book,
@@ -33,7 +34,19 @@ struct SearchResultList: View {
                             savedBook: savedBooks.first(where: { $0.id == book.id }),
                             onSaveTapped: {
                                 if !isSaved {
-                                    let saved = SavedBook(from: book)
+                                    viewModel.saveBook(book, context: context)
+                                } else {
+                                    if let existing = savedBooks.first(where: { $0.id == book.id }) {
+                                        bookToRemove = existing
+                                        showRemoveAlert = true
+                                    }
+                                }
+                            }
+                            
+                            
+                            /*onSaveTapped: {
+                                if !isSaved {
+                                    /*let saved = SavedBook(from: book)
                                     context.insert(saved)
                                     withAnimation(.easeInOut(duration: 0.3)) {
                                         DispatchQueue.main.async {
@@ -44,14 +57,14 @@ struct SearchResultList: View {
                                                 print("❌ Save error: \(error)")
                                             }
                                         }
-                                    }
+                                    }*/
                                 } else {
                                     if let existing = savedBooks.first(where: { $0.id == book.id }) {
                                         bookToRemove = existing
                                         showRemoveAlert = true
                                     }
                                 }
-                            },
+                            }*/,
                             onDeleteTapped: {
                                 if let book = bookToRemove {
                                     context.delete(book)
@@ -264,7 +277,7 @@ struct BookRowView: View {
                     
                     if let existing = savedBook {
                         Menu {
-                            ForEach(ReadingStatus.allCases, id: \.self) { status in
+                            ForEach(ReadingStatus.assignableCases, id: \.self) { status in
                                 Button {
                                     onStatusChange(status)
                                 } label: {
