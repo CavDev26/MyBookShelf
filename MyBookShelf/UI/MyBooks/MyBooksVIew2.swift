@@ -12,13 +12,11 @@ struct MyBooksView2: View {
     @State private var searchText = ""
     @StateObject private var viewModel = CombinedGenreSearchViewModel()
 
-    
     @State private var selectedSort: FilterMenuView.SortOption = .title
     @State private var selectedFilter: FilterMenuView.FilterOption = .allItems
     @State private var selectedSortAD: FilterMenuView.SortAD = .ascending
     @State private var selectedReadingStatus : ReadingStatus = .all
     @State private var selectedGenre: BookGenre = .all
-
     
     @Query var books: [SavedBook]
     

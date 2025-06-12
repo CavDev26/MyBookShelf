@@ -12,9 +12,9 @@ struct BookDetailsView<T: BookRepresentable>: View {
     @Environment(\.dismiss) var dismiss
     
     @ObservedObject var viewModel: CombinedGenreSearchViewModel
-
-    @State private var genres: [BookGenre]? = nil
-
+    
+    //@State private var genres: [BookGenre]? = nil
+    
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -24,146 +24,162 @@ struct BookDetailsView<T: BookRepresentable>: View {
             GeometryReader { outerGeo in
                 ScrollView {
                     VStack(spacing: 0) {
-                        ZStack {
-                            if let urlString = book.coverURL, let url = URL(string: urlString) {
-                                AsyncImageView(urlString: urlString)
-                                    .frame(width: 180, height: 280)
-                                    .cornerRadius(8)
-                                    .shadow(radius: 10)
-                                    .padding()
-                            }
-                        }
+                        detailCoverView(book: book)
                         
-                        VStack(alignment: .center, spacing: 8) {
-                            Text(book.title)
-                                .font(.system(size: 30, weight: .semibold, design: .serif))
-                                .background(
-                                    GeometryReader { geo in
-                                        Color.clear
-                                            .onAppear {
-                                                titleOffset = geo.frame(in: .global).minY
-                                            }
-                                            .onChange(of: geo.frame(in: .global).minY) { newVal in
-                                                withAnimation(.easeInOut(duration: 0.25)) {
-                                                    showNavTitle = newVal < 100
-                                                }
-                                            }
-                                    }
-                                )
-                            
-                            
-                            if let savedBook = book as? SavedBook {
-                                if let genres = savedBook.genres {
-                                    Text("Genres (savedbook): \(genres.map { $0.rawValue }.joined(separator: ", "))")
-                                        .font(.system(size: 16, weight: .semibold))
-                                        .foregroundColor(.primary)
-                                } else {
-                                    Text("Genres: None")
-                                        .foregroundColor(.secondary)
-                                }
-                            } else if book is BookAPI {
-                                if let genres = genres {
-                                    Text("Genres (Api book): \(genres.map { $0.rawValue }.joined(separator: ", "))")
-                                        .font(.system(size: 16, weight: .semibold))
-                                        .foregroundColor(.primary)
-                                } else {
-                                    ProgressView("Fetching genres...")
-                                        .onAppear {
-                                            viewModel.fetchGenreFromOpenLibrary(title: book.title) { fetched in
-                                                genres = fetched
-                                            }
-                                        }
-                                }
-                            }
-                            
-                            //if let desc = book.bookDescription {
-                            Text(book.descriptionText ?? "non ho desc")
-                                .font(.system(size: 20, weight: .light, design: .serif))
-                                .padding(.horizontal, 8)
-                            //}
-                            
-                            HStack(spacing: 4) {
-                                Image(systemName: "star.fill")
-                                Text("4.2 (123)")
-                                //if let pages = book.pageCount {
-                                Text("• \(book.pageCount) pages")
-                                //}
-                            }
-                            .font(.caption)
-                        }
-                        
-                        HStack(spacing: 16) {
-                            Button("Sample") {
-                            }
-                            .buttonStyle(.borderedProminent)
-                            
-                            Button("Buy") {
-                            }
-                            .buttonStyle(.bordered)
-                        }.padding()
-                        
-                        Divider().padding(.vertical)
-                        
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Description")
-                                .font(.system(size: 30, weight: .semibold, design: .serif))
-                                .bold()
-                            ForEach(0..<10, id: \.self) { _ in
-                                Text("Prova\n\n\n\n\n")
-                            }
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal)
+                        detailTAView(titleOffset: $titleOffset, showNavTitle: $showNavTitle, book: book)
                     }
-                    .frame(maxWidth: .infinity)
+                    VStack(alignment: .leading, spacing: 8) {
+                        
+                        detailsGenreView(book: book, viewModel: viewModel)
+                        
+                        HStack(spacing: 4) {
+                            Image(systemName: "star.fill")
+                            Text("4.2 (123)")
+                        }
+                        .font(.caption)
+                        
+                        Text("Description")
+                            .font(.system(size: 25, weight: .semibold, design: .serif))
+                            .bold()
+                        Text(book.descriptionText ?? "No description")
+                            .font(.system(size: 20, weight: .light, design: .serif))
+                            .padding(.horizontal, 8)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal)
                 }
-                .onAppear {
-                    let coverURL = URL(string: book.coverURL ?? "")
-                    fetchDominantColor(from: coverURL) { color in
-                        dominantColor = color
-                    }
+                .frame(maxWidth: .infinity)
+            }
+            .onAppear {
+                let coverURL = URL(string: book.coverURL ?? "")
+                fetchDominantColor(from: coverURL) { color in
+                    dominantColor = color
                 }
-                .navigationTitle("")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        Button(action: {
-                            dismiss()
-                        }) {
-                            Image(systemName: "chevron.left")
-                                .foregroundColor(.white)
-                                .font(.system(size: 20, weight: .semibold))
-                        }
-                    }
-                    ToolbarItem(placement: .principal) {
-                        Text(book.title)
-                            .font(.system(size: 20, weight: .semibold, design: .serif))
-                            .opacity(showNavTitle ? 1 : 0)
-                            .animation(.easeInOut(duration: 0.25), value: showNavTitle)
+            }
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: {
+                        dismiss()
+                    }) {
+                        Image(systemName: "chevron.left")
                             .foregroundColor(.white)
+                            .font(.system(size: 20, weight: .semibold))
                     }
                 }
-                .toolbarBackground(dominantColor, for: .navigationBar)
-                .toolbarBackgroundVisibility(.visible, for: .navigationBar)
-                .navigationBarBackButtonHidden(true)
+                ToolbarItem(placement: .principal) {
+                    Text(book.title)
+                        .font(.system(size: 20, weight: .semibold, design: .serif))
+                        .opacity(showNavTitle ? 1 : 0)
+                        .animation(.easeInOut(duration: 0.25), value: showNavTitle)
+                        .foregroundColor(.white)
+                }
+            }
+            .toolbarBackground(dominantColor, for: .navigationBar)
+            .toolbarBackgroundVisibility(.visible, for: .navigationBar)
+            .navigationBarBackButtonHidden(true)
+        }
+    }
+}
+
+
+func fetchDominantColor(from url: URL?, completion: @escaping (Color) -> Void) {
+    guard let url = url else { return }
+    URLSession.shared.dataTask(with: url) { data, _, _ in
+        guard let data = data,
+              let uiImage = UIImage(data: data) else { return }
+        
+        let color = uiImage.suitableBackgroundColor()
+        
+        DispatchQueue.main.async {
+            completion(color)
+        }
+    }.resume()
+}
+
+
+struct detailsGenreView<T: BookRepresentable> : View {
+    var book: T
+    @State private var genres: [BookGenre]? = nil
+    @ObservedObject var viewModel: CombinedGenreSearchViewModel
+    
+    var body: some View {
+        if let savedBook = book as? SavedBook {
+            if let genres = savedBook.genres {
+                Text("Genres (savedbook): \(genres.map { $0.rawValue }.joined(separator: ", "))")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.primary)
+            } else {
+                Text("Genres: None")
+                    .foregroundColor(.secondary)
+            }
+        } else if book is BookAPI {
+            if let genres = genres {
+                Text("Genres (Api book): \(genres.map { $0.rawValue }.joined(separator: ", "))")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.primary)
+            } else {
+                ProgressView("Fetching genres...")
+                    .onAppear {
+                        viewModel.fetchGenreFromOpenLibrary(title: book.title) { fetched in
+                            genres = fetched
+                        }
+                    }
             }
         }
     }
-    
-    func fetchDominantColor(from url: URL?, completion: @escaping (Color) -> Void) {
-        guard let url = url else { return }
-        URLSession.shared.dataTask(with: url) { data, _, _ in
-            guard let data = data,
-                  let uiImage = UIImage(data: data) else { return }
-            
-            let color = uiImage.suitableBackgroundColor()
-            
-            DispatchQueue.main.async {
-                completion(color)
-            }
-        }.resume()
+}
+
+struct detailTAView<T: BookRepresentable> : View {
+    @Binding var titleOffset: CGFloat
+    @Binding var showNavTitle: Bool
+    var book: T
+    var body: some View {
+        VStack(alignment: .center, spacing: 8) {
+            Text(book.title)
+                .font(.system(size: 30, weight: .semibold, design: .serif))
+                .background(
+                    GeometryReader { geo in
+                        Color.clear
+                            .onAppear {
+                                titleOffset = geo.frame(in: .global).minY
+                            }
+                            .onChange(of: geo.frame(in: .global).minY) { newVal in
+                                withAnimation(.easeInOut(duration: 0.25)) {
+                                    showNavTitle = newVal < 100
+                                }
+                            }
+                    }
+                )
+            Text("\(book.authors)")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(.primary)
+        }
     }
 }
+struct detailCoverView<T: BookRepresentable> : View {
+    var book: T
+    var body: some View {
+        ZStack {
+            if let urlString = book.coverURL {
+                AsyncImageView(urlString: urlString)
+                    .frame(width: 180, height: 280)
+                    .cornerRadius(8)
+                    .shadow(radius: 10)
+                    .padding()
+            } else {
+                noBookCoverUrlView(width: 180, height: 180, bookTitle: book.title)
+                    .cornerRadius(8)
+                    .shadow(radius: 10)
+                    .padding()
+            }
+        }
+    }
+}
+
+
+
 
 struct MapArea: View {
     var location: CLLocationCoordinate2D
