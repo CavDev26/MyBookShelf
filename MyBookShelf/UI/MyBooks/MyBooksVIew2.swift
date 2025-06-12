@@ -17,6 +17,7 @@ struct MyBooksView2: View {
     @State private var selectedFilter: FilterMenuView.FilterOption = .allItems
     @State private var selectedSortAD: FilterMenuView.SortAD = .ascending
     @State private var selectedReadingStatus : ReadingStatus = .all
+    @State private var selectedGenre: BookGenre = .all
 
     
     @Query var books: [SavedBook]
@@ -38,6 +39,9 @@ struct MyBooksView2: View {
         case .favorites:
             result = result.filter { $0.favourite }
         case .genre:
+            if selectedGenre != .all {
+                result = result.filter { $0.genres?.contains(selectedGenre) == true }
+            }
             break
             //result = result.filter { $0.genre != nil } // personalizza
         case .readingStatus:
@@ -82,7 +86,7 @@ struct MyBooksView2: View {
                 VStack {
                     ZStack(alignment: .top) {
                         TopNavBar {
-                            TopBarView(isExpanded: $isExpanded, isViewGrid: $isViewGrid, searchNamespace: searchNamespace, searchText: $searchText, selectedSort: $selectedSort, selectedFilter: $selectedFilter, selectedSortAD: $selectedSortAD, selectedReadingStatus: $selectedReadingStatus)
+                            TopBarView(isExpanded: $isExpanded, isViewGrid: $isViewGrid, searchNamespace: searchNamespace, searchText: $searchText, selectedSort: $selectedSort, selectedFilter: $selectedFilter, selectedSortAD: $selectedSortAD, selectedReadingStatus: $selectedReadingStatus, selectedGenre: $selectedGenre)
                         }
                         .animation(.easeInOut, value: isExpanded)
                     }
@@ -115,6 +119,7 @@ struct TopBarView: View {
     @Binding var selectedFilter: FilterMenuView.FilterOption
     @Binding var selectedSortAD: FilterMenuView.SortAD
     @Binding var selectedReadingStatus : ReadingStatus
+    @Binding var selectedGenre: BookGenre
 
     
     var body: some View {
@@ -144,7 +149,8 @@ struct TopBarView: View {
                     selectedSort: $selectedSort,
                     selectedFilter: $selectedFilter,
                     selectedSortAD: $selectedSortAD,
-                    selectedReadingStatus: $selectedReadingStatus
+                    selectedReadingStatus: $selectedReadingStatus,
+                    selectedGenre: $selectedGenre
                 )
                 Button {
                     withAnimation(.easeInOut(duration: 0.3)) {
@@ -193,6 +199,7 @@ struct FilterMenuView: View {
     @Binding var selectedFilter: FilterOption
     @Binding var selectedSortAD: SortAD
     @Binding var selectedReadingStatus : ReadingStatus
+    @Binding var selectedGenre: BookGenre
     
     var body: some View {
         Menu {
@@ -215,8 +222,17 @@ struct FilterMenuView: View {
                         .tag(FilterOption.allItems)
                     Label("Favorites", systemImage: "bookmark")
                         .tag(FilterOption.favorites)
-                    Label("Genre", systemImage: "tag")
-                        .tag(FilterOption.genre)
+                    
+                    Menu("Genre") {
+                        ForEach(BookGenre.allCases, id: \.self) { genre in
+                            Button {
+                                selectedGenre = genre
+                                selectedFilter = .genre
+                            } label: {
+                                Text(genre.rawValue.capitalized)
+                            }
+                        }
+                    }
                 }
                 Menu("Reading Status") {
                     ForEach(ReadingStatus.filterableCases, id: \.self) { status in

@@ -139,6 +139,7 @@ enum BookGenre: String, CaseIterable, Codable {
     case textbooks = "textbooks"
     case literature = "literature"
     case unknown = "unknown"
+    case all
 }
 
 extension BookGenre {
