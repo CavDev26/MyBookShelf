@@ -150,7 +150,7 @@ struct noBookCoverUrlView : View {
                         .padding(.horizontal, width/10)
                         .minimumScaleFactor(0.5)
                         .frame(maxHeight: height/2)
-                        //.lineLimit(2)
+                    //.lineLimit(2)
                         .foregroundColor(.black)
                         .fontDesign(.serif)
                 }
