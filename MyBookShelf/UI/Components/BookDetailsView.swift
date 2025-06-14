@@ -13,9 +13,9 @@ struct BookDetailsView<T: BookRepresentable>: View {
     @Environment(\.modelContext) private var context
     @ObservedObject var viewModel: CombinedGenreSearchViewModel
     
-    
+    @State private var isExpanded = false
     @State private var showEditProgressSheet: Bool = false
-
+    
     
     
     var body: some View {
@@ -34,33 +34,36 @@ struct BookDetailsView<T: BookRepresentable>: View {
                         if let savedBook = book as? SavedBook {
                             RatingView(book: savedBook, color: dominantColor, rating: Double(savedBook.rating ?? Int(0.0)))
                                 .padding(.horizontal)
-                        }
-                        
-                        if let savedBook = book as? SavedBook {
+                            
                             readingStatusMenuVIew(book: savedBook)
+                            
+                            detailsProgressView(showEditProgressSheet: $showEditProgressSheet, book: savedBook)
+                            
+                            detailsBookNotesView(localNotes: savedBook.userNotes, book: savedBook, isExpanded: $isExpanded)
+                        } else {
+                            Button {
+                                
+                            } label: {
+                                Text("add book")
+                            }
                         }
+
                         
                         detailsGenreView(book: book, viewModel: viewModel)
                         
-                        
-                        if let savedBook = book as? SavedBook {
-                            detailsProgressView(showEditProgressSheet: $showEditProgressSheet, book: savedBook)
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Description")
+                                .font(.title2).bold()
+                            Text(book.descriptionText ?? "No description available")
+                                .font(.body)
+                                .foregroundColor(.secondary)
                         }
-                        
-                        
-                        
-                        
-                        Text("Description")
-                            .font(.system(size: 25, weight: .semibold, design: .serif))
-                            .bold()
-                        Text(book.descriptionText ?? "No description")
-                            .font(.system(size: 20, weight: .light, design: .serif))
-                            .padding(.horizontal, 8)
-                        
-                        
+                        .padding(.horizontal)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal)
+                    relatedBooksView(book: book, viewModel: viewModel, vmsearchResults: $viewModel.searchResultsRelated, isAuthor: false)
+                    relatedBooksView(book: book, viewModel: viewModel, vmsearchResults: $viewModel.searchResultsAuthor, isAuthor: true)
                 }
                 .frame(maxWidth: .infinity)
             }
@@ -184,9 +187,15 @@ struct detailTAView<T: BookRepresentable> : View {
                             }
                     }
                 )
-            Text(book.authors.joined(separator: ", "))
-                .font(.system(size: 16))
-                .foregroundColor(.secondary)
+            HStack {
+                ForEach (book.authors, id: \.self) { a in
+                    NavigationLink (destination: PlaceHolderView()) {
+                        Text(a)
+                            .font(.system(size: 16))
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
         }
     }
 }
@@ -213,13 +222,13 @@ struct detailCoverView<T: BookRepresentable> : View {
 struct RatingView : View {
     var book: SavedBook
     @Environment(\.modelContext) private var context
-
+    
     var color: Color
     var maximumRating = 5
     var starSize: CGFloat = 24
     var allowsHalfStars = true
     @State var rating: Double
-
+    
     
     var body: some View {
         
@@ -325,7 +334,7 @@ struct detailsProgressView: View {
                     Text("\(Int(progress * 100))%")
                         .font(.caption)
                         .foregroundColor(.secondary)
-                        //.padding(.trailing, 10)
+                    //.padding(.trailing, 10)
                     
                     
                     Button(action: {
@@ -335,7 +344,7 @@ struct detailsProgressView: View {
                             .font(.caption)
                             .lineLimit(1)
                             .minimumScaleFactor(0.5)
-                            //.padding(.horizontal, 8)
+                        //.padding(.horizontal, 8)
                             .padding(.vertical, 4)
                             .background(Color.terracottaDarkIcons.opacity(0.15))
                             .foregroundColor(.terracottaDarkIcons)
@@ -347,6 +356,138 @@ struct detailsProgressView: View {
     }
 }
 
+struct detailsBookNotesView: View {
+    @Environment(\.modelContext) private var context
+    @State var localNotes: String
+    var book: SavedBook
+    @Binding var isExpanded: Bool
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Notes")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+            
+            ZStack(alignment: .bottomTrailing) {
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(Color.backgroundColorLight)
+                
+                VStack(alignment: .leading, spacing: 8) {
+                    ZStack(alignment: .topLeading) {
+                        Text(localNotes.isEmpty ? "Tap to add notes..." : localNotes)
+                            .foregroundColor(localNotes.isEmpty ? .secondary : .primary)
+                            .opacity(isExpanded ? 0 : 1)
+                            .animation(.easeInOut(duration: 0.2), value: isExpanded)
+                        
+                        TextEditor(text: $localNotes)
+                            .opacity(isExpanded ? 1 : 0)
+                            .disabled(!isExpanded)
+                            .scrollContentBackground(.hidden)
+                            .animation(.easeInOut(duration: 0.2), value: isExpanded)
+                    }
+                    .frame(maxHeight: isExpanded ? nil : 140)
+                    
+                    if isExpanded {
+                        HStack {
+                            Spacer()
+                            Button("Save") {
+                                book.userNotes = localNotes
+                                try? context.save()
+                                withAnimation {
+                                    isExpanded = false
+                                }
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(Color.terracotta)
+                            .foregroundColor(.white)
+                            .clipShape(Capsule())
+                        }
+                        .transition(.opacity.combined(with: .move(edge: .bottom)))
+                    }
+                }
+                .padding()
+            }
+            .frame(maxWidth: .infinity)
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
+            .animation(.easeInOut(duration: 0.3), value: isExpanded)
+        }
+        .onTapGesture {
+            if !isExpanded {
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                    isExpanded = true
+                }
+            }
+        }
+    }
+}
+
+struct relatedBooksView<T: BookRepresentable>: View {
+    var book: T
+    @Environment(\.colorScheme) var colorScheme
+    @ObservedObject var viewModel: CombinedGenreSearchViewModel
+    @Binding var vmsearchResults: [BookAPI]
+    var isAuthor: Bool
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text(isAuthor ? "Books from this author" : "Related Books")
+                        .font(.system(size: 18, weight: .semibold, design: .serif))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .foregroundColor(colorScheme == .dark ? .white : .black)
+                }.padding(.top)
+                    .padding(.horizontal)
+
+            
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
+                    if vmsearchResults.isEmpty {
+                        ForEach(0..<10, id: \.self) { _ in
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color.gray.opacity(0.3))
+                                .frame(width: 100, height: 150)
+                                .redacted(reason: .placeholder)
+                                .shimmering()
+                        }
+                    } else {
+                        ForEach(vmsearchResults.prefix(10)) { book in
+                            NavigationLink {
+                                BookDetailsView(book: book, viewModel: viewModel)
+                            } label: {
+                                if let urlString = book.coverURL {
+                                    AsyncImageView(urlString: urlString)
+                                        .frame(width: 100, height: 150)
+                                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                                } else {
+                                    noBookCoverUrlView(width: 100, height: 150, bookTitle: book.title)
+                                }
+                            }
+                        }
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.bottom)
+            }
+            .padding(.top)
+            
+        }
+        .padding(.top)
+        .onAppear {
+            vmsearchResults = []
+            if isAuthor {
+                viewModel.fetchBooksFromAuthor(title: book.title, authors: book.authors)
+            } else {
+                viewModel.fetchRelatedBooks(title: book.title, authors: book.authors)
+            }
+        }
+    }
+}
+
+
+
+
 
 struct EditProgressSheetView: View {
     var book: SavedBook
@@ -354,6 +495,13 @@ struct EditProgressSheetView: View {
         Text("Edit progress")
     }
 }
+
+
+
+
+
+
+
 
 
 

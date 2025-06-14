@@ -7,6 +7,9 @@ import Combine
 class CombinedGenreSearchViewModel: ObservableObject {
     @Published var searchResults: [BookAPI] = []
     @Published var searchResultsBS: [BookAPI] = []
+    @Published var searchResultsRelated: [BookAPI] = []
+    @Published var searchResultsAuthor: [BookAPI] = []
+    
     @Published var isLoading = false
     private var cancellables = Set<AnyCancellable>()
     @Published var allTitles: [String] = []
@@ -339,6 +342,116 @@ class CombinedGenreSearchViewModel: ObservableObject {
         }
     }
     
+    
+    
+    
+    
+    
+    func fetchBooksFromAuthor(title: String, authors: [String]) {
+        let queries = authors.map { "inauthor:\($0)" }
+        let fullQuery = queries.joined(separator: " OR ")
+        guard let query = fullQuery.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+            print("❌ Invalid query encoding")
+            self.searchResultsAuthor = []
+            return
+        }
+
+        let urlString = "https://www.googleapis.com/books/v1/volumes?q=\(query)&maxResults=20"
+        guard let url = URL(string: urlString) else {
+            print("❌ Invalid URL")
+            self.searchResultsAuthor = []
+            return
+        }
+
+        URLSession.shared.dataTask(with: url) { data, _, error in
+            if let error = error {
+                print("❌ Error fetching author's books: \(error)")
+                DispatchQueue.main.async {
+                    self.searchResultsAuthor = []
+                }
+                return
+            }
+
+            guard let data = data else {
+                print("❌ No data received")
+                DispatchQueue.main.async {
+                    self.searchResultsAuthor = []
+                }
+                return
+            }
+
+            do {
+                let decoded = try JSONDecoder().decode(BooksAPIResponse.self, from: data)
+                let filtered = (decoded.items ?? [])
+                    .map { BookAPI(from: $0) }
+                    .filter { apiBook in
+                        // Esclude il libro stesso
+                        apiBook.title.localizedCaseInsensitiveCompare(title) != .orderedSame
+                    }
+
+                DispatchQueue.main.async {
+                    self.searchResultsAuthor = filtered
+                }
+            } catch {
+                print("❌ Decoding error: \(error)")
+                DispatchQueue.main.async {
+                    self.searchResultsAuthor = []
+                }
+            }
+        }.resume()
+    }
+    
+    func fetchRelatedBooks(title: String, authors: [String]) {
+        let query = title.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+        let urlString = "https://www.googleapis.com/books/v1/volumes?q=\(query)&maxResults=20"
+
+        guard let url = URL(string: urlString) else {
+            print("❌ Invalid URL")
+            self.searchResultsRelated = []
+            return
+        }
+
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let error = error {
+                print("❌ Error fetching related books: \(error)")
+                DispatchQueue.main.async {
+                    self.searchResultsRelated = []
+                }
+                return
+            }
+
+            guard let data = data else {
+                print("❌ No data received")
+                DispatchQueue.main.async {
+                    self.searchResultsRelated = []
+                }
+                return
+            }
+
+            do {
+                let decoded = try JSONDecoder().decode(BooksAPIResponse.self, from: data)
+                let filtered = (decoded.items ?? [])
+                    .map { BookAPI(from: $0) }
+                    .filter { apiBook in
+                        // Esclude gli stessi autori
+                        !apiBook.authors.contains { author in
+                            authors.contains { inputAuthor in
+                                inputAuthor.localizedCaseInsensitiveCompare(author) == .orderedSame
+                            }
+                        }
+                    }
+
+                DispatchQueue.main.async {
+                    self.searchResultsRelated = filtered
+                }
+            } catch {
+                print("❌ Decoding error: \(error)")
+                DispatchQueue.main.async {
+                    self.searchResultsRelated = []
+                }
+            }
+        }.resume()
+    }
     
     
 }
