@@ -1,10 +1,13 @@
 import SwiftUI
+import _SwiftData_SwiftUI
 import MapKit
 import UIKit
 import CoreImage
 
-struct BookDetailsView<T: BookRepresentable>: View {
-    var book: T
+struct BookDetailsView: View {
+    @State var book: BookRepresentable
+    @State private var savedBook: SavedBook? = nil
+    
     @State private var dominantColor: Color = .gray.opacity(0.2)
     @State private var titleOffset: CGFloat = .infinity
     @State private var showNavTitle = false
@@ -17,8 +20,16 @@ struct BookDetailsView<T: BookRepresentable>: View {
     @State private var showEditProgressSheet: Bool = false
     
     
+    @State private var isSaved: Bool = false
+    @State private var showRemoveAlert = false
+    @State private var bookToRemove: SavedBook? = nil
+    @Query var savedBooks: [SavedBook]
+    var savedBookIDs: Set<String> {
+        Set(savedBooks.map { $0.id })
+    }
     
     var body: some View {
+        
         ZStack(alignment: .top) {
             Color(colorScheme == .dark ? Color.backgroundColorDark : Color.lightColorApp)
                 .ignoresSafeArea()
@@ -30,10 +41,21 @@ struct BookDetailsView<T: BookRepresentable>: View {
                         detailTAView(titleOffset: $titleOffset, showNavTitle: $showNavTitle, book: book)
                     }
                     VStack(alignment: .leading, spacing: 8) {
-                        
                         if let savedBook = book as? SavedBook {
                             RatingView(book: savedBook, color: dominantColor, rating: Double(savedBook.rating ?? Int(0.0)))
                                 .padding(.horizontal)
+                            
+                            Button {
+                                bookToRemove = savedBook
+                                showRemoveAlert.toggle()
+                            } label: {
+                                RoundedRectangle(cornerRadius: 8)
+                                    .frame(width: 100, height: 40)
+                                    .overlay{
+                                        Text("rimuovi libro dalla libreria")
+                                            .foregroundColor(.white)
+                                    }
+                            }
                             
                             readingStatusMenuVIew(book: savedBook)
                             
@@ -41,24 +63,32 @@ struct BookDetailsView<T: BookRepresentable>: View {
                             
                             detailsBookNotesView(localNotes: savedBook.userNotes, book: savedBook, isExpanded: $isExpanded)
                         } else {
-                            Button {
-                                
-                            } label: {
-                                Text("add book")
+                            HStack(spacing: 8) {
+                                Button {
+                                    if !savedBookIDs.contains(book.id) {
+                                        if let bookAPI = book as? BookAPI {
+                                            viewModel.saveBook(bookAPI, context: context)
+                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                                if let saved = savedBooks.first(where: { $0.id == bookAPI.id }) {
+                                                    withAnimation(.easeInOut(duration: 0.3)) {
+                                                        
+                                                        self.savedBook = saved
+                                                        self.book = saved
+                                                        self.isSaved = true
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                } label: {
+                                    addBookButtonView(isSaved: isSaved)
+                                }
                             }
                         }
-
                         
                         detailsGenreView(book: book, viewModel: viewModel)
                         
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text("Description")
-                                .font(.title2).bold()
-                            Text(book.descriptionText ?? "No description available")
-                                .font(.body)
-                                .foregroundColor(.secondary)
-                        }
-                        .padding(.horizontal)
+                        ExpandableDescriptionView(text: book.descriptionText ?? "No description available")
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal)
@@ -71,6 +101,12 @@ struct BookDetailsView<T: BookRepresentable>: View {
                 let coverURL = URL(string: book.coverURL ?? "")
                 fetchDominantColor(from: coverURL) { color in
                     dominantColor = color
+                }
+                //  Controllo se il libro è già salvato
+                if let alreadySaved = savedBooks.first(where: { $0.id == book.id }) {
+                    self.book = alreadySaved
+                    self.savedBook = alreadySaved
+                    self.isSaved = true
                 }
             }
             .navigationTitle("")
@@ -114,6 +150,27 @@ struct BookDetailsView<T: BookRepresentable>: View {
                         .presentationDragIndicator(.visible)
                 }
             }
+            .alert("Remove from Library?", isPresented: $showRemoveAlert, presenting: bookToRemove) { book in
+                Button("Remove", role: .destructive) {
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        context.delete(book)
+                        do {
+                            try context.save()
+                            print("🗑️ Removed: \(book.title)")
+
+                            // Torna alla rappresentazione BookAPI
+                            self.book = BookAPI(from: book)
+                            self.savedBook = nil
+                            self.isSaved = false
+                        } catch {
+                            print("❌ Delete error: \(error)")
+                        }
+                    }
+                }
+                Button("Cancel", role: .cancel) { }
+            } message: { book in
+                Text("Are you sure you want to remove \"\(book.title)\" from your library?")
+            }
         }
     }
 }
@@ -134,8 +191,8 @@ func fetchDominantColor(from url: URL?, completion: @escaping (Color) -> Void) {
 }
 
 
-struct detailsGenreView<T: BookRepresentable> : View {
-    var book: T
+struct detailsGenreView : View {
+    var book: BookRepresentable
     @State private var genres: [BookGenre]? = nil
     @ObservedObject var viewModel: CombinedGenreSearchViewModel
     
@@ -166,10 +223,10 @@ struct detailsGenreView<T: BookRepresentable> : View {
     }
 }
 
-struct detailTAView<T: BookRepresentable> : View {
+struct detailTAView: View {
     @Binding var titleOffset: CGFloat
     @Binding var showNavTitle: Bool
-    var book: T
+    var book: BookRepresentable
     var body: some View {
         VStack(alignment: .center, spacing: 8) {
             Text(book.title)
@@ -199,8 +256,8 @@ struct detailTAView<T: BookRepresentable> : View {
         }
     }
 }
-struct detailCoverView<T: BookRepresentable> : View {
-    var book: T
+struct detailCoverView: View {
+    var book: BookRepresentable
     var body: some View {
         ZStack {
             if let urlString = book.coverURL {
@@ -423,8 +480,8 @@ struct detailsBookNotesView: View {
     }
 }
 
-struct relatedBooksView<T: BookRepresentable>: View {
-    var book: T
+struct relatedBooksView: View {
+    var book: BookRepresentable
     @Environment(\.colorScheme) var colorScheme
     @ObservedObject var viewModel: CombinedGenreSearchViewModel
     @Binding var vmsearchResults: [BookAPI]
@@ -432,14 +489,14 @@ struct relatedBooksView<T: BookRepresentable>: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text(isAuthor ? "Books from this author" : "Related Books")
-                        .font(.system(size: 18, weight: .semibold, design: .serif))
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .foregroundColor(colorScheme == .dark ? .white : .black)
-                }.padding(.top)
-                    .padding(.horizontal)
-
+            HStack {
+                Text(isAuthor ? "Books from this author" : "Related Books")
+                    .font(.system(size: 18, weight: .semibold, design: .serif))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .foregroundColor(colorScheme == .dark ? .white : .black)
+            }.padding(.top)
+                .padding(.horizontal)
+            
             
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
@@ -484,7 +541,33 @@ struct relatedBooksView<T: BookRepresentable>: View {
         }
     }
 }
-
+struct ExpandableDescriptionView: View {
+    let text: String
+    @State private var isExpanded = false
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Description")
+                .font(.system(size: 18, weight: .semibold, design: .serif))
+            
+            Text(text)
+                .font(.system(size: 16, weight: .semibold, design: .serif))
+                .foregroundColor(.secondary)
+                .lineLimit(isExpanded ? nil : 8)
+                .animation(.easeInOut, value: isExpanded)
+            
+            if text.count > 200 { // puoi regolare il valore secondo le tue esigenze
+                Button(isExpanded ? "Less" : "More") {
+                    withAnimation {
+                        isExpanded.toggle()
+                    }
+                }
+                .font(.caption)
+                .foregroundColor(.blue)
+            }
+        }
+    }
+}
 
 
 

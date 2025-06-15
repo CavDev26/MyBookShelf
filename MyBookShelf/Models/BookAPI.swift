@@ -24,6 +24,31 @@ struct BookAPI: Identifiable, Codable, Hashable {
     //var genre: BookGenre?
 }
 
+
+extension BookAPI {
+    init(from savedBook: SavedBook) {
+        self.id = savedBook.id
+        self.title = savedBook.title
+        self.authors = savedBook.authors
+        self.publisher = savedBook.publisher
+        self.coverURL = savedBook.coverURL
+        self.pageCount = savedBook.pageCount
+        self.description = savedBook.descriptionText
+        self.publishedDate = savedBook.publishedDate
+        self.industryIdentifiers = savedBook.industryIdentifiers.map {
+            IndustryIdentifier(type: $0.type, identifier: $0.identifier)
+        }
+        self.categories = savedBook.categories
+        self.mainCategory = savedBook.mainCategory
+        self.averageRating = savedBook.averageRating
+        self.ratingsCount = savedBook.ratingsCount
+        
+        self.readingStatus = savedBook.readingStatus
+        self.pagesRead = savedBook.pagesRead
+        self.userNotes = savedBook.userNotes
+        self.rating = savedBook.rating
+    }
+}
 extension BookAPI {
     init(from item: BookItem, genre: BookGenre = .unknown) {
         self.id = item.id
