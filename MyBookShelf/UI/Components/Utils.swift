@@ -173,13 +173,12 @@ struct CustomNavigationTitleModifier: ViewModifier {
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     Text("\(title)")
-                    
                         .font(.system(size: 18, weight: .semibold, design: .serif))
                 }
             }
             .navigationTitle("\(title)")
-            .toolbarBackground(Color(colorScheme == .dark ? Color.backgroundColorDark : Color.backgroundColorLight)
-                .opacity(1) // se si abbassa, rimane l'effetto glossy sotto
+            .toolbarBackground(Color(colorScheme == .dark ? Color.backgroundColorDark2 : Color.backgroundColorLight)
+                .opacity(0.8) // se si abbassa, rimane l'effetto glossy sotto
             )
             .toolbarBackground(.visible, for: .navigationBar)
     }
@@ -219,44 +218,6 @@ extension View {
         self.modifier(Shimmer())
     }
 }
-
-
-struct SearchResultListPreview: View {
-    var body: some View {
-        ForEach (0..<6) { i in
-            HStack(alignment: .top, spacing: 12) {
-                
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.gray.opacity(0.3))
-                    .frame(width: 60, height: 100)
-                    .redacted(reason: .placeholder)
-                    .shimmering()
-                
-                VStack(alignment: .leading, spacing: 6) {
-                    Spacer()
-                    RoundedRectangle(cornerRadius: 6)
-                        .fill(Color.gray.opacity(0.3))
-                        .frame(height: 20)
-                        .frame(maxWidth: .infinity)
-                        .shimmering()
-                }
-                .padding(.top, 4)
-            }
-            .frame(maxWidth: .infinity)
-            .shimmering()
-            .padding()
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color(.systemBackground))
-                    .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
-            )
-            .padding(.horizontal)
-        }
-        .padding(.top, 8)
-    }
-}
-
-
 
 
 extension UIApplication {

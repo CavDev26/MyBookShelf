@@ -39,25 +39,22 @@ struct BookDetailsView: View {
                     VStack(spacing: 0) {
                         detailCoverView(book: book)
                         detailTAView(titleOffset: $titleOffset, showNavTitle: $showNavTitle, book: book)
+                            .padding(.horizontal)
                     }
-                    VStack(alignment: .leading, spacing: 8) {
+                    .padding(.bottom, 15)
+                                        
+                    VStack(alignment: .center, spacing: 8) {
                         if let savedBook = book as? SavedBook {
-                            RatingView(book: savedBook, color: dominantColor, rating: Double(savedBook.rating ?? Int(0.0)))
-                                .padding(.horizontal)
-                            
-                            Button {
-                                bookToRemove = savedBook
-                                showRemoveAlert.toggle()
-                            } label: {
-                                RoundedRectangle(cornerRadius: 8)
-                                    .frame(width: 100, height: 40)
-                                    .overlay{
-                                        Text("rimuovi libro dalla libreria")
-                                            .foregroundColor(.white)
-                                    }
+                            dividerRectangle()
+
+                            HStack {
+                                readingStatusMenuVIew(book: savedBook)
+                                
+                                RatingView(book: savedBook, color: dominantColor, rating: Double(savedBook.rating ?? Int(0.0)))
+                                    .padding(.horizontal)
                             }
+                            .padding(.bottom)
                             
-                            readingStatusMenuVIew(book: savedBook)
                             
                             detailsProgressView(showEditProgressSheet: $showEditProgressSheet, book: savedBook)
                             
@@ -81,26 +78,58 @@ struct BookDetailsView: View {
                                         }
                                     }
                                 } label: {
-                                    addBookButtonView(isSaved: isSaved)
+                                    addBookButtonView(color: dominantColor, isSaved: isSaved)
                                 }
                             }
                         }
-                        
-                        detailsGenreView(book: book, viewModel: viewModel)
-                        
-                        ExpandableDescriptionView(text: book.descriptionText ?? "No description available")
+                        dividerRectangle()
+                            .padding(.top)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal)
-                    relatedBooksView(book: book, viewModel: viewModel, vmsearchResults: $viewModel.searchResultsRelated, isAuthor: false)
-                    relatedBooksView(book: book, viewModel: viewModel, vmsearchResults: $viewModel.searchResultsAuthor, isAuthor: true)
+                    ExpandableDescriptionView(text: book.descriptionText ?? "No description available")
+                        .padding(.leading)
+                        .frame(maxWidth: .infinity)
+                        .padding(.bottom)
+                    detailsGenreView(book: book, viewModel: viewModel)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading)
+                        .padding(.bottom)
+
+                    if let savedBook = book as? SavedBook {
+                        Button {
+                            bookToRemove = savedBook
+                            showRemoveAlert.toggle()
+                        } label: {
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(dominantColor)
+                                //.fill(Color.terracottaDarkIcons)
+                                .frame(width: 150, height: 40)
+                                .overlay{
+                                    Text("Remove book")
+                                        .minimumScaleFactor(0.8)
+                                        .foregroundColor(.white)
+                                        .padding()
+                                }
+                        }
+                        .padding(.bottom)
+                    }
+                    
+                    VStack(alignment: .center, spacing: 8) {
+                        dividerRectangle()
+                    }
+                        relatedBooksView(book: book, viewModel: viewModel, vmsearchResults: $viewModel.searchResultsRelated, isAuthor: false)
+                        relatedBooksView(book: book, viewModel: viewModel, vmsearchResults: $viewModel.searchResultsAuthor, isAuthor: true)
                 }
                 .frame(maxWidth: .infinity)
             }
             .onAppear {
-                let coverURL = URL(string: book.coverURL ?? "")
-                fetchDominantColor(from: coverURL) { color in
-                    dominantColor = color
+                if let coverURL = URL(string: book.coverURL ?? ""){
+                    fetchDominantColor(from: coverURL) { color in
+                        dominantColor = color
+                    }
+                } else {
+                    dominantColor = Color.terracotta
                 }
                 //  Controllo se il libro è già salvato
                 if let alreadySaved = savedBooks.first(where: { $0.id == book.id }) {
@@ -140,7 +169,7 @@ struct BookDetailsView: View {
                     }
                 }
             }
-            .toolbarBackground(dominantColor, for: .navigationBar)
+            .toolbarBackground(dominantColor.opacity(1), for: .navigationBar)
             .toolbarBackgroundVisibility(.visible, for: .navigationBar)
             .navigationBarBackButtonHidden(true)
             .sheet(isPresented: $showEditProgressSheet) {
@@ -157,7 +186,7 @@ struct BookDetailsView: View {
                         do {
                             try context.save()
                             print("🗑️ Removed: \(book.title)")
-
+                            
                             // Torna alla rappresentazione BookAPI
                             self.book = BookAPI(from: book)
                             self.savedBook = nil
@@ -175,6 +204,15 @@ struct BookDetailsView: View {
     }
 }
 
+
+struct dividerRectangle: View {
+    var body: some View {
+        RoundedRectangle(cornerRadius: 3)
+            .fill(Color.gray.opacity(0.5))
+            .frame(width: 150, height: 3, alignment: .center)
+            .padding(.bottom, 20)
+    }
+}
 
 func fetchDominantColor(from url: URL?, completion: @escaping (Color) -> Void) {
     guard let url = url else { return }
@@ -199,18 +237,25 @@ struct detailsGenreView : View {
     var body: some View {
         if let savedBook = book as? SavedBook {
             if let genres = savedBook.genres {
-                Text("Genres (savedbook): \(genres.map { $0.rawValue }.joined(separator: ", "))")
+                Text("Genres: \(genres.map { $0.rawValue }.joined(separator: ", "))")
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.primary)
+                    .foregroundColor(.secondary)
             } else {
                 Text("Genres: None")
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.secondary)
             }
         } else if book is BookAPI {
             if let genres = genres {
-                Text("Genres (Api book): \(genres.map { $0.rawValue }.joined(separator: ", "))")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.primary)
+                if genres == [] || genres == [.unknown] {
+                    Text("Genres: None")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.secondary)
+                } else {
+                    Text("Genres: \(genres.map { $0.rawValue }.joined(separator: ", "))")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.secondary)
+                }
             } else {
                 ProgressView("Fetching genres...")
                     .onAppear {
@@ -264,12 +309,12 @@ struct detailCoverView: View {
                 AsyncImageView(urlString: urlString)
                     .frame(width: 180, height: 280)
                     .cornerRadius(8)
-                    .shadow(radius: 10)
+                    .shadow(color: Color.black.opacity(0.5), radius: 4, x: 4, y: 4)
                     .padding()
             } else {
-                noBookCoverUrlView(width: 180, height: 180, bookTitle: book.title)
+                noBookCoverUrlView(width: 180, height: 280, bookTitle: book.title)
                     .cornerRadius(8)
-                    .shadow(radius: 10)
+                    //.shadow(color: Color.black.opacity(0.5), radius: 4, x: 4, y: 4)
                     .padding()
             }
         }
@@ -279,6 +324,7 @@ struct detailCoverView: View {
 struct RatingView : View {
     var book: SavedBook
     @Environment(\.modelContext) private var context
+    @Environment(\.colorScheme) var colorScheme
     
     var color: Color
     var maximumRating = 5
@@ -288,38 +334,24 @@ struct RatingView : View {
     
     
     var body: some View {
-        
-        if color ==  .gray.opacity(0.2) {
-            HStack(spacing: 4) {
-                ForEach(1...maximumRating, id: \.self) { index in
-                    Image(systemName: "star.fill")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: starSize, height: starSize)
-                        .foregroundColor(.gray)
-                        .shimmering()
-                }
-            }
-        } else {
-            HStack(spacing: 4) {
-                ForEach(1...maximumRating, id: \.self) { index in
-                    Image(systemName: starType(for: index))
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: starSize, height: starSize)
-                        .foregroundColor(color)
-                        .onTapGesture {
-                            withAnimation {
-                                if allowsHalfStars && rating == Double(index) {
-                                    rating = Double(index) - 0.5
-                                } else {
-                                    rating = Double(index)
-                                }
+        HStack(spacing: 4) {
+            ForEach(1...maximumRating, id: \.self) { index in
+                Image(systemName: starType(for: index))
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: starSize, height: starSize)
+                    .foregroundColor(Color.terracotta)
+                    .onTapGesture {
+                        withAnimation {
+                            if allowsHalfStars && rating == Double(index) {
+                                rating = Double(index) - 0.5
+                            } else {
+                                rating = Double(index)
                             }
-                            book.rating = Int(rating)
-                            try? context.save()
                         }
-                }
+                        book.rating = Int(rating)
+                        try? context.save()
+                    }
             }
         }
     }
@@ -341,25 +373,40 @@ struct readingStatusMenuVIew: View {
     var book: SavedBook
     
     var body: some View {
-        Menu {
-            ForEach(ReadingStatus.assignableCases, id: \.self) { status in
-                Button {
-                    book.readingStatus = status
-                    try? context.save()
-                } label: {
-                    Label(status.rawValue.capitalized, systemImage: status.iconName)
+        
+            Menu {
+                ForEach(ReadingStatus.assignableCases, id: \.self) { status in
+                    Button {
+                        book.readingStatus = status
+                        try? context.save()
+                    } label: {
+                        Label(status.rawValue.capitalized, systemImage: status.iconName)
+                    }
                 }
+            } label: {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(book.readingStatus.color)
+                    .frame(height: 50)
+                    .overlay{
+                        HStack {
+                            Text(book.readingStatus.rawValue.capitalized)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .animation(.easeInOut(duration: 0.25), value: book.readingStatus)
             }
-        } label: {
-            Circle()
-                .fill(book.readingStatus.color)
-                .frame(width: 20, height: 20)
-                .overlay(
-                    Circle().stroke(Color.primary.opacity(0.2), lineWidth: 1)
-                )
-                .animation(.easeInOut(duration: 0.25), value: book.readingStatus)
-        }
-        .menuOrder(.fixed)
+            .menuOrder(.fixed)
+            
+            
+            
+            /*Circle()
+             .fill(book.readingStatus.color)
+             .frame(width: 20, height: 20)
+             .overlay(
+             Circle().stroke(Color.primary.opacity(0.2), lineWidth: 1)
+             )
+             .animation(.easeInOut(duration: 0.25), value: book.readingStatus)
+        }*/
     }
 }
 
@@ -415,6 +462,7 @@ struct detailsProgressView: View {
 
 struct detailsBookNotesView: View {
     @Environment(\.modelContext) private var context
+    @Environment(\.colorScheme) var colorScheme
     @State var localNotes: String
     var book: SavedBook
     @Binding var isExpanded: Bool
@@ -427,7 +475,7 @@ struct detailsBookNotesView: View {
             
             ZStack(alignment: .bottomTrailing) {
                 RoundedRectangle(cornerRadius: 14)
-                    .fill(Color.backgroundColorLight)
+                    .fill(colorScheme == .dark ? Color.backgroundColorDark2 : Color.backgroundColorLight)
                 
                 VStack(alignment: .leading, spacing: 8) {
                     ZStack(alignment: .topLeading) {
@@ -549,14 +597,16 @@ struct ExpandableDescriptionView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Description")
                 .font(.system(size: 18, weight: .semibold, design: .serif))
+                .frame(maxWidth: .infinity, alignment: .leading)
             
             Text(text)
-                .font(.system(size: 16, weight: .semibold, design: .serif))
+                .font(.system(size: 15, weight: .semibold, design: .serif))
                 .foregroundColor(.secondary)
                 .lineLimit(isExpanded ? nil : 8)
                 .animation(.easeInOut, value: isExpanded)
+                .frame(maxWidth: .infinity, alignment: .leading)
             
-            if text.count > 200 { // puoi regolare il valore secondo le tue esigenze
+            if text.count > 200 {
                 Button(isExpanded ? "Less" : "More") {
                     withAnimation {
                         isExpanded.toggle()

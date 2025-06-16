@@ -41,11 +41,11 @@ struct ContentView: View {
         
         if scheme == .dark {
             appearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
-            appearance.backgroundColor = UIColor(.backgroundColorDark2).withAlphaComponent(0.5)
+            appearance.backgroundColor = UIColor(.backgroundColorDark2).withAlphaComponent(0.7)
         }
         else {
             appearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterialLight)
-            appearance.backgroundColor = UIColor(.backgroundColorLight).withAlphaComponent(0.8)
+            appearance.backgroundColor = UIColor(.backgroundColorLight).withAlphaComponent(0.7)
         }
         
         UITabBar.appearance().standardAppearance = appearance

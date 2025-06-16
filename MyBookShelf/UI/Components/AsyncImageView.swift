@@ -3,7 +3,7 @@ import UIKit
 
 struct AsyncImageView: View {
     let urlString: String?
-    
+    @Environment(\.colorScheme) var colorScheme
     @State private var image: Image? = nil
     @State private var isLoading = false
     @State private var attemptedFallback = false
@@ -16,8 +16,13 @@ struct AsyncImageView: View {
                     .aspectRatio(contentMode: .fill)
             } else {
                 ZStack {
-                    Color.gray.opacity(0.3)
-                        .shimmering()
+                    if colorScheme == .dark {
+                        Color.gray
+                            .shimmering()
+                    } else {
+                        Color.gray.opacity(0.3)
+                            .shimmering()
+                    }
                 }
                 .onAppear {
                     loadImage(highQuality: true)
@@ -135,6 +140,7 @@ struct AsyncImageView: View {
 
 
 struct noBookCoverUrlView : View {
+    @Environment(\.colorScheme) var colorScheme
     var width: CGFloat
     var height: CGFloat
     var bookTitle: String
@@ -142,17 +148,18 @@ struct noBookCoverUrlView : View {
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 8)
-                .fill(Color.gray.opacity(0.2))
+                .fill(colorScheme == .dark ? Color.black.opacity(0.6) : Color.gray.opacity(0.2))
                 .frame(width: width, height: height)
-                .shadow(radius: 2)
+                .shadow(color: Color.black.opacity(0.5), radius: 4, x: 4, y: 4)
                 .overlay {
                     Text(bookTitle)
                         .padding(.horizontal, width/10)
                         .minimumScaleFactor(0.5)
                         .frame(maxHeight: height/2)
                     //.lineLimit(2)
-                        .foregroundColor(.black)
+                        .foregroundColor(colorScheme == .dark ? .white : .black)
                         .fontDesign(.serif)
+                        .multilineTextAlignment(.leading)
                 }
             RoundedRectangle(cornerRadius: 8)
                 .fill(Color.clear)
@@ -164,5 +171,6 @@ struct noBookCoverUrlView : View {
 
 
 #Preview {
+    AsyncImageView(urlString: "https://covers.openlibrary.org/b/id/10521283-L.jpg")
     noBookCoverUrlView(width: 100, height: 150, bookTitle: "Il signore degli anelli")
 }

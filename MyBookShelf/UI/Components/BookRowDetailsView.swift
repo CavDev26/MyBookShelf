@@ -10,22 +10,32 @@ struct BookRowDetailsView<T: BookRepresentable>: View {
         } else {
             noBookCoverUrlView(width: 60, height: 100, bookTitle: book.title)
         }
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 6) {
                         
             Text(book.title)
                 .font(.system(size: 16, weight: .semibold))
+                .fontDesign(.serif)
                 .foregroundColor(.primary)
                 .lineLimit(1)
             
             Text(book.authors.joined(separator: ", "))
                 .font(.system(size: 13))
+                .fontDesign(.serif)
                 .foregroundColor(.secondary)
                 .lineLimit(1)
             
             Text(book.publisher == "Unknown" ? " " : book.publisher)
                 .font(.system(size: 13))
+                .fontDesign(.serif)
                 .foregroundColor(.secondary)
                 .lineLimit(1)
-        }    }
+        }
+        .padding(.bottom)
+    }
 }
 
+#Preview {
+    @Previewable @State var selectedTab = 1
+    return MyBooksView2(selectedTab: $selectedTab)
+        .modelContainer(PreviewData2.makeModelContainer())
+}

@@ -37,7 +37,8 @@ struct BookListItemGrid: View {
 
 struct BookListItemList: View {
     var book: SavedBook
-    
+    @Environment(\.colorScheme) var colorScheme
+
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
             BookRowDetailsView(book: book)
@@ -47,8 +48,8 @@ struct BookListItemList: View {
         .background (
             ZStack(alignment: .bottomTrailing) {
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(Color(.systemBackground))
-                    .shadow(color: .black.opacity(0.06), radius: 4, x: 2, y: 2)
+                    .fill(colorScheme == .dark ? Color.backgroundColorDark2 : Color.backgroundColorLight)
+                    .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
                 Circle()
                     .fill(book.readingStatus.color)
                     .frame(width: 15, height: 15)

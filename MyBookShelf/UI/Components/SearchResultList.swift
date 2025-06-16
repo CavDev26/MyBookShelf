@@ -183,7 +183,7 @@ struct SearchResultList: View {
                     .padding()
                     .background(
                         RoundedRectangle(cornerRadius: 12)
-                            .fill(Color(.systemBackground))
+                            .fill(colorScheme == .dark ? Color.backgroundColorDark2 : Color.backgroundColorLight)
                             .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
                     )
                     .padding(.horizontal)
@@ -212,6 +212,7 @@ struct SearchResultList: View {
 
 
 struct addBookButtonView: View {
+    var color: Color?
     var isSaved: Bool
     var body: some View {
         ZStack {
@@ -229,7 +230,8 @@ struct addBookButtonView: View {
             .padding(.horizontal, 4)
         }
         .frame(maxWidth: .infinity)
-        .background(isSaved ? Color.pastelGreen : Color.terracotta)
+        .background(color == nil ? isSaved ? Color.pastelGreen : Color.terracotta : color)
+        //.background(isSaved ? Color.pastelGreen : Color.terracotta)
         .clipShape(RoundedRectangle(cornerRadius: 6))
         .animation(.easeInOut(duration: 0.25), value: isSaved)
     }
@@ -257,16 +259,19 @@ struct BookRowView: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text(book.title)
                     .font(.system(size: 16, weight: .semibold))
+                    .fontDesign(.serif)
                     .foregroundColor(.primary)
                     .lineLimit(1)
                 
                 Text(book.authors.joined(separator: ", "))
                     .font(.system(size: 13))
+                    .fontDesign(.serif)
                     .foregroundColor(.secondary)
                     .lineLimit(1)
                 
                 Text(book.publisher == "Unknown" ? " " : book.publisher)
                     .font(.system(size: 13))
+                    .fontDesign(.serif)
                     .foregroundColor(.secondary)
                     .lineLimit(1)
                 
@@ -302,6 +307,46 @@ struct BookRowView: View {
     }
 }
 
+struct SearchResultListPreview: View {
+    @Environment(\.colorScheme) var colorScheme
+    var body: some View {
+        ForEach (0..<6) { i in
+            HStack(alignment: .top, spacing: 12) {
+                
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(colorScheme == .dark ? Color.black.opacity(0.6) : Color.gray.opacity(0.5))
+                    .frame(width: 60, height: 100)
+                    .redacted(reason: .placeholder)
+                    .shimmering()
+                
+                VStack(alignment: .leading, spacing: 6) {
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(colorScheme == .dark ? Color.black.opacity(0.6) : Color.gray.opacity(0.5))
+                        .frame(height: 20)
+                        .frame(maxWidth: 100)
+                        .shimmering()
+                    Spacer()
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(colorScheme == .dark ? Color.black.opacity(0.6) : Color.gray.opacity(0.5))
+                        .frame(height: 20)
+                        .frame(maxWidth: .infinity)
+                        .shimmering()
+                }
+                .padding(.top, 4)
+            }
+            .frame(maxWidth: .infinity)
+            .shimmering()
+            .padding()
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(colorScheme == .dark ? Color.backgroundColorDark2 : Color.backgroundColorLight)
+                    .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+            )
+            .padding(.horizontal)
+        }
+        .padding(.top, 8)
+    }
+}
 
 #Preview {
     AddBooksView()
