@@ -6,11 +6,13 @@ import SwiftUI
 class AuthManager: ObservableObject {
     @Published var isLoggedIn: Bool = false
     @Published var email: String = ""
+    @Published var uid: String = ""
 
     init() {
         let user = Auth.auth().currentUser
         self.isLoggedIn = user != nil
         self.email = user?.email ?? ""
+        self.uid = user?.uid ?? ""
     }
 
     func login(email: String, password: String, completion: @escaping (String?) -> Void) {
@@ -21,6 +23,7 @@ class AuthManager: ObservableObject {
                 DispatchQueue.main.async {
                     self.isLoggedIn = true
                     self.email = user.email ?? ""
+                    self.uid = user.uid
                 }
                 completion(nil)
             }
@@ -35,6 +38,7 @@ class AuthManager: ObservableObject {
                 DispatchQueue.main.async {
                     self.isLoggedIn = true
                     self.email = user.email ?? ""
+                    self.uid = user.uid
                 }
                 completion(nil)
             }
@@ -47,6 +51,7 @@ class AuthManager: ObservableObject {
             DispatchQueue.main.async {
                 self.isLoggedIn = false
                 self.email = ""
+                self.uid = ""
             }
         } catch {
             print("Logout error: \(error.localizedDescription)")

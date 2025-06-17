@@ -7,6 +7,7 @@ struct SearchResultList: View {
     @Environment(\.colorScheme) var colorScheme
     @State private var showRemoveAlert = false
     @State private var bookToRemove: SavedBook? = nil
+    @EnvironmentObject var auth: AuthManager
     
     @ObservedObject var viewModel: CombinedGenreSearchViewModel
     
@@ -195,6 +196,9 @@ struct SearchResultList: View {
                             do {
                                 try context.save()
                                 print("🗑️ Removed: \(book.title)")
+                                if !auth.uid.isEmpty {
+                                    FirebaseBookService.shared.deleteBook(bookID: book.id, for: auth.uid)
+                                }
                             } catch {
                                 print("❌ Delete error: \(error)")
                             }

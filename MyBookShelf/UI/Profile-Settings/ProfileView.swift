@@ -9,11 +9,10 @@ import SwiftUI
 
 struct ProfileView: View {
     @Environment(\.colorScheme) var colorScheme
-    
     @EnvironmentObject var auth: AuthManager
+    @State private var showLogoutConfirmation = false
 
     @AppStorage("isDarkMode") private var isDarkMode: Bool = false
-    //@AppStorage("isLoggedIn") private var isLoggedIn: Bool = false
     @AppStorage("username") private var username: String = ""
     
     var body: some View {
@@ -95,9 +94,17 @@ struct ProfileView: View {
                             }
                             
                             Button(role: .destructive) {
-                                auth.logout()
+                                showLogoutConfirmation = true
                             } label: {
                                 Label("Logout", systemImage: "rectangle.portrait.and.arrow.forward")
+                            }
+                            .alert("Are you sure you want to logout?", isPresented: $showLogoutConfirmation) {
+                                Button("Cancel", role: .cancel) { }
+                                Button("Logout", role: .destructive) {
+                                    auth.logout()
+                                }
+                            } message: {
+                                Text("This action will disconnect your account.")
                             }
                             
                         }.listRowBackground(colorScheme == .dark ? Color.backgroundColorDark2 : Color.backgroundColorLight)

@@ -12,12 +12,12 @@ class SavedBook {
     var pageCount: Int?
     var bookDescription: String?
     var publishedDate: String?
-    var industryIdentifiers: [IndustryIdentifierModel]
+    var industryIdentifiers: [IndustryIdentifierModel] = []
     var categories: [String]?
     var mainCategory: String?
     var averageRating: Double?
     var ratingsCount: Int?
-    var favourite: Bool
+    var favourite: Bool = false
 
     var readingStatus: ReadingStatus
     var pagesRead: Int

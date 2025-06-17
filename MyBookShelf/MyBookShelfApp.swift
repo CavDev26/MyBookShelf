@@ -22,8 +22,8 @@ struct MyBookShelfApp: App {
             StartupView()
                 .environmentObject(authManager) // 👈
         }
-        .modelContainer(container2)
-        //.modelContainer(for: SavedBook.self)
+        //.modelContainer(container2)
+        .modelContainer(for: SavedBook.self)
 
         //.modelContainer(container)
     }

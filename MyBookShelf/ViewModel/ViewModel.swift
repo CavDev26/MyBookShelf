@@ -3,6 +3,29 @@ import SwiftData
 import AVFoundation
 import SwiftUICore
 import Combine
+import FirebaseAuth
+
+
+
+
+
+extension ModelContext {
+    func saveAndSync(for uid: String) throws {
+        try self.save()
+
+        let allBooks = try self.fetch(FetchDescriptor<SavedBook>())
+        for book in allBooks {
+            let firestoreBook = FirebaseBookMapper.toFirestore(book)
+            FirebaseBookService.shared.upload(book: firestoreBook, for: uid)
+        }
+
+        print("✅ Synced all local books to Firestore")
+    }
+}
+
+
+
+
 
 class CombinedGenreSearchViewModel: ObservableObject {
     @Published var searchResults: [BookAPI] = []
@@ -323,10 +346,15 @@ class CombinedGenreSearchViewModel: ObservableObject {
         do {
             try context.save()
             print("✅ Saved: \(saved.title)")
+            
+            // 🔥 Upload iniziale senza generi
+            if let uid = Auth.auth().currentUser?.uid {
+                let firestoreBook = FirebaseBookMapper.toFirestore(saved)
+                FirebaseBookService.shared.upload(book: firestoreBook, for: uid)
+            }
         } catch {
             print("❌ Save error: \(error)")
         }
-
         fetchGenreFromOpenLibrary(title: book.title) { genre in
             guard let genre else { return }
 
@@ -335,6 +363,12 @@ class CombinedGenreSearchViewModel: ObservableObject {
                 do {
                     try context.save()
                     print("✅ Genre saved: \(genre)")
+                    
+                    // 🔁 Upload aggiornato con genere
+                    if let uid = Auth.auth().currentUser?.uid {
+                        let firestoreBook = FirebaseBookMapper.toFirestore(saved)
+                        FirebaseBookService.shared.upload(book: firestoreBook, for: uid)
+                    }
                 } catch {
                     print("❌ Error saving genre: \(error)")
                 }

@@ -225,3 +225,30 @@ extension UIApplication {
         sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil) //to dismiss the keyboard
     }
 }
+
+
+
+
+func convertISBN13ToISBN10(_ isbn13: String) -> String? {
+    guard isbn13.hasPrefix("978"), isbn13.count == 13 else { return nil }
+
+    let core = isbn13.dropFirst(3).dropLast()
+    guard core.allSatisfy({ $0.isNumber }) else { return nil }
+
+    let digits = core.compactMap { Int(String($0)) }
+    guard digits.count == 9 else { return nil }
+
+    let sum = digits.enumerated().reduce(0) {
+        $0 + (10 - $1.offset) * $1.element
+    }
+    let remainder = 11 - (sum % 11)
+    let checkDigit: String
+
+    switch remainder {
+    case 10: checkDigit = "X"
+    case 11: checkDigit = "0"
+    default: checkDigit = "\(remainder)"
+    }
+
+    return core + checkDigit
+}

@@ -65,9 +65,8 @@ struct progressViewBook: View {
     var book: SavedBook
     
     var progress: CGFloat {
-        
-        guard book.pageCount! > 0 else { return 0 }
-        return CGFloat(book.pagesRead) / CGFloat(book.pageCount!)
+        guard let pageCount = book.pageCount, pageCount > 0 else { return 0 }
+        return CGFloat(book.pagesRead) / CGFloat(pageCount)
     }
     
     var body: some View {

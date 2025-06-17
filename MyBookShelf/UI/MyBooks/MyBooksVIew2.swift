@@ -1,10 +1,12 @@
 import SwiftData
+//import FirebaseAuth
 import SwiftUI
 
 struct MyBooksView2: View {
     
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject var auth: AuthManager
     @State var isViewGrid: Bool = true
     @State private var isExpanded = false
     @Namespace private var searchNamespace
@@ -99,6 +101,10 @@ struct MyBooksView2: View {
                     }
                     .animation(.easeInOut(duration: 0.3), value: isViewGrid)
                 }
+            }
+        }.onAppear {
+            if !auth.uid.isEmpty {
+                FirebaseBookService.shared.syncBooksToLocal(for: auth.uid, context: modelContext)
             }
         }
     }

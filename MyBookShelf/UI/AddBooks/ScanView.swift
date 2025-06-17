@@ -5,10 +5,11 @@ import AVFoundation
 struct ScanView: View {
     @Environment(\.dismiss) var dismiss
     @StateObject private var scanner = ScannerViewModel()
+    @EnvironmentObject var auth: AuthManager
     @Binding var searchText: String
     @State var lastSearchText: String
     @State private var scannedBook: BookAPI? = nil
-    @StateObject private var vm = CombinedGenreSearchViewModel()
+    @StateObject private var viewModel = CombinedGenreSearchViewModel()
     @Environment(\.modelContext) private var context
     @State private var lastScannedISBN: String? = nil
     
@@ -38,7 +39,7 @@ struct ScanView: View {
                 if let book = scannedBook {
                     VStack {
                         Spacer()
-                        if !vm.isLoading {
+                        if !viewModel.isLoading {
                             
                             VStack(spacing: 12) {
                                 if let urlString = book.coverURL, let url = URL(string: urlString) {
@@ -64,18 +65,7 @@ struct ScanView: View {
                                 HStack(spacing: 8) {
                                     Button(action: {
                                         if !isSaved {
-                                            let saved = SavedBook(from: book)
-                                            context.insert(saved)
-                                            withAnimation(.easeInOut(duration: 0.3)) {
-                                                DispatchQueue.main.async {
-                                                    do {
-                                                        try context.save()
-                                                        print("✅ Saved: \(saved.title)")
-                                                    } catch {
-                                                        print("❌ Save error: \(error)")
-                                                    }
-                                                }
-                                            }
+                                            viewModel.saveBook(book, context: context)
                                         } else {
                                             if let existing = savedBooks.first(where: { $0.id == book.id }) {
                                                 bookToRemove = existing
@@ -155,6 +145,9 @@ struct ScanView: View {
                     context.delete(book)
                     do {
                         try context.save()
+                        if !auth.uid.isEmpty {
+                            FirebaseBookService.shared.deleteBook(bookID: book.id, for: auth.uid)
+                        }
                         print("🗑️ Removed: \(book.title)")
                     } catch {
                         print("❌ Delete error: \(error)")
@@ -167,12 +160,23 @@ struct ScanView: View {
         }
     }
 
+    
     func fetchBookForScanner(for isbn: String) {
-        vm.searchBooks(query: isbn, reset: true) { success in
-            if success, let book = vm.searchResults.first {
+        viewModel.searchBooks(query: "isbn:\(isbn)", reset: true) { success in
+            if success, let book = viewModel.searchResults.first {
                 scannedBook = book
+            } else if let fallbackISBN = convertISBN13ToISBN10(isbn) {
+                print("🔁 Retry with ISBN-10: \(fallbackISBN)")
+                viewModel.searchBooks(query: "isbn:\(fallbackISBN)", reset: true) { fallbackSuccess in
+                    if fallbackSuccess, let book = viewModel.searchResults.first {
+                        scannedBook = book
+                    } else {
+                        print("❌ Nessun libro trovato per ISBN-13 o ISBN-10")
+                        scannedBook = nil
+                    }
+                }
             } else {
-                print("❌ Nessun libro trovato per ISBN: \(isbn)")
+                print("❌ Nessun libro trovato e ISBN-13 non convertibile")
                 scannedBook = nil
             }
         }

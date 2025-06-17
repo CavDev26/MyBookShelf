@@ -7,6 +7,7 @@ import CoreImage
 struct BookDetailsView: View {
     @State var book: BookRepresentable
     @State private var savedBook: SavedBook? = nil
+    @EnvironmentObject var auth: AuthManager
     
     @State private var dominantColor: Color = .gray.opacity(0.2)
     @State private var titleOffset: CGFloat = .infinity
@@ -187,6 +188,9 @@ struct BookDetailsView: View {
                             try context.save()
                             print("🗑️ Removed: \(book.title)")
                             
+                            if !auth.uid.isEmpty {
+                                FirebaseBookService.shared.deleteBook(bookID: book.id, for: auth.uid)
+                            }
                             // Torna alla rappresentazione BookAPI
                             self.book = BookAPI(from: book)
                             self.savedBook = nil
@@ -199,6 +203,11 @@ struct BookDetailsView: View {
                 Button("Cancel", role: .cancel) { }
             } message: { book in
                 Text("Are you sure you want to remove \"\(book.title)\" from your library?")
+            }
+        }
+        .onDisappear {
+            if !auth.uid.isEmpty {
+                try? context.saveAndSync(for: auth.uid)
             }
         }
     }

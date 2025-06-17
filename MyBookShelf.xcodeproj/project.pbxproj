@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		DA4D1C122E017AA800798108 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = DA4D1C112E017AA800798108 /* FirebaseAuth */; };
 		DA4D1C142E017AA800798108 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = DA4D1C132E017AA800798108 /* FirebaseCore */; };
+		DA4D1C202E01A27500798108 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = DA4D1C1F2E01A27500798108 /* FirebaseFirestore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,6 +60,7 @@
 			files = (
 				DA4D1C142E017AA800798108 /* FirebaseCore in Frameworks */,
 				DA4D1C122E017AA800798108 /* FirebaseAuth in Frameworks */,
+				DA4D1C202E01A27500798108 /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -121,6 +123,7 @@
 			packageProductDependencies = (
 				DA4D1C112E017AA800798108 /* FirebaseAuth */,
 				DA4D1C132E017AA800798108 /* FirebaseCore */,
+				DA4D1C1F2E01A27500798108 /* FirebaseFirestore */,
 			);
 			productName = MyBookShelf;
 			productReference = DA58887A2DE32538001687EE /* MyBookShelf.app */;
@@ -594,6 +597,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = DA4D1C102E017AA800798108 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseCore;
+		};
+		DA4D1C1F2E01A27500798108 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DA4D1C102E017AA800798108 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
