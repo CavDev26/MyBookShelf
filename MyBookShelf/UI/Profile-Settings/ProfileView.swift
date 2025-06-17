@@ -9,8 +9,11 @@ import SwiftUI
 
 struct ProfileView: View {
     @Environment(\.colorScheme) var colorScheme
+    
+    @EnvironmentObject var auth: AuthManager
+
     @AppStorage("isDarkMode") private var isDarkMode: Bool = false
-    @AppStorage("isLoggedIn") private var isLoggedIn: Bool = false
+    //@AppStorage("isLoggedIn") private var isLoggedIn: Bool = false
     @AppStorage("username") private var username: String = ""
     
     var body: some View {
@@ -30,7 +33,7 @@ struct ProfileView: View {
                     }
                     List {
                         Section {
-                            if isLoggedIn {
+                            if auth.isLoggedIn {
                                     HStack {
                                         Image(systemName: "person.crop.circle.fill")
                                             .resizable()
@@ -38,7 +41,7 @@ struct ProfileView: View {
                                             .foregroundColor(.gray)
                                         
                                         VStack(alignment: .leading) {
-                                            Text(username)
+                                            Text(auth.email)
                                                 .font(.headline)
                                             Text("Apple ID, iCloud, and more")
                                                 .font(.subheadline)
@@ -90,72 +93,19 @@ struct ProfileView: View {
                             NavigationLink(destination: Text("About View")) {
                                 Label("About", systemImage: "info.circle")
                             }
+                            
+                            Button(role: .destructive) {
+                                auth.logout()
+                            } label: {
+                                Label("Logout", systemImage: "rectangle.portrait.and.arrow.forward")
+                            }
+                            
                         }.listRowBackground(colorScheme == .dark ? Color.backgroundColorDark2 : Color.backgroundColorLight)
                     }
                     .scrollContentBackground(.hidden)
                     .listStyle(.insetGrouped)
                 }
                 
-            }
-        }
-    }
-}
-
-
-struct AuthView: View {
-    @AppStorage("isLoggedIn") private var isLoggedIn = false
-    @AppStorage("username") private var savedUsername = ""
-    @AppStorage("password") private var savedPassword = ""
-
-    @State private var username = ""
-    @State private var password = ""
-    @State private var isRegistering = false
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        VStack(spacing: 20) {
-            Text(isRegistering ? "Registrati" : "Accedi")
-                .font(.title)
-                .bold()
-
-            TextField("Username", text: $username)
-                .textFieldStyle(.roundedBorder)
-                .autocapitalization(.none)
-
-            SecureField("Password", text: $password)
-                .textFieldStyle(.roundedBorder)
-
-            Button(isRegistering ? "Registrati" : "Accedi") {
-                handleAuth()
-            }
-            .buttonStyle(.borderedProminent)
-
-            Button(isRegistering ? "Hai già un account? Accedi" : "Non hai un account? Registrati") {
-                isRegistering.toggle()
-            }
-            .font(.footnote)
-            .padding(.top)
-
-            Spacer()
-        }
-        .padding()
-    }
-
-    func handleAuth() {
-        if isRegistering {
-            // Registrazione
-            savedUsername = username
-            savedPassword = password
-            isLoggedIn = true
-            dismiss()
-        } else {
-            // Login
-            if username == savedUsername && password == savedPassword {
-                isLoggedIn = true
-                dismiss()
-            } else {
-                // Puoi mostrare un alert qui
-                print("❌ Username o password errati")
             }
         }
     }

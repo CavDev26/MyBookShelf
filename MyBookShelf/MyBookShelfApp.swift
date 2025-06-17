@@ -7,14 +7,20 @@
 
 import SwiftData
 import SwiftUI
+import Firebase
 
 @main
 struct MyBookShelfApp: App {
-    
-    
+    @StateObject private var authManager = AuthManager() // 👈
+
+    init() {
+        FirebaseApp.configure()
+    }
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            StartupView()
+                .environmentObject(authManager) // 👈
         }
         .modelContainer(container2)
         //.modelContainer(for: SavedBook.self)
