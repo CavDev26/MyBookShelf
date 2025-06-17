@@ -3,6 +3,8 @@ import SwiftUI
 struct ContentView: View {
     @Environment(\.colorScheme) var colorScheme
     @State private var selectedTab = 0
+    @AppStorage("isDarkMode") private var isDarkMode: Bool = false
+    @State private var forceUpdate = false
     
     var body: some View {
         ZStack {
@@ -23,27 +25,29 @@ struct ContentView: View {
                     .tabItem { Label("Profile", systemImage: "person.crop.circle") }
                     .tag(3)
             }
-            .tint(colorScheme == .dark ? .terracottaDarkIcons
-                  : .peachColorIcons
-            )
-            .onAppear {
-                setTabBarAppearance(for: colorScheme)
+            .id(forceUpdate)
+            .onChange(of: isDarkMode) {
+                forceUpdate.toggle()
             }
-            .onChange(of: colorScheme) { newScheme in
-                setTabBarAppearance(for: newScheme)
+            .preferredColorScheme(isDarkMode ? .dark : .light)
+            .tint(isDarkMode ? .terracottaDarkIcons : .peachColorIcons)
+            .onAppear {
+                setTabBarAppearance(isDarkMode: isDarkMode)
+            }
+            .onChange(of: isDarkMode) {
+                setTabBarAppearance(isDarkMode: isDarkMode)
             }
         }
     }
     
-    private func setTabBarAppearance(for scheme: ColorScheme) {
+    private func setTabBarAppearance(isDarkMode: Bool) {
         let appearance = UITabBarAppearance()
         appearance.configureWithDefaultBackground()
         
-        if scheme == .dark {
+        if isDarkMode {
             appearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
             appearance.backgroundColor = UIColor(.backgroundColorDark2).withAlphaComponent(0.7)
-        }
-        else {
+        } else {
             appearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterialLight)
             appearance.backgroundColor = UIColor(.backgroundColorLight).withAlphaComponent(0.7)
         }
