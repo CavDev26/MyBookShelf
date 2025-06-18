@@ -8,6 +8,7 @@ struct BookDetailsView: View {
     @State var book: BookRepresentable
     @State private var savedBook: SavedBook? = nil
     @EnvironmentObject var auth: AuthManager
+    var openSheetOnAppear: Bool = false // 👈 nuovo parametro
     
     @State private var dominantColor: Color = .gray.opacity(0.2)
     @State private var titleOffset: CGFloat = .infinity
@@ -43,11 +44,11 @@ struct BookDetailsView: View {
                             .padding(.horizontal)
                     }
                     .padding(.bottom, 15)
-                                        
+                    
                     VStack(alignment: .center, spacing: 8) {
                         if let savedBook = book as? SavedBook {
                             dividerRectangle()
-
+                            
                             HStack {
                                 readingStatusMenuVIew(book: savedBook)
                                 
@@ -57,7 +58,13 @@ struct BookDetailsView: View {
                             .padding(.bottom)
                             
                             
-                            detailsProgressView(showEditProgressSheet: $showEditProgressSheet, book: savedBook)
+                            if savedBook.readingStatus == .reading {
+                                detailsProgressView(showEditProgressSheet: $showEditProgressSheet, book: savedBook)
+                                    .padding(.bottom)
+                                    .padding(.top)
+                                    .transition(.scale)
+                                    //.transition(.opacity.combined(with: .move(edge: .top)))
+                            }
                             
                             detailsBookNotesView(localNotes: savedBook.userNotes, book: savedBook, isExpanded: $isExpanded)
                         } else {
@@ -96,7 +103,7 @@ struct BookDetailsView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.leading)
                         .padding(.bottom)
-
+                    
                     if let savedBook = book as? SavedBook {
                         Button {
                             bookToRemove = savedBook
@@ -104,7 +111,7 @@ struct BookDetailsView: View {
                         } label: {
                             RoundedRectangle(cornerRadius: 8)
                                 .fill(dominantColor)
-                                //.fill(Color.terracottaDarkIcons)
+                            //.fill(Color.terracottaDarkIcons)
                                 .frame(width: 150, height: 40)
                                 .overlay{
                                     Text("Remove book")
@@ -119,8 +126,8 @@ struct BookDetailsView: View {
                     VStack(alignment: .center, spacing: 8) {
                         dividerRectangle()
                     }
-                        relatedBooksView(book: book, viewModel: viewModel, vmsearchResults: $viewModel.searchResultsRelated, isAuthor: false)
-                        relatedBooksView(book: book, viewModel: viewModel, vmsearchResults: $viewModel.searchResultsAuthor, isAuthor: true)
+                    relatedBooksView(book: book, viewModel: viewModel, vmsearchResults: $viewModel.searchResultsRelated, isAuthor: false)
+                    relatedBooksView(book: book, viewModel: viewModel, vmsearchResults: $viewModel.searchResultsAuthor, isAuthor: true)
                 }
                 .frame(maxWidth: .infinity)
             }
@@ -137,6 +144,13 @@ struct BookDetailsView: View {
                     self.book = alreadySaved
                     self.savedBook = alreadySaved
                     self.isSaved = true
+                }
+                
+                if openSheetOnAppear {
+                    // 👇 apre direttamente lo sheet al primo rendering
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        showEditProgressSheet = true
+                    }
                 }
             }
             .navigationTitle("")
@@ -215,9 +229,10 @@ struct BookDetailsView: View {
 
 
 struct dividerRectangle: View {
+    @Environment(\.colorScheme) var colorScheme
     var body: some View {
         RoundedRectangle(cornerRadius: 3)
-            .fill(Color.gray.opacity(0.5))
+            .fill(colorScheme == .dark ? Color.white.opacity(0.5) : Color.gray.opacity(0.5))
             .frame(width: 150, height: 3, alignment: .center)
             .padding(.bottom, 20)
     }
@@ -323,7 +338,7 @@ struct detailCoverView: View {
             } else {
                 noBookCoverUrlView(width: 180, height: 280, bookTitle: book.title)
                     .cornerRadius(8)
-                    //.shadow(color: Color.black.opacity(0.5), radius: 4, x: 4, y: 4)
+                //.shadow(color: Color.black.opacity(0.5), radius: 4, x: 4, y: 4)
                     .padding()
             }
         }
@@ -380,48 +395,48 @@ struct RatingView : View {
 struct readingStatusMenuVIew: View {
     @Environment(\.modelContext) private var context
     var book: SavedBook
+
     
     var body: some View {
-        
-            Menu {
-                ForEach(ReadingStatus.assignableCases, id: \.self) { status in
-                    Button {
-                        book.readingStatus = status
-                        try? context.save()
-                    } label: {
-                        Label(status.rawValue.capitalized, systemImage: status.iconName)
+        Menu {
+            ForEach(ReadingStatus.assignableCases, id: \.self) { status in
+                Button {
+                    let previousStatus = book.readingStatus
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                            book.readingStatus = status
+                            
+                            if status == .read {
+                                book.pagesRead = book.pageCount ?? 0
+                            } else if status == .reading && previousStatus != .reading {
+                                book.pagesRead = 0
+                            }
+                        }
+
+                    try? context.save()
+                } label: {
+                    Label(status.rawValue.capitalized, systemImage: status.iconName)
+                }
+            }
+        } label: {
+            RoundedRectangle(cornerRadius: 8)
+                .fill(book.readingStatus.color)
+                .frame(height: 50)
+                .overlay{
+                    HStack {
+                        Text(book.readingStatus.rawValue.capitalized)
+                            .foregroundColor(.secondary)
                     }
                 }
-            } label: {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(book.readingStatus.color)
-                    .frame(height: 50)
-                    .overlay{
-                        HStack {
-                            Text(book.readingStatus.rawValue.capitalized)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    .animation(.easeInOut(duration: 0.25), value: book.readingStatus)
-            }
-            .menuOrder(.fixed)
-            
-            
-            
-            /*Circle()
-             .fill(book.readingStatus.color)
-             .frame(width: 20, height: 20)
-             .overlay(
-             Circle().stroke(Color.primary.opacity(0.2), lineWidth: 1)
-             )
-             .animation(.easeInOut(duration: 0.25), value: book.readingStatus)
-        }*/
+                .animation(.easeInOut(duration: 0.25), value: book.readingStatus)
+        }
+        .menuOrder(.fixed)
     }
 }
 
 struct detailsProgressView: View {
     @Binding var showEditProgressSheet: Bool
     @State var size: CGSize = .zero
+    @Environment(\.colorScheme) var colorScheme
     var book: SavedBook
     var progress: CGFloat {
         
@@ -430,38 +445,52 @@ struct detailsProgressView: View {
     }
     
     var body: some View {
-        if book.readingStatus == .reading || book.readingStatus == .read {
+        if book.readingStatus == .reading /*|| book.readingStatus == .read*/ {
             VStack(alignment: .leading, spacing: 6) {
+                Text("Progress")
+                    .font(.system(size: 18, weight: .semibold, design: .serif))
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 ZStack(alignment: .leading) {
                     Capsule()
-                        .fill(Color.gray.opacity(0.2))
-                        .frame(height: 8)
+                        .fill(colorScheme == .dark ? Color.white.opacity(0.2) : Color.gray.opacity(0.2))
+                        .frame(height: 10)
                         .saveSize(in: $size)
                     
                     Capsule()
                         .fill(Color.terracottaDarkIcons)
-                        .frame(width: progress * size.width, height: 8)
+                        .frame(width: progress * size.width, height: 10)
+                        .animation(.easeInOut(duration: 0.5), value: book.pagesRead)
                 }.padding(.top)
                 
-                HStack(spacing: 8) {
-                    Text("\(Int(progress * 100))%")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    //.padding(.trailing, 10)
+                ZStack {
+                    HStack {
+                        Text("\(Int(progress * 100))%")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(.secondary)
+                            .padding(.leading)
+                        
+                        Spacer()
+                    }
                     
-                    
-                    Button(action: {
-                        showEditProgressSheet.toggle()
-                    }) {
-                        Text("Update")
-                            .font(.caption)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.5)
-                        //.padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.terracottaDarkIcons.opacity(0.15))
-                            .foregroundColor(.terracottaDarkIcons)
-                            .clipShape(Capsule())
+                    HStack {
+                        Spacer()
+                        
+                        Button(action: {
+                            showEditProgressSheet.toggle()
+                        }) {
+                            Text("Update")
+                                .font(.caption)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.5)
+                                .frame(width: 100)
+                                .padding(.vertical, 6)
+                                .background(Color.terracotta)
+                                .foregroundColor(Color.secondary)
+                            //.foregroundColor(colorScheme == .dark ? Color.white : Color.secondary)
+                                .clipShape(RoundedRectangle(cornerRadius: 6))
+                        }
+                        
+                        Spacer()
                     }
                 }
             }
@@ -630,14 +659,115 @@ struct ExpandableDescriptionView: View {
 
 
 
-
 struct EditProgressSheetView: View {
-    var book: SavedBook
+    @Environment(\.dismiss) var dismiss
+    @Environment(\.modelContext) private var context
+    @Environment(\.colorScheme) var colorScheme
+    @EnvironmentObject var auth: AuthManager
+    
+    @State private var usePercentage = false
+    @State private var inputValue: String = ""
+    @State private var tooltipVisible = false
+    @State private var isEditingPageCount = false
+    @State private var tempPageCount: String = ""
+    
+    @State var book: SavedBook
+    
+    var totalPages: Int {
+        book.pageCount ?? 0
+    }
+    
     var body: some View {
-        Text("Edit progress")
+        NavigationStack {
+            Form {
+                Section(header: Text("Progress")) {
+                    HStack {
+                        HStack {
+                            TextField("Enter page", text: $inputValue)
+                                .keyboardType(.numberPad)
+                                .frame(width: 80)
+                            
+                            Text("/")
+                            
+                            if isEditingPageCount {
+                                TextField("Total Pages", text: $tempPageCount)
+                                    .keyboardType(.numberPad)
+                                    .frame(width: 60)
+                                    .onSubmit {
+                                        updatePageCount()
+                                    }
+                            } else {
+                                Text("\(totalPages)")
+                                    .foregroundColor(.secondary)
+                                    .onTapGesture {
+                                        isEditingPageCount = true
+                                        tempPageCount = "\(totalPages)"
+                                    }
+                            }
+                        }
+                        .contentShape(Rectangle())
+                        
+                        Spacer()
+                        
+                        Button {
+                            tooltipVisible.toggle()
+                        } label: {
+                            Image(systemName: "info.circle")
+                                .foregroundColor(Color.terracotta)
+                        }
+                        .buttonStyle(PlainButtonStyle()) // evita effetti indesiderati
+                        .popover(isPresented: $tooltipVisible, arrowEdge: .top) {
+                            VStack(alignment: .leading, spacing: 10) {
+                                Text("Some books may not show the correct number of total pages. You can manually set it by tapping on the page count.")
+                                    .font(.footnote)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            .padding()
+                            .frame(width: 240)
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Edit Progress")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        saveProgress()
+                        try? context.save()
+                        if !auth.uid.isEmpty {
+                            try? context.saveAndSync(for: auth.uid)
+                        }
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+            }
+            .onAppear {
+                inputValue = "\(book.pagesRead)"
+            }
+        }
+    }
+    
+    func updatePageCount() {
+        if let value = Int(tempPageCount), value > 0 {
+            book.pageCount = value
+        }
+        isEditingPageCount = false
+    }
+    
+    func saveProgress() {
+        guard let value = Int(inputValue), value >= 0 else { return }
+        book.pagesRead = min(value, totalPages)
+        if value == totalPages {
+            book.readingStatus = .read
+        }
     }
 }
-
 
 
 

@@ -82,7 +82,13 @@ struct SearchResultList: View {
                                     withAnimation {
                                         existing.readingStatus = status
                                         do {
+                                            if status == .read {
+                                                existing.pagesRead = existing.pageCount ?? 0
+                                            }
                                             try context.save()
+                                            if !auth.uid.isEmpty {
+                                                try? context.saveAndSync(for: auth.uid)
+                                            }
                                             print("📖 Updated to \(status.rawValue)")
                                         } catch {
                                             print("❌ Error saving status: \(error)")

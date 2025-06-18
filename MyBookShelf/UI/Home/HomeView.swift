@@ -5,6 +5,8 @@ struct HomeView: View {
     
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.modelContext) private var context
+    @EnvironmentObject var auth: AuthManager
+
     let columnCount: Int = 3
     let gridSpacing: CGFloat = 20.0
     @Query(sort: \SavedBook.title, order: .forward) var books: [SavedBook]
@@ -31,6 +33,11 @@ struct HomeView: View {
                         challengesPreview()
                     }
                 }
+            }
+        }
+        .onAppear{
+            if !auth.uid.isEmpty {
+                FirebaseBookService.shared.syncBooksToLocal(for: auth.uid, context: context)
             }
         }
     }
@@ -140,13 +147,18 @@ struct yourProgressView: View {
                 ForEach(books) { book in
                     if (book.readingStatus == .reading) {
                         VStack {
+                            
+                            
+                            
                             NavigationLink(
                                 destination: BookDetailsView(book: book, viewModel: viewModel)
                             ) {
                                 BookListItemGrid(book: book, showStatus: true)
                                     .aspectRatio(2/3, contentMode: .fill)
                             }
-                            progressViewBook(book: book)
+                            
+                            
+                            progressViewBook(book: book, viewModel: viewModel)
                                 .padding(.top, -10)
                         }
                     }
@@ -159,6 +171,61 @@ struct yourProgressView: View {
         .padding(.horizontal)
     }
 }
+
+struct progressViewBook: View {
+    @State var size: CGSize = .zero
+    var book: SavedBook
+    @ObservedObject var viewModel: CombinedGenreSearchViewModel
+
+    @Environment(\.colorScheme) var colorScheme
+    
+    var progress: CGFloat {
+        guard let pageCount = book.pageCount, pageCount > 0 else { return 0 }
+        return CGFloat(book.pagesRead) / CGFloat(pageCount)
+    }
+    
+    var body: some View {
+        
+        NavigationLink (
+            destination: BookDetailsView(book: book, openSheetOnAppear: true, viewModel: viewModel)) {
+        
+        VStack(alignment: .leading, spacing: 6) {
+            ZStack(alignment: .leading) {
+                Capsule()
+                    .fill(colorScheme == .dark ? Color.white.opacity(0.2) : Color.gray.opacity(0.2))
+                    .frame(height: 8)
+                    .saveSize(in: $size)
+                
+                Capsule()
+                    .fill(Color.terracottaDarkIcons)
+                    .frame(width: progress * size.width, height: 8)
+                    .animation(.easeInOut(duration: 0.5), value: book.pagesRead)
+                
+            }.padding(.top)
+            
+
+                HStack {
+                    Text("\(Int(progress * 100))%")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(colorScheme == .dark ? Color.terracotta : Color.backgroundColorLight)
+                            .overlay {
+                                Text("Update")
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.8)
+                                    .foregroundColor(Color.secondary)
+                                    .padding(4)
+                            }
+                }
+            }
+        }
+    }
+}
+
 
 
 #Preview {

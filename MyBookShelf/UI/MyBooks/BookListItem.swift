@@ -60,52 +60,6 @@ struct BookListItemList: View {
     }
 }
 
-struct progressViewBook: View {
-    @State var size: CGSize = .zero
-    var book: SavedBook
-    
-    var progress: CGFloat {
-        guard let pageCount = book.pageCount, pageCount > 0 else { return 0 }
-        return CGFloat(book.pagesRead) / CGFloat(pageCount)
-    }
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            ZStack(alignment: .leading) {
-                Capsule()
-                    .fill(Color.gray.opacity(0.2))
-                    .frame(height: 8)
-                    .saveSize(in: $size)
-                
-                Capsule()
-                    .fill(Color.terracottaDarkIcons)
-                    .frame(width: progress * size.width, height: 8)
-            }.padding(.top)
-            
-            HStack(spacing: 8) {
-                Text("\(Int(progress * 100))%")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    //.padding(.trailing, 10)
-                
-                
-                Button(action: {
-                    //aggiorna in processo
-                }) {
-                    Text("Update")
-                        .font(.caption)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.5)
-                        //.padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Color.terracottaDarkIcons.opacity(0.15))
-                        .foregroundColor(.terracottaDarkIcons)
-                        .clipShape(Capsule())
-                }
-            }
-        }
-    }
-}
 
 
 #Preview {

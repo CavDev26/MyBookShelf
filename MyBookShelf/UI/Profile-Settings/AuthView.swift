@@ -5,6 +5,7 @@ struct AuthView: View {
     @EnvironmentObject var auth: AuthManager
     @Environment(\.dismiss) var dismiss
     @Environment(\.colorScheme) var colorScheme
+
     @State private var isLoading = false
     @State private var showPassword = false
     @State private var email = ""
