@@ -21,9 +21,9 @@ struct DiscoverSearchBarView: View {
                         .textFieldStyle(.plain)
                         .autocapitalization(.none)
                         .disableAutocorrection(true)
-                        .onChange(of: viewModel.searchText) { newValue in
+                        .onChange(of: viewModel.searchText) {
                             withAnimation(.easeInOut) {
-                                isSearching = !newValue.isEmpty
+                                isSearching = !viewModel.searchText.isEmpty
                             }
                         }
                     

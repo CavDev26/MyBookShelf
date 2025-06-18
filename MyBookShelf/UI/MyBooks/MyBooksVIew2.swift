@@ -59,9 +59,6 @@ struct MyBooksView2: View {
             result = result.sorted { compare($0.title, $1.title) }
         case .author:
             result = result.sorted { compare($0.authors.first ?? "", $1.authors.first ?? "") }
-        case .recentlyAdded:
-            break
-            //result = result.sorted { compare($0.dateAdded, $1.dateAdded) }
         case .length:
             result = result.sorted { compare($0.pageCount ?? 0, $1.pageCount ?? 0) }
         case .review:
@@ -90,16 +87,37 @@ struct MyBooksView2: View {
                         }
                         .animation(.easeInOut, value: isExpanded)
                     }
-                    ZStack {
-                        if isViewGrid {
-                            BookListViewGrid(books: filteredBooks, selectedTab: $selectedTab, viewModel: viewModel)
-                                .transition(.opacity.combined(with: .scale))
-                        } else {
-                            BookListViewList(books: filteredBooks, viewModel: viewModel)
-                                .transition(.opacity.combined(with: .scale))
+                    if books.isEmpty {
+                        ContentUnavailableView(
+                            label: { Label("No books", systemImage: "books.vertical.fill") },
+                            actions: {
+                                
+                                Button {
+                                    selectedTab = 2
+                                } label: {
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .fill(colorScheme == .dark ? Color.backgroundColorDark2 : Color.backgroundColorLight)
+                                        .frame(width: 120, height: 60)
+                                        .overlay {
+                                            Text("Add a new book!")
+                                                .foregroundColor(colorScheme == .dark ? .white : .black)
+                                        }
+                                }
+                                .padding()
+                            }
+                        )
+                    } else {
+                        ZStack {
+                            if isViewGrid {
+                                BookListViewGrid(books: filteredBooks, selectedTab: $selectedTab, viewModel: viewModel)
+                                    .transition(.opacity.combined(with: .scale))
+                            } else {
+                                BookListViewList(books: filteredBooks, selectedTab: $selectedTab, viewModel: viewModel)
+                                    .transition(.opacity.combined(with: .scale))
+                            }
                         }
+                        .animation(.easeInOut(duration: 0.3), value: isViewGrid)
                     }
-                    .animation(.easeInOut(duration: 0.3), value: isViewGrid)
                 }
             }
         }.onAppear {
@@ -212,8 +230,6 @@ struct FilterMenuView: View {
                     .tag(SortOption.title)
                 Label("Sort by Author", systemImage: "")
                     .tag(SortOption.author)
-                Label("Sort by Recently Added", systemImage: "")
-                    .tag(SortOption.recentlyAdded)
                 Label("Sort by Lenght", systemImage: "")
                     .tag(SortOption.length)
                 Label("Sort by your Reviews", systemImage: "")
@@ -261,7 +277,6 @@ struct FilterMenuView: View {
 
         } label: {
             Image(systemName: "arrow.up.arrow.down")
-            //Image(systemName: "line.3.horizontal.decrease")
                 .modifier(TopBarButtonStyle())
         }
     }
@@ -271,7 +286,6 @@ struct FilterMenuView: View {
         case descending
     }
     enum SortOption {
-        case recentlyAdded
         case length
         case title
         case author

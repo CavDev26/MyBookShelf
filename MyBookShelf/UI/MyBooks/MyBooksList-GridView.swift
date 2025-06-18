@@ -26,21 +26,8 @@ struct BookListViewGrid: View {
         .overlay(alignment: .center) {
             if books.isEmpty {
                 ContentUnavailableView(
-                    label: { Label("No books", systemImage: "books.vertical.fill") },
+                    label: { Label("No books matching these filters", systemImage: "books.vertical.fill").font(.system(size: 18)) },
                     actions: {
-                        
-                        Button {
-                            selectedTab = 2
-                        } label: {
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(colorScheme == .dark ? Color.backgroundColorDark2 : Color.backgroundColorLight)
-                                .frame(width: 100, height: 50)
-                                .overlay {
-                                    Text("Add a new book!")
-                                        .foregroundColor(colorScheme == .dark ? .white : .black)
-                                }
-                        }
-                        .padding()
                     }
                 )
             }
@@ -50,8 +37,10 @@ struct BookListViewGrid: View {
 
 struct BookListViewList: View {
     var books: [SavedBook]
+    @Binding var selectedTab: Int
     @State var showAddBookSheet = false
     @ObservedObject var viewModel: CombinedGenreSearchViewModel
+    @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
         let columnCount: Int = 1
@@ -71,22 +60,11 @@ struct BookListViewList: View {
         .overlay(alignment: .center) {
             if books.isEmpty {
                 ContentUnavailableView(
-                    label: { Label("No books", systemImage: "map") },
-                    description: {
-                        Text("Add a new book to see your list.")
-                    },
+                    label: { Label("No books matching these filters", systemImage: "books.vertical.fill").font(.system(size: 18)) },
                     actions: {
-                        Button(action: {
-                            showAddBookSheet = true
-                        }) {
-                            Text("Add book")
-                        }
                     }
                 )
             }
-        }
-        .sheet(isPresented: $showAddBookSheet) {
-            AddBookSheet()
         }
     }
 }

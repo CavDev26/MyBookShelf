@@ -39,6 +39,61 @@ class CombinedGenreSearchViewModel: ObservableObject {
     @Published var loadedCount: Int = 0
     @Published var searchText: String = ""
     
+    private var currentAuthorStartIndex: Int = 0
+    private var currentAuthorQuery: String = ""
+    
+    
+    func searchBooksByAuthor(_ author: String, reset: Bool = true, completion: ((Bool) -> Void)? = nil) {
+        if reset {
+            currentAuthorQuery = author
+            currentAuthorStartIndex = 0
+            searchResultsAuthor = []
+        }
+
+        fetchBooksByAuthorPaginated(completion: completion)
+    }
+    private func fetchBooksByAuthorPaginated(completion: ((Bool) -> Void)? = nil) {
+        guard !currentAuthorQuery.isEmpty else {
+            completion?(false)
+            return
+        }
+
+        let query = "inauthor:\(currentAuthorQuery)".addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+        let urlString = "https://www.googleapis.com/books/v1/volumes?q=\(query)&startIndex=\(currentAuthorStartIndex)&maxResults=20"
+
+        guard let url = URL(string: urlString) else {
+            completion?(false)
+            return
+        }
+
+        isLoading = true
+        URLSession.shared.dataTask(with: url) { data, _, error in
+            defer {
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                }
+            }
+
+            guard let data = data, error == nil,
+                  let decoded = try? JSONDecoder().decode(BooksAPIResponse.self, from: data) else {
+                completion?(false)
+                return
+            }
+
+            let books = (decoded.items ?? []).map { BookAPI(from: $0) }
+            DispatchQueue.main.async {
+                self.searchResultsAuthor.append(contentsOf: books)
+                self.currentAuthorStartIndex += 20
+                completion?(true)
+            }
+        }.resume()
+    }
+    
+    
+    
+    
+    
+    
     init() {
         $searchText
             .debounce(for: .milliseconds(500), scheduler: RunLoop.main)

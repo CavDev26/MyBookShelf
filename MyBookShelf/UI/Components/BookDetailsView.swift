@@ -261,7 +261,7 @@ struct detailsGenreView : View {
     var body: some View {
         if let savedBook = book as? SavedBook {
             if let genres = savedBook.genres {
-                Text("Genres: \(genres.map { $0.rawValue }.joined(separator: ", "))")
+                Text("Genres: \(genres.map { $0.rawValue.capitalized }.joined(separator: ", "))")
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.secondary)
             } else {
@@ -276,7 +276,7 @@ struct detailsGenreView : View {
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(.secondary)
                 } else {
-                    Text("Genres: \(genres.map { $0.rawValue }.joined(separator: ", "))")
+                    Text("Genres: \(genres.map { $0.rawValue.capitalized }.joined(separator: ", "))")
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(.secondary)
                 }
@@ -300,23 +300,25 @@ struct detailTAView: View {
         VStack(alignment: .center, spacing: 8) {
             Text(book.title)
                 .font(.system(size: 30, weight: .semibold, design: .serif))
+                .multilineTextAlignment(.center)
                 .background(
                     GeometryReader { geo in
                         Color.clear
                             .onAppear {
                                 titleOffset = geo.frame(in: .global).minY
                             }
-                            .onChange(of: geo.frame(in: .global).minY) { newVal in
+                            .onChange(of: geo.frame(in: .global).minY) {
                                 withAnimation(.easeInOut(duration: 0.25)) {
-                                    showNavTitle = newVal < 100
+                                    showNavTitle = geo.frame(in: .global).minY < 100
                                 }
                             }
                     }
                 )
             HStack {
                 ForEach (book.authors, id: \.self) { a in
-                    NavigationLink (destination: PlaceHolderView()) {
+                    NavigationLink (destination: AuthorResultsVIew(author: a)) {
                         Text(a)
+                            .underline()
                             .font(.system(size: 16))
                             .foregroundColor(.secondary)
                     }

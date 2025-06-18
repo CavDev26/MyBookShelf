@@ -211,7 +211,7 @@ struct progressViewBook: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
 
                         RoundedRectangle(cornerRadius: 6)
-                            .fill(colorScheme == .dark ? Color.terracotta : Color.backgroundColorLight)
+                        .fill(Color.terracotta)
                             .overlay {
                                 Text("Update")
                                     .font(.system(size: 12, weight: .semibold))

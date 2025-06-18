@@ -120,17 +120,16 @@ struct ScanView: View {
 
 
         }
-        .customNavigationTitle("Stai scannerizzando boss")
+        .customNavigationTitle("Looking for ISBNs...")
         .onAppear {
             scanner.restartIfNeeded()
         }
         .onDisappear {
             scanner.stopScanning()
         }
-        .onChange(of: scanner.scannedCode) { code in
-            guard let isbn = code else { return }
+        .onChange(of: scanner.scannedCode) {
+            guard let isbn = scanner.scannedCode else { return }
 
-            // ✅ Evita fetch se ISBN è già mostrato
             if isbn == lastScannedISBN {
                 print("ℹ️ ISBN già mostrato, nessuna fetch")
                 return
@@ -138,8 +137,7 @@ struct ScanView: View {
 
             lastScannedISBN = isbn
             fetchBookForScanner(for: isbn)
-        }
-        .alert("Remove from Library?", isPresented: $showRemoveAlert, presenting: bookToRemove) { book in
+        }        .alert("Remove from Library?", isPresented: $showRemoveAlert, presenting: bookToRemove) { book in
             Button("Remove", role: .destructive) {
                 withAnimation(.easeInOut(duration: 0.3)) {
                     context.delete(book)
