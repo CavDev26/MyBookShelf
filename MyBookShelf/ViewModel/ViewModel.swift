@@ -18,8 +18,15 @@ extension ModelContext {
             let firestoreBook = FirebaseBookMapper.toFirestore(book)
             FirebaseBookService.shared.upload(book: firestoreBook, for: uid)
         }
-
         print("✅ Synced all local books to Firestore")
+    }
+    func saveAndSync(_ book: SavedBook, for uid: String) throws {
+        try self.save()
+
+        let firestoreBook = FirebaseBookMapper.toFirestore(book)
+        FirebaseBookService.shared.upload(book: firestoreBook, for: uid)
+        
+        print("✅ Synced '\(book.title)' to Firestore")
     }
 }
 
@@ -392,7 +399,21 @@ class CombinedGenreSearchViewModel: ObservableObject {
     
     
     
-    
+    func saveBook(_ saved: SavedBook, context: ModelContext) {
+        context.insert(saved)
+        do {
+            try context.save()
+            print("✅ Saved: \(saved.title)")
+            
+            // 🔥 Upload iniziale senza generi
+            if let uid = Auth.auth().currentUser?.uid {
+                let firestoreBook = FirebaseBookMapper.toFirestore(saved)
+                FirebaseBookService.shared.upload(book: firestoreBook, for: uid)
+            }
+        } catch {
+            print("❌ Save error: \(error)")
+        }
+    }
     
     
     func saveBook(_ book: BookAPI, context: ModelContext) {

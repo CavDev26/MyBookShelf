@@ -33,9 +33,3 @@ struct BookRowDetailsView<T: BookRepresentable>: View {
         .padding(.bottom)
     }
 }
-
-#Preview {
-    @Previewable @State var selectedTab = 1
-    return MyBooksView2(selectedTab: $selectedTab)
-        .modelContainer(PreviewData2.makeModelContainer())
-}

@@ -44,7 +44,7 @@ struct AddBooksView: View {
                         ScrollView(showsIndicators: false) {
                             genreDiscoverView(gridSpacing: gridSpacing, columnCount: columnCount)
                             topPicksDiscoverView(viewModel: viewModel)
-                            addBookManuallyView()
+                            addBookManuallyView(viewModel: viewModel)
                         }
                     }
                 }
@@ -57,6 +57,7 @@ struct AddBooksView: View {
 
 struct addBookManuallyView: View {
     @State private var showSheet = false
+    @ObservedObject var viewModel: CombinedGenreSearchViewModel
     
     var body: some View {
         Button {
@@ -74,61 +75,24 @@ struct addBookManuallyView: View {
         .frame(height: 150)
         .padding()
         .sheet(isPresented: $showSheet) {
-            manualAddSheet()
-                .presentationDetents([.fraction(0.25), .medium])
+            manualAddSheet(viewModel: viewModel)
+                .presentationDetents([.fraction(1)])
                 .presentationDragIndicator(.visible)
         }
     }
 }
 
-struct manualAddSheet: View {
+/*struct manualAddSheet: View {
     @Environment(\.colorScheme) var colorScheme
-    //@Binding var goal: Int?
-    //@Binding var tempGoal: String
-    //@Binding var showSheet: Bool
-    //var goalName: String
+
     
     var body: some View {
         VStack(spacing: 20) {
             Text("Add a book - Manually")
-            /*Text(goalName)
-             .font(.headline)
-             .padding(.top, 30)
-             TextField("Books you want to read", text: $tempGoal)
-             .padding()
-             .background(
-             RoundedRectangle(cornerRadius: 10)
-             .fill(colorScheme == .dark ? Color(white: 0.15) : Color(white: 0.9))
-             )
-             .foregroundColor(colorScheme == .dark ? .white : .black)
-             .keyboardType(.numberPad)
-             .padding(.horizontal)
-             
-             Button("Save") {
-             if let newGoal = Int(tempGoal), newGoal > 0 {
-             goal = newGoal
-             showSheet = false
-             tempGoal = ""
-             }
-             }
-             .font(.system(size: 17, weight: .semibold))
-             .padding(.horizontal, 32)
-             .padding(.vertical, 12)
-             .background(Color.terracotta)
-             .foregroundColor(.white)
-             .clipShape(RoundedRectangle(cornerRadius: 10))
-             //.buttonStyle(.borderedProminent)
-             Spacer()
-             }
-             .padding()
-             .padding(.top, 30)
-             .onAppear {
-             if let goal {
-             tempGoal = "\(goal)"
-             }*/
+
         }
     }
-}
+}*/
 
 
 struct topPicksDiscoverView: View {

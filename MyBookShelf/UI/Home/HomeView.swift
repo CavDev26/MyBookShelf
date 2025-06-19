@@ -226,9 +226,3 @@ struct progressViewBook: View {
     }
 }
 
-
-
-#Preview {
-    @Previewable @State var selectedTab = 0
-    HomeView(selectedTab: $selectedTab).modelContainer(PreviewData2.makeModelContainer())
-}

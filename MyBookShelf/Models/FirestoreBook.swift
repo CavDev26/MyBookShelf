@@ -9,6 +9,7 @@
 import Foundation
 import FirebaseFirestore
 import SwiftData
+import SwiftUI
 //import FirebaseFirestoreSwift
 
 struct FirestoreBook: Codable, Identifiable {
@@ -32,6 +33,7 @@ struct FirestoreBook: Codable, Identifiable {
     var userNotes: String
     var rating: Int?
     var genres: [String]?
+    var coverJPG: Data?
 }
 
 struct FirebaseBookMapper {
@@ -79,13 +81,15 @@ struct FirebaseBookMapper {
             userNotes: firestoreBook.userNotes,
             rating: firestoreBook.rating,
             favourite: firestoreBook.favourite,
-            genres: firestoreBook.genres?.compactMap { BookGenre(rawValue: $0) }
+            genres: firestoreBook.genres?.compactMap { BookGenre(rawValue: $0) },
+            coverJPG: firestoreBook.coverJPG
         )
     }
 }
 
 final class FirebaseBookService {
     static let shared = FirebaseBookService()
+    @AppStorage("lastSyncDate") var lastSyncDate: Double = 0
     private init() {}
 
     private let db = Firestore.firestore()
@@ -100,6 +104,13 @@ final class FirebaseBookService {
     }
     
     func syncBooksToLocal(for uid: String, context: ModelContext) {
+        let now = Date().timeIntervalSince1970
+        guard now - lastSyncDate > 10 else {
+            print("⏱️ Skipping sync: too recent")
+            return
+        }
+        lastSyncDate = now
+        
         fetchBooks(for: uid) { firestoreBooks in
             DispatchQueue.main.async {
                 do {

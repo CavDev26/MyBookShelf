@@ -1,4 +1,4 @@
-import SwiftData
+/*import SwiftData
 import Foundation
 
 enum PreviewData2 {
@@ -589,3 +589,4 @@ enum PreviewData {
         return container
     }
 }
+*/

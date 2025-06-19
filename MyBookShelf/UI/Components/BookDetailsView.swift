@@ -221,7 +221,8 @@ struct BookDetailsView: View {
         }
         .onDisappear {
             if !auth.uid.isEmpty {
-                try? context.saveAndSync(for: auth.uid)
+                guard let book = book as? SavedBook else { return }
+                try? context.saveAndSync(book, for: auth.uid)
             }
         }
     }
@@ -331,17 +332,43 @@ struct detailCoverView: View {
     var book: BookRepresentable
     var body: some View {
         ZStack {
-            if let urlString = book.coverURL {
-                AsyncImageView(urlString: urlString)
-                    .frame(width: 180, height: 280)
-                    .cornerRadius(8)
-                    .shadow(color: Color.black.opacity(0.5), radius: 4, x: 4, y: 4)
-                    .padding()
+            if let savedBook = book as? SavedBook {
+                if let data = savedBook.coverJPG, let uiImage = UIImage(data: data) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 180, height: 280)
+                        .clipped()                       // taglia l'eccesso
+                        .cornerRadius(8)
+                        .shadow(color: Color.black.opacity(0.5), radius: 4, x: 4, y: 4)
+                        .padding()
+                } else {
+                    if let urlString = savedBook.coverURL {
+                        AsyncImageView(urlString: urlString)
+                            .frame(width: 180, height: 280)
+                            .cornerRadius(8)
+                            .shadow(color: Color.black.opacity(0.5), radius: 4, x: 4, y: 4)
+                            .padding()
+                    } else {
+                        noBookCoverUrlView(width: 180, height: 280, bookTitle: book.title)
+                            .cornerRadius(8)
+                        //.shadow(color: Color.black.opacity(0.5), radius: 4, x: 4, y: 4)
+                            .padding()
+                    }
+                }
             } else {
-                noBookCoverUrlView(width: 180, height: 280, bookTitle: book.title)
-                    .cornerRadius(8)
-                //.shadow(color: Color.black.opacity(0.5), radius: 4, x: 4, y: 4)
-                    .padding()
+                if let urlString = book.coverURL {
+                    AsyncImageView(urlString: urlString)
+                        .frame(width: 180, height: 280)
+                        .cornerRadius(8)
+                        .shadow(color: Color.black.opacity(0.5), radius: 4, x: 4, y: 4)
+                        .padding()
+                } else {
+                    noBookCoverUrlView(width: 180, height: 280, bookTitle: book.title)
+                        .cornerRadius(8)
+                    //.shadow(color: Color.black.opacity(0.5), radius: 4, x: 4, y: 4)
+                        .padding()
+                }
             }
         }
     }
@@ -812,11 +839,5 @@ struct RoundImage: View {
         .clipShape(Circle())
         .overlay(Circle().stroke(.background, lineWidth: 6))
     }
-}
-
-#Preview {
-    @Previewable @State var selectedTab = 1
-    return MyBooksView2(selectedTab: $selectedTab)
-        .modelContainer(PreviewData2.makeModelContainer())
 }
 

@@ -21,12 +21,19 @@ struct BookListItemGrid: View {
                 }
             }
             .background {
+                if let data = book.coverJPG, let uiImage = UIImage(data: data) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .clipped()
+                } else {
                     if let urlString = book.coverURL {
                         AsyncImageView(urlString: urlString)
-                            
+                        
                     } else {
                         noBookCoverUrlView(width: geometry.size.width, height: geometry.size.height, bookTitle: book.title)
                     }
+                }
             }
             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
             .shadow(color: Color.black.opacity(showStatus ? 0 : 0.3), radius: 4, x: 5, y: 4)
@@ -61,9 +68,3 @@ struct BookListItemList: View {
 }
 
 
-
-#Preview {
-    @Previewable @State var selectedTab = 1
-    return MyBooksView2(selectedTab: $selectedTab)
-        .modelContainer(PreviewData2.makeModelContainer())
-}

@@ -57,6 +57,3 @@ struct ContentView: View {
     }
 }
 
-#Preview {
-    ContentView().modelContainer(PreviewData2.makeModelContainer())
-}
