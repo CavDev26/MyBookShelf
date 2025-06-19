@@ -14,6 +14,7 @@ struct ProfileView: View {
 
     @AppStorage("isDarkMode") private var isDarkMode: Bool = false
     @AppStorage("username") private var username: String = ""
+    @AppStorage("useSystemColorScheme") private var useSystemColorScheme: Bool = true
     
     var body: some View {
         NavigationStack{
@@ -79,11 +80,21 @@ struct ProfileView: View {
                             }
                         }.listRowBackground(colorScheme == .dark ? Color.backgroundColorDark2 : Color.backgroundColorLight)
                         
-                        Section(header: Text("Others")) {
+                        
+                        Section(header: Text("Appearance")) {
                             
+                            Toggle(isOn: $useSystemColorScheme) {
+                                Label("Automatic Theme", systemImage: "circle.lefthalf.fill")
+                            }
+
                             Toggle(isOn: $isDarkMode) {
                                 Label("Dark Mode", systemImage: "moon.fill")
                             }
+                            .disabled(useSystemColorScheme)
+                        }
+                        .listRowBackground(colorScheme == .dark ? Color.backgroundColorDark2 : Color.backgroundColorLight)
+                        
+                        Section(header: Text("Others")) {
                             
                             NavigationLink(destination: Text("Privacy View")) {
                                 Label("Privacy", systemImage: "hand.raised.fill")
