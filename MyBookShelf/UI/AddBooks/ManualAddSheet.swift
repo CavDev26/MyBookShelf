@@ -34,134 +34,132 @@ struct manualAddSheet: View {
     
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 16) {
-                    
-                    // Cover Placeholder
-                    Button {
-                        showingSourceDialog = true
-                    } label: {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(Color.gray.opacity(0.2))
-                                .frame(width: 160, height: 240)
-                            
-                            if let image = selectedImage {
-                                Image(uiImage: image)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 160, height: 240)
-                                    .clipped()
-                                    .cornerRadius(8)
-                            } else {
-                                Text("Tap to add cover")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-                    }
-                    .confirmationDialog("Choose Image Source", isPresented: $showingSourceDialog, titleVisibility: .visible) {
-                        Button("Photo Library") { showingImagePicker = true }
-                        Button("Camera") { showingCamera = true }
-                        Button("From URL") { showingURLPrompt = true }
-                        Button("Cancel", role: .cancel) { }
-                    }
-                    // Title
-                    TextField("Title", text: $title)
-                        .textFieldStyle(.roundedBorder)
-                    
-                    // Author
-                    TextField("Author", text: $author)
-                        .textFieldStyle(.roundedBorder)
-                    
-                    // Publisher
-                    TextField("Publisher", text: $publisher)
-                        .textFieldStyle(.roundedBorder)
-                    
-                    // Published Date
-                    TextField("Published Date", text: $publishedDate)
-                        .textFieldStyle(.roundedBorder)
-                    
-                    // Reading Status and Rating
-                    HStack {
-                        Menu {
-                            ForEach(ReadingStatus.assignableCases, id: \.self) { status in
-                                Button(status.rawValue.capitalized) {
-                                    readingStatus = status
-                                }
-                            }
+
+                ScrollView {
+                    VStack(spacing: 16) {
+                        Button {
+                            showingSourceDialog = true
                         } label: {
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(readingStatus.color)
-                                .frame(height: 40)
-                                .overlay(
-                                    Text(readingStatus.rawValue.capitalized)
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(Color.gray.opacity(0.2))
+                                    .frame(width: 160, height: 240)
+                                
+                                if let image = selectedImage {
+                                    Image(uiImage: image)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 160, height: 240)
+                                        .clipped()
+                                        .cornerRadius(8)
+                                } else {
+                                    Text("Tap to add cover")
+                                        .font(.caption)
                                         .foregroundColor(.secondary)
-                                )
+                                }
+                            }
                         }
+                        .confirmationDialog("Choose Image Source", isPresented: $showingSourceDialog, titleVisibility: .visible) {
+                            Button("Photo Library") { showingImagePicker = true }
+                            Button("Camera") { showingCamera = true }
+                            Button("From URL") { showingURLPrompt = true }
+                            Button("Cancel", role: .cancel) { }
+                        }
+                        // Title
+                        TextField("Title", text: $title)
+                            .textFieldStyle(.roundedBorder)
                         
-                        Spacer()
+                        // Author
+                        TextField("Author", text: $author)
+                            .textFieldStyle(.roundedBorder)
                         
-                        RatingViewEditable(rating: $rating)
-                    }
-                    
-                    // Page Count
-                    TextField("Page Count", text: $pageCount)
-                        .keyboardType(.numberPad)
-                        .textFieldStyle(.roundedBorder)
-                    
-                    // Description
-                    TextField("Description", text: $description, axis: .vertical)
-                        .textFieldStyle(.roundedBorder)
-                        .lineLimit(4...6)
-                    
-                    // Genre Selector
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Genres")
-                            .font(.headline)
+                        // Publisher
+                        TextField("Publisher", text: $publisher)
+                            .textFieldStyle(.roundedBorder)
                         
-                        let displayedGenres = BookGenre.allCases.filter { $0 != .all }
-                        let genresToShow = showAllGenres ? displayedGenres : Array(displayedGenres.prefix(6))
+                        // Published Date
+                        TextField("Published Date", text: $publishedDate)
+                            .textFieldStyle(.roundedBorder)
                         
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 100))], spacing: 10) {
-                            ForEach(genresToShow, id: \.self) { genre in
-                                Button(action: {
-                                    if selectedGenres.contains(genre) {
-                                        selectedGenres.remove(genre)
-                                    } else {
-                                        selectedGenres.insert(genre)
+                        // Reading Status and Rating
+                        HStack {
+                            Menu {
+                                ForEach(ReadingStatus.assignableCases, id: \.self) { status in
+                                    Button(status.rawValue.capitalized) {
+                                        readingStatus = status
                                     }
-                                }) {
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .fill(selectedGenres.contains(genre) ? Color.terracotta : Color.gray.opacity(0.2))
-                                        .overlay{
-                                            Text(genre.rawValue)
-                                                .lineLimit(1)
-                                                .minimumScaleFactor(0.8)
-                                                .foregroundColor(.primary)
-                                                .padding()
-                                        }
-                                        .frame(maxWidth: .infinity)
-                                        .frame(height: 40)
-                                        .padding(.vertical, 8)
                                 }
+                            } label: {
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(readingStatus.color)
+                                    .frame(height: 40)
+                                    .overlay(
+                                        Text(readingStatus.rawValue.capitalized)
+                                            .foregroundColor(.secondary)
+                                    )
                             }
+                            
+                            Spacer()
+                            
+                            RatingViewEditable(rating: $rating)
                         }
                         
-                        if !showAllGenres {
-                            Button("Show All Genres") {
-                                withAnimation {
-                                    showAllGenres = true
+                        // Page Count
+                        TextField("Page Count", text: $pageCount)
+                            .keyboardType(.numberPad)
+                            .textFieldStyle(.roundedBorder)
+                        
+                        // Description
+                        TextField("Description", text: $description, axis: .vertical)
+                            .textFieldStyle(.roundedBorder)
+                            .lineLimit(4...6)
+                        
+                        // Genre Selector
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Genres")
+                                .font(.headline)
+                            
+                            let displayedGenres = BookGenre.allCases.filter { $0 != .all }
+                            let genresToShow = showAllGenres ? displayedGenres : Array(displayedGenres.prefix(6))
+                            
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 100))], spacing: 10) {
+                                ForEach(genresToShow, id: \.self) { genre in
+                                    Button(action: {
+                                        if selectedGenres.contains(genre) {
+                                            selectedGenres.remove(genre)
+                                        } else {
+                                            selectedGenres.insert(genre)
+                                        }
+                                    }) {
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .fill(selectedGenres.contains(genre) ? Color.terracotta : Color.gray.opacity(0.2))
+                                            .overlay{
+                                                Text(genre.rawValue)
+                                                    .lineLimit(1)
+                                                    .minimumScaleFactor(0.8)
+                                                    .foregroundColor(.primary)
+                                                    .padding()
+                                            }
+                                            .frame(maxWidth: .infinity)
+                                            .frame(height: 40)
+                                            .padding(.vertical, 8)
+                                    }
                                 }
                             }
-                            .font(.caption)
-                            .foregroundColor(.blue)
-                            .padding(.top, 4)
+                            
+                            if !showAllGenres {
+                                Button("Show All Genres") {
+                                    withAnimation {
+                                        showAllGenres = true
+                                    }
+                                }
+                                .font(.caption)
+                                .foregroundColor(.blue)
+                                .padding(.top, 4)
+                            }
                         }
                     }
-                    
-                }
-                .padding()
+                    .padding()
             }
             .navigationTitle("Add Book Manually")
             .navigationBarTitleDisplayMode(.inline)
@@ -181,9 +179,7 @@ struct manualAddSheet: View {
             })
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        // Dismiss sheet
-                    }
+                    Button("Cancel") { dismiss() }
                 }
                 
                 ToolbarItem(placement: .confirmationAction) {
