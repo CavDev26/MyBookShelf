@@ -35,7 +35,7 @@ struct HomeView: View {
                     }
                     ScrollView(.vertical, showsIndicators: false) {
                         yourProgressView(books: books, gridSpacing: gridSpacing, columnCount: columnCount, selectedTab: $selectedTab, viewModel: viewModel)
-                        challengesPreview()
+                        ChallengesPreview()
                         yourShelvesView(shelves: shelves, showShelfSheet: $showShelfSheet, viewModel: viewModel)
                     }
                 }
@@ -135,80 +135,126 @@ struct yourShelvesView: View {
     }
 }
 
-struct challengesPreview: View {
+
+struct ChallengesPreview: View {
     @Environment(\.colorScheme) var colorScheme
-    
+    @Query var yearlyChallenges: [YearlyReadingChallenge]
+    @Query var monthlyChallenges: [MonthlyReadingChallenge]
+
+    var currentYear: Int {
+        Calendar.current.component(.year, from: .now)
+    }
+
+    var currentMonth: Int {
+        Calendar.current.component(.month, from: .now)
+    }
+
+    var yearlyChallenge: YearlyReadingChallenge? {
+        yearlyChallenges.first { $0.year == currentYear }
+    }
+
+    var monthlyChallenge: MonthlyReadingChallenge? {
+        monthlyChallenges.first { $0.year == currentYear && $0.month == currentMonth }
+    }
+
     var body: some View {
-        NavigationLink(destination: ChallengesView()
-        ) {
-            HStack(spacing: 6) {
-                RoundedRectangle(cornerRadius: 2)
-                    .fill(Color.terracotta)
-                    .frame(width: 4, height: 20)
-                
-                Text("Challenges & Achievements")
-                    .font(.system(size: 20, weight: .semibold, design: .serif))
-                    .foregroundColor(colorScheme == .dark ? .white : .black)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                Image(systemName: "chevron.right")
-                    .foregroundColor(colorScheme == .dark ? .white : .black)
-                    .font(.system(size: 18, weight: .semibold))
-            }
-            .padding(.horizontal)
-            .padding(.top)
-        }
-        
-        HStack(spacing: 16) {
+        VStack(alignment: .leading, spacing: 8) {
             NavigationLink(destination: ChallengesView()) {
-                VStack(spacing: 4) {
-                    SingleRingProgress(progress: 0.75, current: 18, goal: 24, small: true)
-                        .padding()
-                    Text("2025 Goal")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
+                HStack(spacing: 6) {
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(Color.terracotta)
+                        .frame(width: 4, height: 20)
+                    
+                    Text("Challenges & Achievements")
+                        .font(.system(size: 20, weight: .semibold, design: .serif))
+                        .foregroundColor(colorScheme == .dark ? .white : .black)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(colorScheme == .dark ? .white : .black)
+                        .font(.system(size: 18, weight: .semibold))
                 }
+                .padding(.horizontal)
+                .padding(.top)
             }
-            NavigationLink(destination: ChallengesView()) {
-                VStack(spacing: 4) {
-                    SingleRingProgress(progress: 0.33, current: 1, goal: 3, small: true)
-                        .padding()
-                    Text("June Goal")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                }
-            }
-            NavigationLink(destination: StatsView()) {
-                VStack(spacing: 4) {
-                    ZStack {
-                        Circle()
-                            .stroke(Color.gray.opacity(0.2), lineWidth: 10)
-                            .frame(width: 60, height: 60)
-                        Circle()
-                            .trim(from: 0, to: 1.0)
-                            .stroke(Color.terracotta, lineWidth: 10)
-                            .frame(width: 60, height: 60)
-                            .opacity(0.2)
-                        
-                        Image(systemName: "chart.bar.xaxis")
-                            .foregroundColor(.terracotta)
-                            .font(.system(size: 20, weight: .semibold))
+
+            HStack(spacing: 16) {
+                // Yearly challenge
+                NavigationLink(destination: ChallengesView()) {
+                    VStack(spacing: 4) {
+                        if yearlyChallenge?.goal == 0{
+                            Text("Set up your yearly challenge")
+                        } else {
+                            SingleRingProgress(
+                                progress: progress(for: yearlyChallenge?.booksFinished, goal: yearlyChallenge?.goal),
+                                current: yearlyChallenge?.booksFinished ?? 0,
+                                goal: yearlyChallenge?.goal,
+                                small: true
+                            )
+                            .padding()
+                            Text("Yearly\nChallenge")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
                     }
-                    .padding()
-                    Text("Stats")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
                 }
-                //.padding()
+
+                // Monthly challenge
+                NavigationLink(destination: ChallengesView()) {
+                    VStack(spacing: 4) {
+                        if monthlyChallenge?.goal == 0{
+                            Text("Set up your monthly challenge")
+                        } else{
+                            SingleRingProgress(
+                                progress: progress(for: monthlyChallenge?.booksFinished, goal: monthlyChallenge?.goal),
+                                current: monthlyChallenge?.booksFinished ?? 0,
+                                goal: monthlyChallenge?.goal,
+                                small: true
+                            )
+                            .padding()
+                            Text("Monthly\nGoal")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+
+                // Stats icon
+                NavigationLink(destination: ChallengesView()) {
+                    VStack(spacing: 4) {
+                        ZStack {
+                            Circle()
+                                .stroke(Color.gray.opacity(0.2), lineWidth: 10)
+                                .frame(width: 60, height: 60)
+                            Circle()
+                                .trim(from: 0, to: 1.0)
+                                .stroke(Color.terracotta, lineWidth: 10)
+                                .frame(width: 60, height: 60)
+                                .opacity(0.2)
+                            Image(systemName: "chart.bar.xaxis")
+                                .foregroundColor(.terracotta)
+                                .font(.system(size: 20, weight: .semibold))
+                        }
+                        .padding()
+                        Text("See all\nStats")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                }
             }
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(colorScheme == .dark ? Color.backgroundColorDark2 : Color.backgroundColorLight.opacity(0.8))
+            )
+            .padding(.horizontal, 8)
+            .padding(.bottom, 10)
         }
-        .frame(maxWidth: .infinity)
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(colorScheme == .dark ? Color.backgroundColorDark2 : Color.backgroundColorLight.opacity(0.8))
-        )
-        .padding(.horizontal, 8)
-        .padding(.bottom, 10)
+    }
+
+    func progress(for current: Int?, goal: Int?) -> Double {
+        guard let current, let goal, goal > 0 else { return 0 }
+        return Double(current) / Double(goal)
     }
 }
 

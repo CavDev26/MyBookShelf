@@ -1,4 +1,5 @@
 import SwiftUICore
+import SwiftData
 //import FirebaseAuth
 import SwiftUI
 import SwiftUI
@@ -8,6 +9,7 @@ struct StartupView: View {
     @State private var isChecking = true
     @Namespace private var transitionNamespace
     @Environment(\.modelContext) private var modelContext
+    @Query var globalStats: [GlobalReadingStats]
 
 
     var body: some View {
@@ -19,6 +21,9 @@ struct StartupView: View {
                 ContentView()
                     .environmentObject(auth)
                     .transition(.move(edge: .trailing).combined(with: .opacity))
+                    .onAppear{
+                        ensureStatsExistAndUpdate()
+                    }
             } else {
                 AuthView()
                     .environmentObject(auth)
@@ -34,6 +39,21 @@ struct StartupView: View {
 
                 }
             }
+        }
+    }
+    private func ensureStatsExistAndUpdate() {
+        if globalStats.isEmpty {
+            let stats = GlobalReadingStats()
+            modelContext.insert(stats)
+            try? modelContext.save()
+            print("✅ GlobalReadingStats initialized")
+        }
+
+        do {
+            let books = try modelContext.fetch(FetchDescriptor<SavedBook>())
+            StatsManager.shared.updateStats(using: books, in: modelContext)
+        } catch {
+            print("❌ Failed to update stats: \(error)")
         }
     }
 }

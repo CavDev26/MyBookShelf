@@ -8,7 +8,7 @@ struct BookDetailsView: View {
     @State var book: BookRepresentable
     @State private var savedBook: SavedBook? = nil
     @EnvironmentObject var auth: AuthManager
-    var openSheetOnAppear: Bool = false // 👈 nuovo parametro
+    var openSheetOnAppear: Bool = false
     
     @State private var dominantColor: Color = .gray.opacity(0.2)
     @State private var titleOffset: CGFloat = .infinity
@@ -20,7 +20,8 @@ struct BookDetailsView: View {
     
     @State private var isExpanded = false
     @State private var showEditProgressSheet: Bool = false
-    
+    @State var showAddSessionSheet: Bool = false
+
     
     @State private var isSaved: Bool = false
     @State private var showRemoveAlert = false
@@ -57,6 +58,12 @@ struct BookDetailsView: View {
                             }
                             .padding(.bottom)
                             
+                            if savedBook.readingStatus == .read {
+                                HStack{
+                                    readingSessionView(book: savedBook, showAddSessionSheet: $showAddSessionSheet)
+                                }
+                                .padding(.bottom)
+                            }
                             
                             if savedBook.readingStatus == .reading {
                                 detailsProgressView(showEditProgressSheet: $showEditProgressSheet, book: savedBook)
@@ -194,6 +201,15 @@ struct BookDetailsView: View {
                         .presentationDragIndicator(.visible)
                 }
             }
+            .sheet(isPresented: $showAddSessionSheet) {
+                if let savedBook {
+                    readingSessionSheetView(book: savedBook)
+                        .presentationDetents([.fraction(0.3)])
+                        .presentationDragIndicator(.visible)
+                } else {
+                    Text("Missing book") // fallback di sicurezza
+                }
+            }
             .alert("Remove from Library?", isPresented: $showRemoveAlert, presenting: bookToRemove) { book in
                 Button("Remove", role: .destructive) {
                     withAnimation(.easeInOut(duration: 0.3)) {
@@ -201,6 +217,9 @@ struct BookDetailsView: View {
                         do {
                             try context.save()
                             print("🗑️ Removed: \(book.title)")
+                            
+                            let books = try context.fetch(FetchDescriptor<SavedBook>())
+                            StatsManager.shared.updateStats(using: books, in: context)
                             
                             if !auth.uid.isEmpty {
                                 FirebaseBookService.shared.deleteBook(bookID: book.id, for: auth.uid)
@@ -221,8 +240,16 @@ struct BookDetailsView: View {
         }
         .onDisappear {
             if !auth.uid.isEmpty {
+                
                 guard let book = book as? SavedBook else { return }
                 try? context.saveAndSync(book, for: auth.uid)
+                
+                do {
+                    let books = try context.fetch(FetchDescriptor<SavedBook>())
+                    StatsManager.shared.updateStats(using: books, in: context)
+                } catch {
+                    print("❌ Failed to update stats: \(error)")
+                }
             }
         }
     }
@@ -440,8 +467,13 @@ struct readingStatusMenuVIew: View {
                                 book.pagesRead = 0
                             }
                         }
-
                     try? context.save()
+                    do {
+                        let books = try context.fetch(FetchDescriptor<SavedBook>())
+                        StatsManager.shared.updateStats(using: books, in: context)
+                    } catch {
+                        print("❌ Failed to update stats: \(error)")
+                    }
                 } label: {
                     Label(status.rawValue.capitalized, systemImage: status.iconName)
                 }
@@ -565,6 +597,12 @@ struct detailsBookNotesView: View {
                             Button("Save") {
                                 book.userNotes = localNotes
                                 try? context.save()
+                                do {
+                                    let books = try context.fetch(FetchDescriptor<SavedBook>())
+                                    StatsManager.shared.updateStats(using: books, in: context)
+                                } catch {
+                                    print("❌ Failed to update stats: \(error)")
+                                }
                                 withAnimation {
                                     isExpanded = false
                                 }
@@ -766,6 +804,12 @@ struct EditProgressSheetView: View {
                         try? context.save()
                         if !auth.uid.isEmpty {
                             try? context.saveAndSync(for: auth.uid)
+                            do {
+                                let books = try context.fetch(FetchDescriptor<SavedBook>())
+                                StatsManager.shared.updateStats(using: books, in: context)
+                            } catch {
+                                print("❌ Failed to update stats: \(error)")
+                            }
                         }
                         dismiss()
                     }
@@ -799,45 +843,98 @@ struct EditProgressSheetView: View {
 }
 
 
+struct readingSessionSheetView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var context
 
-
-
-
-
-
-
-
-
-struct MapArea: View {
-    var location: CLLocationCoordinate2D
+    var book: SavedBook
+    @State private var startDate: Date = Date()
+    @State private var finishDate: Date = Date()
     
     var body: some View {
-        let region = MKCoordinateRegion(
-            center: location,
-            span: MKCoordinateSpan(latitudeDelta: 0.2, longitudeDelta: 0.2)
-        )
-        let cameraPosition = MapCameraPosition.region(region)
-        
-        Map(position: .constant(cameraPosition))
-            .allowsHitTesting(false)
-    }
-}
-
-struct RoundImage: View {
-    var url: URL?
-    
-    var body: some View {
-        ZStack {
-            Rectangle().fill(.blue.opacity(0.2))
-            AsyncImage(
-                url: url,
-                content: { image in image.resizable() },
-                placeholder: { ProgressView().tint(.blue) }
-            )
+        NavigationStack {
+            VStack(alignment: .leading, spacing: 16) {
+                DatePicker("Date Started", selection: $startDate, displayedComponents: .date)
+                DatePicker("Date Finished", selection: $finishDate, displayedComponents: .date)
+            }
+            .padding()
+            .background(Color.gray.opacity(0.1))
+            .cornerRadius(12)
+            .onAppear {
+                startDate = book.dateStarted ?? Date()
+                finishDate = book.dateFinished ?? Date()
+            }
+            .navigationTitle("Add a reading session")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        book.dateStarted = startDate
+                        book.dateFinished = finishDate
+                        try? context.save()
+                        
+                        do {
+                            let books = try context.fetch(FetchDescriptor<SavedBook>())
+                            StatsManager.shared.updateStats(using: books, in: context)
+                        } catch {
+                            print("❌ Failed to update stats: \(error)")
+                        }
+                        
+                        dismiss()
+                    }
+                }
+            }
         }
-        .background(.background)
-        .clipShape(Circle())
-        .overlay(Circle().stroke(.background, lineWidth: 6))
     }
 }
 
+
+struct readingSessionView: View {
+    @Bindable var book: SavedBook
+    @Binding var showAddSessionSheet: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack{
+                Text("Reading Session")
+                    .font(.system(size: 18, weight: .semibold, design: .serif))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Button("Edit"){
+                    showAddSessionSheet.toggle()
+                }
+                .foregroundColor(Color.terracotta)
+            }
+            .padding(.bottom)
+
+
+            if let start = book.dateStarted, let end = book.dateFinished {
+                Text("📅 Started: \(start.formatted(date: .abbreviated, time: .omitted))")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    //.padding()
+                Text("✅ Finished: \(end.formatted(date: .abbreviated, time: .omitted))")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    //.padding()
+            } else {
+                Button {
+                    showAddSessionSheet.toggle()
+                } label: {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.terracotta)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 40)
+                        .overlay{
+                            Text("Add a new session")
+                                .foregroundColor(.white)
+                        }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .cornerRadius(12)
+    }
+}

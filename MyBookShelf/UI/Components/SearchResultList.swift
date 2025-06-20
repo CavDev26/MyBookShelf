@@ -71,6 +71,8 @@ struct SearchResultList: View {
                                     context.delete(book)
                                     do {
                                         try context.save()
+                                            let books = try context.fetch(FetchDescriptor<SavedBook>())
+                                            StatsManager.shared.updateStats(using: books, in: context)
                                         print("🗑️ Removed: \(book.title)")
                                     } catch {
                                         print("❌ Delete error: \(error)")
@@ -88,6 +90,8 @@ struct SearchResultList: View {
                                             try context.save()
                                             if !auth.uid.isEmpty {
                                                 try? context.saveAndSync(for: auth.uid)
+                                                    let books = try context.fetch(FetchDescriptor<SavedBook>())
+                                                    StatsManager.shared.updateStats(using: books, in: context)
                                             }
                                             print("📖 Updated to \(status.rawValue)")
                                         } catch {
@@ -204,6 +208,8 @@ struct SearchResultList: View {
                                 print("🗑️ Removed: \(book.title)")
                                 if !auth.uid.isEmpty {
                                     FirebaseBookService.shared.deleteBook(bookID: book.id, for: auth.uid)
+                                        let books = try context.fetch(FetchDescriptor<SavedBook>())
+                                        StatsManager.shared.updateStats(using: books, in: context)
                                 }
                             } catch {
                                 print("❌ Delete error: \(error)")

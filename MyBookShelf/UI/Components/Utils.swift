@@ -8,6 +8,7 @@
 import SwiftUICore
 import UIKit
 import SwiftUI
+import SwiftData
 
 struct Triangle: Shape {
     func path(in rect: CGRect) -> Path {

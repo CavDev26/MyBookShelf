@@ -25,8 +25,9 @@ class SavedBook {
     var rating: Int?
     var genres: [BookGenre]?
     var coverJPG: Data?
-    //var lastUpdated: Date
-
+    var dateStarted: Date?
+    var dateFinished: Date?
+    
     init(
         id: String,
         title: String,
@@ -47,8 +48,9 @@ class SavedBook {
         rating: Int? = nil,
         favourite: Bool = false,
         genres: [BookGenre]?,
-        coverJPG: Data?
-        //lastUpdated: Date = .now
+        coverJPG: Data?,
+        dateStarted: Date? = nil,
+        dateFinished: Date? = nil
     ) {
         self.id = id
         self.title = title
@@ -70,7 +72,8 @@ class SavedBook {
         self.favourite = favourite
         self.genres = genres
         self.coverJPG = coverJPG
-        //self.lastUpdated = lastUpdated
+        self.dateStarted = dateStarted
+        self.dateFinished = dateFinished
     }
 }
 
@@ -134,7 +137,9 @@ extension SavedBook {
             rating: book.rating,
             favourite : false,
             genres: nil,
-            coverJPG: nil
+            coverJPG: nil,
+            dateStarted: nil,
+            dateFinished: nil
         )
     }
 }

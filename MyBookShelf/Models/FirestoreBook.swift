@@ -34,6 +34,8 @@ struct FirestoreBook: Codable, Identifiable {
     var rating: Int?
     var genres: [String]?
     var coverJPG: Data?
+    var dateStarted: Date?
+    var dateFinished: Date?
 }
 
 struct FirebaseBookMapper {
@@ -57,7 +59,10 @@ struct FirebaseBookMapper {
             pagesRead: book.pagesRead,
             userNotes: book.userNotes,
             rating: book.rating,
-            genres: book.genres?.map { $0.rawValue }
+            genres: book.genres?.map { $0.rawValue },
+            dateStarted: book.dateStarted,
+            dateFinished: book.dateFinished
+            
         )
     }
 
@@ -82,7 +87,9 @@ struct FirebaseBookMapper {
             rating: firestoreBook.rating,
             favourite: firestoreBook.favourite,
             genres: firestoreBook.genres?.compactMap { BookGenre(rawValue: $0) },
-            coverJPG: firestoreBook.coverJPG
+            coverJPG: firestoreBook.coverJPG,
+            dateStarted: firestoreBook.dateStarted,
+            dateFinished: firestoreBook.dateFinished
         )
     }
 }

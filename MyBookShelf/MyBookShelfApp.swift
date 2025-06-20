@@ -27,7 +27,7 @@ struct MyBookShelfApp: App {
                     useSystemColorScheme ? nil : (isDarkMode ? .dark : .light)
                 )
         }
-        .modelContainer(for: [SavedBook.self, Shelf.self])
+        .modelContainer(for: [SavedBook.self, Shelf.self, YearlyReadingChallenge.self, MonthlyReadingChallenge.self, GlobalReadingStats.self])
     }
 }
 
