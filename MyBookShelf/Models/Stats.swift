@@ -8,13 +8,16 @@ class GlobalReadingStats {
     var longestBookRead: Int // in pagine
     var mostBooksReadInAYear: Int
     var mostBooksReadInAMonth: Int
+    var totalXP: Int
 
-    init(totalBooksFinished: Int = 0, totalPagesRead: Int = 0, longestBookRead: Int = 0, mostBooksReadInAYear: Int = 0, mostBooksReadInAMonth: Int = 0) {
+
+    init(totalBooksFinished: Int = 0, totalPagesRead: Int = 0, longestBookRead: Int = 0, mostBooksReadInAYear: Int = 0, mostBooksReadInAMonth: Int = 0, totalXP: Int = 0) {
         self.totalBooksFinished = totalBooksFinished
         self.totalPagesRead = totalPagesRead
         self.longestBookRead = longestBookRead
         self.mostBooksReadInAYear = mostBooksReadInAMonth
         self.mostBooksReadInAMonth = mostBooksReadInAMonth
+        self.totalXP = totalXP
     }
 }
 
@@ -54,7 +57,7 @@ class MonthlyReadingChallenge {
     }
 }
 
-enum BadgeType: String, Codable {
+/*enum BadgeType: String, Codable {
     case global
     case yearly
     case monthly
@@ -78,7 +81,7 @@ class Badge {
         self.isEarned = isEarned
         self.earnedDate = earnedDate
     }
-}
+}*/
 
 
 
@@ -92,6 +95,7 @@ struct FirestoreGlobalReadingStats: Codable {
     var longestBookRead: Int
     var mostBooksReadInAYear: Int
     var mostBooksReadInAMonth: Int
+    var experiencePoints: Int
     
     var startDate: Date
     var lastUpdate: Date
@@ -118,7 +122,7 @@ struct FirestoreMonthlyReadingChallenge: Codable, Identifiable {
 }
 
 
-enum FirestoreBadgeType: String, Codable {
+/*enum FirestoreBadgeType: String, Codable {
     case global
     case yearly
     case monthly
@@ -132,4 +136,4 @@ struct FirestoreBadge: Codable, Identifiable {
     var earnedDate: Date?
     var isEarned: Bool
     var type: FirestoreBadgeType
-}
+}*/

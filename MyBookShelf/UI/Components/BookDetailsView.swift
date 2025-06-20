@@ -219,7 +219,7 @@ struct BookDetailsView: View {
                             print("🗑️ Removed: \(book.title)")
                             
                             let books = try context.fetch(FetchDescriptor<SavedBook>())
-                            StatsManager.shared.updateStats(using: books, in: context)
+                            StatsManager.shared.updateStats(using: books, in: context, uid: auth.uid)
                             
                             if !auth.uid.isEmpty {
                                 FirebaseBookService.shared.deleteBook(bookID: book.id, for: auth.uid)
@@ -246,7 +246,7 @@ struct BookDetailsView: View {
                 
                 do {
                     let books = try context.fetch(FetchDescriptor<SavedBook>())
-                    StatsManager.shared.updateStats(using: books, in: context)
+                    StatsManager.shared.updateStats(using: books, in: context, uid: auth.uid)
                 } catch {
                     print("❌ Failed to update stats: \(error)")
                 }
@@ -451,7 +451,7 @@ struct RatingView : View {
 struct readingStatusMenuVIew: View {
     @Environment(\.modelContext) private var context
     var book: SavedBook
-
+    @EnvironmentObject var auth: AuthManager
     
     var body: some View {
         Menu {
@@ -470,7 +470,7 @@ struct readingStatusMenuVIew: View {
                     try? context.save()
                     do {
                         let books = try context.fetch(FetchDescriptor<SavedBook>())
-                        StatsManager.shared.updateStats(using: books, in: context)
+                        StatsManager.shared.updateStats(using: books, in: context, uid: auth.uid)
                     } catch {
                         print("❌ Failed to update stats: \(error)")
                     }
@@ -565,6 +565,7 @@ struct detailsBookNotesView: View {
     @State var localNotes: String
     var book: SavedBook
     @Binding var isExpanded: Bool
+    @EnvironmentObject var auth: AuthManager
     
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -599,7 +600,7 @@ struct detailsBookNotesView: View {
                                 try? context.save()
                                 do {
                                     let books = try context.fetch(FetchDescriptor<SavedBook>())
-                                    StatsManager.shared.updateStats(using: books, in: context)
+                                    StatsManager.shared.updateStats(using: books, in: context, uid: auth.uid)
                                 } catch {
                                     print("❌ Failed to update stats: \(error)")
                                 }
@@ -806,7 +807,7 @@ struct EditProgressSheetView: View {
                             try? context.saveAndSync(for: auth.uid)
                             do {
                                 let books = try context.fetch(FetchDescriptor<SavedBook>())
-                                StatsManager.shared.updateStats(using: books, in: context)
+                                StatsManager.shared.updateStats(using: books, in: context, uid: auth.uid)
                             } catch {
                                 print("❌ Failed to update stats: \(error)")
                             }
@@ -846,6 +847,8 @@ struct EditProgressSheetView: View {
 struct readingSessionSheetView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
+    @EnvironmentObject var auth: AuthManager
+
 
     var book: SavedBook
     @State private var startDate: Date = Date()
@@ -880,7 +883,7 @@ struct readingSessionSheetView: View {
                         
                         do {
                             let books = try context.fetch(FetchDescriptor<SavedBook>())
-                            StatsManager.shared.updateStats(using: books, in: context)
+                            StatsManager.shared.updateStats(using: books, in: context, uid: auth.uid)
                         } catch {
                             print("❌ Failed to update stats: \(error)")
                         }

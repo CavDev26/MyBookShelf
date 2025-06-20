@@ -24,7 +24,8 @@ struct ChallengesView: View {
     @State var yearlyChallenge: YearlyReadingChallenge?
     @State var monthlyChallenge: MonthlyReadingChallenge?
     
-    
+    @State var showInfoLevelSheet: Bool = false
+
     var body: some View {
         NavigationStack {
             ZStack(alignment: .top) {
@@ -42,13 +43,18 @@ struct ChallengesView: View {
                                     .frame(maxWidth: .infinity, minHeight: 120, maxHeight: .infinity)
                             }
                             .frame(height: 120)
-                            BadgesSectionView()
+                            LevelSectionView(showInfoLevelSheet: $showInfoLevelSheet)
                             StatsSectionView()
                         }
                         .padding()
                     }
                 }
             }
+        }
+        .sheet(isPresented: $showInfoLevelSheet) {
+            LevelInfoSheetView()
+                .presentationDetents([.fraction(0.5)])
+                .presentationDragIndicator(.visible)
         }
         .onAppear {
             let year = Calendar.current.component(.year, from: .now)
@@ -255,6 +261,7 @@ struct MonthlyGoalView: View {
 struct goalSetterSheetView: View {
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.modelContext) private var context
+    @StateObject private var auth = AuthManager()
     //var goal: Int
     var yChall: YearlyReadingChallenge?
     var mChall: MonthlyReadingChallenge?
@@ -287,7 +294,7 @@ struct goalSetterSheetView: View {
                     try? context.save()
                     do {
                         let books = try context.fetch(FetchDescriptor<SavedBook>())
-                        StatsManager.shared.updateStats(using: books, in: context)
+                        StatsManager.shared.updateStats(using: books, in: context, uid: auth.uid)
                     } catch {
                         print("❌ Failed to update stats: \(error)")
                     }
@@ -340,11 +347,71 @@ struct StreakTrackerView: View {
 
 
 
+struct LevelSectionView: View {
+    @Environment(\.colorScheme) var colorScheme
+    @Environment(\.modelContext) private var context
+    @Query var globalStats: [GlobalReadingStats]
+
+    @Binding var showInfoLevelSheet: Bool
+
+    let xpPerLevel = 100
+
+    var currentXP: Int {
+        globalStats.first?.totalXP ?? 0
+    }
+
+    var currentLevel: Int {
+        currentXP / xpPerLevel
+    }
+
+    var xpToNextLevel: Int {
+        (currentLevel + 1) * xpPerLevel
+    }
+
+    var progress: Double {
+        Double(currentXP % xpPerLevel) / Double(xpPerLevel)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            HStack(spacing: 6) {
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(Color.terracotta)
+                    .frame(width: 4, height: 20)
+                Spacer()
+                Text("Your Level")
+                    .modifier(TitleTextMod(size: 20))
+                Button {
+                    showInfoLevelSheet.toggle()
+                } label: {
+                    Image(systemName: "info.circle")
+                        .foregroundColor(.white)
+                }
+            }
+
+            HStack {
+                Text("Level \(currentLevel)")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                Spacer()
+                Text("\(currentXP) / \(xpToNextLevel) XP")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+
+            ProgressView(value: progress)
+                .progressViewStyle(LinearProgressViewStyle(tint: .terracotta))
+                .scaleEffect(x: 1, y: 3, anchor: .center)
+        }
+        .padding(.top, 8)
+        .modifier(ChallengesBlockMod())
+    }
+}
+
 struct BadgesSectionView: View {
     @Environment(\.colorScheme) var colorScheme
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            
             NavigationLink(destination: AchievementsView()
             ) {
                 HStack(spacing: 6) {
@@ -367,16 +434,19 @@ struct BadgesSectionView: View {
                     BadgeView(icon: "👑", title: "Legendary Reader\n100 Books")
                     BadgeView(icon: "👑", title: "Legendary Reader\n100 Books")
                     BadgeView(icon: "👑", title: "Legendary Reader\n100 Books")
-                    NavigationLink(destination: PlaceHolderView()
-                    ){
-                        BadgeView(icon: "📘", title: "See all achievements")
-                    }
                 }
             }
         }
         .modifier(ChallengesBlockMod())
     }
 }
+
+
+
+
+
+
+
 
 
 struct StatsSectionView: View {
@@ -524,5 +594,36 @@ struct TitleTextMod: ViewModifier {
             .font(.system(size: size, weight: .semibold, design: .serif))
             .foregroundColor(colorScheme == .dark ? .white : .black)
             .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+
+struct LevelInfoSheetView: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            Text("Level System Info")
+                .font(.title2)
+                .fontWeight(.bold)
+                .padding(.top, 30)
+                .frame(maxWidth: .infinity, alignment: .center)
+
+            VStack(alignment: .leading, spacing: 12) {
+                Label("1 XP for every 10 pages read", systemImage: "book.fill")
+                Label("25 XP for completing a monthly challenge", systemImage: "calendar")
+                Label("100 XP for completing the yearly challenge", systemImage: "trophy.fill")
+                Label("Bonus XP for reading long books", systemImage: "sparkles")
+            }
+            .font(.subheadline)
+            .padding(.horizontal)
+
+            //Spacer()
+
+            Text("📚 Keep reading to level up!")
+                .font(.callout)
+                .fontWeight(.semibold)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding()
+        }
+        .padding()
     }
 }

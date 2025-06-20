@@ -36,7 +36,10 @@ struct StartupView: View {
                 isChecking = false
                 if auth.isLoggedIn {
                     FirebaseBookService.shared.syncBooksToLocal(for: auth.uid, context: modelContext)
-
+                    Task {
+                        await StatsManager.shared.fetchStatsFromFirebase(for: auth.uid, context: modelContext)
+                        await StatsManager.shared.fetchChallengesFromFirebase(for: auth.uid, context: modelContext)
+                    }
                 }
             }
         }
@@ -51,7 +54,8 @@ struct StartupView: View {
 
         do {
             let books = try modelContext.fetch(FetchDescriptor<SavedBook>())
-            StatsManager.shared.updateStats(using: books, in: modelContext)
+            StatsManager.shared.updateStats(using: books, in: modelContext, uid: auth.uid)
+            
         } catch {
             print("❌ Failed to update stats: \(error)")
         }

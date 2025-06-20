@@ -72,7 +72,7 @@ struct SearchResultList: View {
                                     do {
                                         try context.save()
                                             let books = try context.fetch(FetchDescriptor<SavedBook>())
-                                            StatsManager.shared.updateStats(using: books, in: context)
+                                            StatsManager.shared.updateStats(using: books, in: context, uid: auth.uid)
                                         print("🗑️ Removed: \(book.title)")
                                     } catch {
                                         print("❌ Delete error: \(error)")
@@ -91,7 +91,7 @@ struct SearchResultList: View {
                                             if !auth.uid.isEmpty {
                                                 try? context.saveAndSync(for: auth.uid)
                                                     let books = try context.fetch(FetchDescriptor<SavedBook>())
-                                                    StatsManager.shared.updateStats(using: books, in: context)
+                                                    StatsManager.shared.updateStats(using: books, in: context, uid: auth.uid)
                                             }
                                             print("📖 Updated to \(status.rawValue)")
                                         } catch {
@@ -209,7 +209,7 @@ struct SearchResultList: View {
                                 if !auth.uid.isEmpty {
                                     FirebaseBookService.shared.deleteBook(bookID: book.id, for: auth.uid)
                                         let books = try context.fetch(FetchDescriptor<SavedBook>())
-                                        StatsManager.shared.updateStats(using: books, in: context)
+                                        StatsManager.shared.updateStats(using: books, in: context, uid: auth.uid)
                                 }
                             } catch {
                                 print("❌ Delete error: \(error)")

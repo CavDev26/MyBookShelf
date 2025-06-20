@@ -4,16 +4,15 @@
 //
 //  Created by Lorenzo Cavallucci on 20/06/25.
 //
-
 import Foundation
+import FirebaseFirestore
 import SwiftData
-
 
 @MainActor
 class StatsManager: ObservableObject {
     static let shared = StatsManager()
-    
-    func updateStats(using books: [SavedBook], in context: ModelContext) {
+
+    func updateStats(using books: [SavedBook], in context: ModelContext, uid: String) {
         let calendar = Calendar.current
         let now = Date()
         let currentYear = calendar.component(.year, from: now)
@@ -37,6 +36,14 @@ class StatsManager: ObservableObject {
                 return "\(comps.year!)-\(comps.month!)"
             }
             stats.mostBooksReadInAMonth = booksByMonth.mapValues { $0.count }.values.max() ?? 0
+
+            // 🆕 XP Calculation
+            let xpFromPages = stats.totalPagesRead / 10
+            let monthlyCompleted = (try? context.fetch(FetchDescriptor<MonthlyReadingChallenge>()).filter { $0.isCompleted }.count) ?? 0
+            let yearlyCompleted = (try? context.fetch(FetchDescriptor<YearlyReadingChallenge>()).first(where: { $0.year == currentYear })?.isCompleted) == true
+            let xpFromMonths = monthlyCompleted * 25
+            let xpFromYear = yearlyCompleted ? 100 : 0
+            stats.totalXP = xpFromPages + xpFromMonths + xpFromYear
         }
 
         // 📆 Yearly Challenge
@@ -76,7 +83,146 @@ class StatsManager: ObservableObject {
         }
 
         try? context.save()
+        Task {
+                await self.syncStatsToFirebase(for: uid, from: context)
+                await self.syncChallengesToFirebase(for: uid, from: context)
+        }
     }
 }
 
 
+
+extension StatsManager {
+    
+    func fetchChallengesFromFirebase(for uid: String, context: ModelContext) async {
+        let ref = Firestore.firestore()
+            .collection("users")
+            .document(uid)
+            .collection("stats")
+
+        do {
+            // YEARLY
+            let yearlyDocs = try await ref.getDocuments()
+            for doc in yearlyDocs.documents {
+                if let y = try? doc.data(as: FirestoreYearlyReadingChallenge.self) {
+                    let model = YearlyReadingChallenge(
+                        year: y.year,
+                        goal: y.goal,
+                        booksFinished: y.booksFinished
+                    )
+                    model.isCompleted = y.isCompleted
+                    model.completionDate = y.completionDate
+                    context.insert(model)
+                } else if let m = try? doc.data(as: FirestoreMonthlyReadingChallenge.self) {
+                    let model = MonthlyReadingChallenge(
+                        year: m.year,
+                        month: m.month,
+                        goal: m.goal,
+                        booksFinished: m.booksFinished
+                    )
+                    model.isCompleted = m.isCompleted
+                    model.completionDate = m.completionDate
+                    context.insert(model)
+                }
+            }
+
+            try? context.save()
+            print("✅ Challenges fetched from Firebase")
+        } catch {
+            print("❌ Error fetching challenges from Firebase: \(error)")
+        }
+    }
+    func syncChallengesToFirebase(for uid: String, from context: ModelContext) async {
+        do {
+            let yearly = try context.fetch(FetchDescriptor<YearlyReadingChallenge>())
+            let monthly = try context.fetch(FetchDescriptor<MonthlyReadingChallenge>())
+
+            let statsRef = Firestore.firestore()
+                .collection("users")
+                .document(uid)
+                .collection("stats")
+
+            for y in yearly {
+                let data = FirestoreYearlyReadingChallenge(
+                    year: y.year,
+                    goal: y.goal,
+                    booksFinished: y.booksFinished,
+                    isCompleted: y.isCompleted,
+                    completionDate: y.completionDate
+                )
+                try await statsRef.document("\(y.year)").setData(from: data)
+            }
+
+            for m in monthly {
+                let data = FirestoreMonthlyReadingChallenge(
+                    year: m.year,
+                    month: m.month,
+                    goal: m.goal,
+                    booksFinished: m.booksFinished,
+                    isCompleted: m.isCompleted,
+                    completionDate: m.completionDate
+                )
+                try await statsRef.document("\(m.year)-\(m.month)").setData(from: data)
+            }
+
+            print("✅ Challenges synced to Firebase")
+
+        } catch {
+            print("❌ Error syncing challenges to Firebase: \(error)")
+        }
+    }
+    
+    func syncStatsToFirebase(for uid: String, from context: ModelContext) async {
+        guard let stats = try? context.fetch(FetchDescriptor<GlobalReadingStats>()).first else { return }
+
+        let firestoreStats = FirestoreGlobalReadingStats(
+            totalBooksFinished: stats.totalBooksFinished,
+            totalPagesRead: stats.totalPagesRead,
+            longestBookRead: stats.longestBookRead,
+            mostBooksReadInAYear: stats.mostBooksReadInAYear,
+            mostBooksReadInAMonth: stats.mostBooksReadInAMonth,
+            experiencePoints: stats.totalXP,
+            startDate: .now, // Puoi anche salvarlo solo al primo avvio
+            lastUpdate: .now
+        )
+
+        do {
+            try await Firestore.firestore()
+                .collection("users")
+                .document(uid)
+                .collection("stats")
+                .document("global")
+                .setData(from: firestoreStats)
+            print("✅ Stats synced to Firebase")
+        } catch {
+            print("❌ Error syncing stats to Firebase: \(error)")
+        }
+    }
+
+    func fetchStatsFromFirebase(for uid: String, context: ModelContext) async {
+        let docRef = Firestore.firestore()
+            .collection("users")
+            .document(uid)
+            .collection("stats")
+            .document("global")
+
+        do {
+            let snapshot = try await docRef.getDocument()
+            if let data = try? snapshot.data(as: FirestoreGlobalReadingStats.self) {
+                let stats = GlobalReadingStats(
+                    totalBooksFinished: data.totalBooksFinished,
+                    totalPagesRead: data.totalPagesRead,
+                    longestBookRead: data.longestBookRead,
+                    mostBooksReadInAYear: data.mostBooksReadInAYear,
+                    mostBooksReadInAMonth: data.mostBooksReadInAMonth,
+                    totalXP: data.experiencePoints
+                )
+                context.insert(stats)
+                try? context.save()
+                print("✅ Stats fetched from Firebase")
+            }
+        } catch {
+            print("❌ Error fetching stats from Firebase: \(error)")
+        }
+    }
+}
