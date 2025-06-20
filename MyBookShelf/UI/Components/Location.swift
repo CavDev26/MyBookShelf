@@ -8,12 +8,12 @@
 import CoreLocation
 import Foundation
 
-@Observable
-class LocationService: NSObject, CLLocationManagerDelegate {
+class LocationService: NSObject, ObservableObject, CLLocationManagerDelegate {
     private(set) var isMonitoring = false
-    private(set) var latitude: Double? = nil
-    private(set) var longitude: Double? = nil
-
+    @Published private(set) var latitude: Double? = nil
+    @Published private(set) var longitude: Double? = nil
+    @Published var currentLocation: CLLocationCoordinate2D?
+    
     private let locationManager = CLLocationManager()
 
     override init() {
@@ -40,12 +40,11 @@ class LocationService: NSObject, CLLocationManagerDelegate {
     }
 
     // Handle location updates
-    func locationManager(
-        _ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]
-    ) {
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.first else { return }
         latitude = location.coordinate.latitude
         longitude = location.coordinate.longitude
+        currentLocation = location.coordinate // 👈 AGGIUNGI QUESTA RIGA
         stopLocationRequest()
     }
 

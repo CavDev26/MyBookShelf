@@ -49,6 +49,7 @@ struct HomeView: View {
         .onAppear{
             if !auth.uid.isEmpty {
                 FirebaseBookService.shared.syncBooksToLocal(for: auth.uid, context: context)
+                ShelfService.shared.syncModifiedShelves(userID: auth.uid, context: context)
             }
         }
     }
@@ -66,18 +67,24 @@ struct yourShelvesView: View {
 
 
     var body: some View {
-        HStack(spacing: 6) {
-            RoundedRectangle(cornerRadius: 2)
-                .fill(Color.terracotta)
-                .frame(width: 4, height: 20)
-            
-            Text("Your Shelves")
-                .font(.system(size: 20, weight: .semibold, design: .serif))
-                .foregroundColor(colorScheme == .dark ? .white : .black)
-                .frame(maxWidth: .infinity, alignment: .leading)
+        NavigationLink(destination: ShelvesView(shelves: shelves, viewModel: viewModel)
+        ) {
+            HStack(spacing: 6) {
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(Color.terracotta)
+                    .frame(width: 4, height: 20)
+                
+                Text("Your Shelves")
+                    .font(.system(size: 20, weight: .semibold, design: .serif))
+                    .foregroundColor(colorScheme == .dark ? .white : .black)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Image(systemName: "chevron.right")
+                    .foregroundColor(colorScheme == .dark ? .white : .black)
+                    .font(.system(size: 18, weight: .semibold))
+            }
+            .padding(.horizontal)
+            .padding(.top)
         }
-        .padding(.horizontal)
-        .padding(.top)
         VStack(alignment: .leading, spacing: 8) {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
@@ -93,7 +100,7 @@ struct yourShelvesView: View {
                                     )
                                 Text(shelf.name)
                                     .font(.system(size: 14, weight: .semibold))
-                                    .foregroundColor(.white)
+                                    .foregroundColor(.secondary)
                             }
                         }
                     }
@@ -106,11 +113,13 @@ struct yourShelvesView: View {
                                 .frame(width: 100, height: 100)
                                 .overlay(
                                     Image(systemName: "plus")
+                                        .resizable()
+                                        .frame(width: 30, height: 30)
                                         .foregroundColor(.white)
                                 )
                             Text("Add Shelf")
                                 .font(.system(size: 14, weight: .semibold))
-                                .foregroundColor(.white)
+                                .foregroundColor(.secondary)
                         }
                     }
                 }
@@ -340,29 +349,36 @@ struct addShelfSheetView: View {
     @State private var latitude: Double? = nil
     @State private var longitude: Double? = nil
 
+    @EnvironmentObject var auth: AuthManager
+    
     @StateObject private var completerDelegate = CompleterDelegate()
     private var searchCompleter = MKLocalSearchCompleter()
     private var canSubmit: Bool { !name.isEmpty }
-    @State private var locationService = LocationService()
-
+    @StateObject private var locationService = LocationService()
     var body: some View {
             NavigationStack {
                 ZStack {
-                    if colorScheme == .dark {
+                    /*if colorScheme == .dark {
                         Color.backgroundColorDark2.ignoresSafeArea()
                     } else {
                         Color.lightColorApp.ignoresSafeArea()
-                    }
+                    }*/
                     Form {
                         Section(
                             content: {
                                 TextField("Name", text: $name)
+                                    .padding(10)
+                                    .background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
+                                    .cornerRadius(8)
                             },
                             header: { Text("Name") }
                         )
                         Section(
                             content: {
                                 TextField("Description", text: $description)
+                                    .padding(10)
+                                    .background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
+                                    .cornerRadius(8)
                             },
                             header: { Text("Description") }
                         )
@@ -370,6 +386,9 @@ struct addShelfSheetView: View {
                         
                         Section(header: Text("Address (optional)")) {
                             TextField("Enter address", text: $address)
+                                .padding(10)
+                                .background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
+                                .cornerRadius(8)
                                 .focused($isAddressFieldFocused)
                                 .onChange(of: address) { newValue in
                                     print("🔍 Querying: \(newValue)")
@@ -410,41 +429,50 @@ struct addShelfSheetView: View {
                                 .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 12))
                             }
                         }
-                        
-                        
-                        
-                        
-                        
                         Section(
                             content: {
                                 TextField("Latitude", value: $latitude, format: .number)
+                                    .padding(10)
+                                    .background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
+                                    .cornerRadius(8)
                                     .keyboardType(.numberPad)
                                     .onChange(of: locationService.latitude) {
                                         latitude = locationService.latitude
                                     }
-                                TextField(
-                                    "Longitude", value: $longitude, format: .number
-                                )
-                                .keyboardType(.numberPad)
-                                .onChange(of: locationService.longitude) {
-                                    longitude = locationService.longitude
-                                }
+                                TextField("Longitude", value: $longitude, format: .number)
+                                    .padding(10)
+                                    .background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
+                                    .cornerRadius(8)
+                                    .keyboardType(.numberPad)
+                                    .onChange(of: locationService.longitude) {
+                                        longitude = locationService.longitude
+                                    }
                                 
                                 HStack {
                                     Button(action: { locationService.requestLocation() }
                                     ) {
-                                        Text("Get current location")
+                                        HStack{
+                                            Image(systemName: "location.fill")
+                                                .padding(.trailing)
+                                            Text("Get current location")
+                                                //.cornerRadius(8)
+                                        }
+                                        .frame(maxWidth: .infinity)
+                                        .padding(10)
+                                        .background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
+                                        .cornerRadius(8)
+
                                     }
                                     if locationService.isMonitoring {
                                         Spacer()
-                                        ProgressView().tint(.blue)
+                                        ProgressView().tint(Color.terracotta)
                                     }
                                 }
                             },
                             header: { Text("Coordinates") }
                         )
                     }
-                    .scrollContentBackground(.hidden) // 👈 Nasconde sfondo originale del Form
+                    .scrollContentBackground(.hidden)
                 }     
                 .navigationTitle("Add Shelf")
                 .navigationBarTitleDisplayMode(.inline)
@@ -455,6 +483,30 @@ struct addShelfSheetView: View {
                     ToolbarItemGroup(placement: .topBarTrailing) {
                         Button("Save") {
                             if !canSubmit { return }
+                            if !auth.uid.isEmpty {
+                                let shelf = Shelf(
+                                    name: name,
+                                    latitude: latitude ?? 0,
+                                    longitude: longitude ?? 0,
+                                    shelfDescription: description ?? "",
+                                    address: address.isEmpty ? nil : address
+                                )
+                                
+                                ShelfService.shared.saveShelf(shelf, context: context, userID: auth.uid) { result in
+                                    switch result {
+                                    case .success():
+                                        print("✅ Uploaded to Firebase")
+                                    case .failure(let error):
+                                        print("⚠️ Upload failed: \(error.localizedDescription)")
+                                    }
+                                    dismiss()
+                                }
+                            }
+                            
+                            
+                            
+                            
+                            /*if !canSubmit { return }
                             let shelf = Shelf(
                                 name: name,
                                 latitude: latitude ?? 0,
@@ -473,7 +525,7 @@ struct addShelfSheetView: View {
                             } catch {
                                 print("❌ Save error: \(error)")
                             }
-                            dismiss()
+                            dismiss()*/
                         }
                         .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
                     }
