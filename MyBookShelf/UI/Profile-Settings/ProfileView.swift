@@ -8,6 +8,8 @@ import LocalAuthentication
 import SwiftUI
 import FirebaseAuth
 import SwiftData
+import FirebaseFirestore
+
 
 struct ProfileView: View {
     @Environment(\.colorScheme) var colorScheme
@@ -16,6 +18,7 @@ struct ProfileView: View {
     @State private var isDiaryUnlocked = false
     @State private var showDiaryAuthError = false
     @Environment(\.modelContext) private var context
+    @State private var profileImage: UIImage? = nil
 
     @AppStorage("isDarkMode") private var isDarkMode: Bool = false
     @AppStorage("username") private var username: String = ""
@@ -41,10 +44,19 @@ struct ProfileView: View {
                             if auth.isLoggedIn {
                                 NavigationLink(destination: AccountView()) {
                                     HStack {
-                                        Image(systemName: "person.crop.circle.fill")
-                                            .resizable()
-                                            .frame(width: 48, height: 48)
-                                            .foregroundColor(.gray)
+                                        Group {
+                                            if let image = profileImage {
+                                                Image(uiImage: image)
+                                                    .resizable()
+                                                    .scaledToFill()
+                                                    .clipShape(Circle())
+                                            } else {
+                                                Image(systemName: "person.crop.circle.fill")
+                                                    .resizable()
+                                                    .foregroundColor(.gray)
+                                            }
+                                        }
+                                        .frame(width: 100, height: 100)
                                         
                                         VStack(alignment: .leading) {
                                             Text(auth.email)
@@ -153,7 +165,23 @@ struct ProfileView: View {
                     .scrollContentBackground(.hidden)
                     .listStyle(.insetGrouped)
                 }
+                .onAppear {
+                    if auth.isLoggedIn {
+                        loadProfileImage()
+                    }
+                }
                 
+            }
+        }
+    }
+    func loadProfileImage() {
+        let userRef = Firestore.firestore().collection("users").document(auth.uid)
+        userRef.getDocument { snapshot, error in
+            if let data = snapshot?.data(),
+               let base64String = data["profileImageBase64"] as? String,
+               let imageData = Data(base64Encoded: base64String),
+               let uiImage = UIImage(data: imageData) {
+                profileImage = uiImage
             }
         }
     }
@@ -188,68 +216,111 @@ struct NotificationView: View {
 
 
 
+// AccountView.swift
+
 struct AccountView: View {
     @Environment(\.colorScheme) var colorScheme
     @EnvironmentObject var auth: AuthManager
 
+    @State private var selectedImage: UIImage? = nil
+    @State private var showingSourceDialog = false
+    @State private var showingCamera = false
+    @State private var showingImagePicker = false
+    @State private var imagePickerSource: UIImagePickerController.SourceType = .photoLibrary
     @State private var showImagePicker = false
     @State private var showChangeEmailSheet = false
     @State private var newPassword = ""
     @State private var showAlert = false
     @State private var alertMessage = ""
+    @State private var isUploading = false
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section {
-                    HStack {
-                        Spacer()
-                        Button {
-                            showImagePicker = true
-                        } label: {
-                            Circle()
-                                .fill(Color.gray.opacity(0.2))
-                                .frame(width: 100, height: 100)
-                                .overlay(
-                                    Image(systemName: "camera")
-                                        .font(.title)
-                                        .foregroundColor(.primary)
-                                )
-                        }
-                        Spacer()
-                    }
-                }
+            ZStack(alignment: .top) {
+                Color(colorScheme == .dark ? Color.backgroundColorDark : Color.lightColorApp)
+                    .ignoresSafeArea()
+                List {
+                    Section {
+                        HStack {
+                            Spacer()
+                            Button {
+                                showingSourceDialog = true
+                            } label: {
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.gray.opacity(0.2))
+                                        .frame(width: 150, height: 150)
 
-                Section(header: Text("Email")) {
-                    HStack {
-                        Text("Current:")
-                        Spacer()
+                                    if let image = selectedImage {
+                                        Image(uiImage: image)
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(width: 150, height: 150)
+                                            .clipShape(Circle())
+                                    } else {
+                                        Image(systemName: "camera")
+                                            .font(.title)
+                                            .foregroundColor(.primary)
+                                    }
+                                }
+                            }
+                            .confirmationDialog("Choose Image Source", isPresented: $showingSourceDialog) {
+                                Button("Photo Library") {
+                                    imagePickerSource = .photoLibrary
+                                    showingImagePicker = true
+                                }
+                                Button("Camera") {
+                                    imagePickerSource = .camera
+                                    showingImagePicker = true
+                                }
+                                Button("Cancel", role: .cancel) { }
+                            }
+                            .sheet(isPresented: $showingImagePicker) {
+                                ImagePicker(sourceType: imagePickerSource, selectedImage: $selectedImage)
+                                    .onDisappear {
+                                        if let image = selectedImage {
+                                            uploadProfileImage(image, for: auth.uid)
+                                        }
+                                    }
+                            }
+                            Spacer()
+                        }
+                    }.listRowBackground(Color.clear)
+
+                    Section(header: Text("Email")) {
                         Text(auth.email)
                             .foregroundColor(.secondary)
                             .lineLimit(1)
                             .truncationMode(.middle)
-                    }
 
-                    Button("Change Email") {
-                        showChangeEmailSheet = true
-                    }
-                }
-
-                Section(header: Text("New Password")) {
-                    SecureField("••••••••", text: $newPassword)
-
-                    Button("Change Password") {
-                        auth.updatePassword(to: newPassword) { error in
-                            if let error = error {
-                                alertMessage = "⚠️ \(error)"
-                            } else {
-                                alertMessage = "✅ Password aggiornata con successo"
-                            }
-                            showAlert = true
+                        Button {
+                            showChangeEmailSheet = true
+                        } label : {
+                            Text("Change Email")
+                                .frame(maxWidth: .infinity)
                         }
-                    }
-                    .disabled(newPassword.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    }.listRowBackground(colorScheme == .dark ? Color.backgroundColorDark2 : Color.backgroundColorLight)
+
+                    Section(header: Text("New Password")) {
+                        SecureField("Insert new password", text: $newPassword)
+
+                        Button{
+                            auth.updatePassword(to: newPassword) { error in
+                                if let error = error {
+                                    alertMessage = "\(error)"
+                                } else {
+                                    alertMessage = "Password aggiornata con successo"
+                                }
+                                showAlert = true
+                            }
+                        } label: {
+                            Text("Change Password")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .disabled(newPassword.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    }.listRowBackground(colorScheme == .dark ? Color.backgroundColorDark2 : Color.backgroundColorLight)
                 }
+                .scrollContentBackground(.hidden)
             }
             .customNavigationTitle("Account Settings")
             .sheet(isPresented: $showChangeEmailSheet) {
@@ -261,9 +332,42 @@ struct AccountView: View {
             } message: {
                 Text(alertMessage)
             }
+            .onAppear {
+                loadProfileImage()
+            }
         }
     }
+
+    func uploadProfileImage(_ image: UIImage, for uid: String) {
+        guard let imageData = image.jpegData(compressionQuality: 0.4) else { return }
+
+        let base64String = imageData.base64EncodedString()
+
+        let userRef = Firestore.firestore().collection("users").document(uid)
+        userRef.setData(["profileImageBase64": base64String], merge: true) { error in
+            if let error = error {
+                alertMessage = "❌ Firestore upload error: \(error.localizedDescription)"
+                showAlert = true
+            } else {
+                alertMessage = "✅ Immagine caricata con successo!"
+                showAlert = true
+            }
+        }
+    }
+    func loadProfileImage() {
+        let userRef = Firestore.firestore().collection("users").document(auth.uid)
+        userRef.getDocument { snapshot, error in
+            if let data = snapshot?.data(),
+               let base64String = data["profileImageBase64"] as? String,
+               let imageData = Data(base64Encoded: base64String),
+               let uiImage = UIImage(data: imageData) {
+                selectedImage = uiImage
+            }
+        }
+    }
+    
 }
+
 
 struct ChangeEmailSheetView: View {
     @EnvironmentObject var auth: AuthManager

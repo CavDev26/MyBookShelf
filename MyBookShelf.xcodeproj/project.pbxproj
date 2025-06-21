@@ -10,6 +10,7 @@
 		DA4D1C122E017AA800798108 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = DA4D1C112E017AA800798108 /* FirebaseAuth */; };
 		DA4D1C142E017AA800798108 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = DA4D1C132E017AA800798108 /* FirebaseCore */; };
 		DA4D1C202E01A27500798108 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = DA4D1C1F2E01A27500798108 /* FirebaseFirestore */; };
+		DA6BAAB32E06FA53008CE1BA /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = DA6BAAB22E06FA53008CE1BA /* FirebaseStorage */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,6 +60,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DA4D1C142E017AA800798108 /* FirebaseCore in Frameworks */,
+				DA6BAAB32E06FA53008CE1BA /* FirebaseStorage in Frameworks */,
 				DA4D1C122E017AA800798108 /* FirebaseAuth in Frameworks */,
 				DA4D1C202E01A27500798108 /* FirebaseFirestore in Frameworks */,
 			);
@@ -124,6 +126,7 @@
 				DA4D1C112E017AA800798108 /* FirebaseAuth */,
 				DA4D1C132E017AA800798108 /* FirebaseCore */,
 				DA4D1C1F2E01A27500798108 /* FirebaseFirestore */,
+				DA6BAAB22E06FA53008CE1BA /* FirebaseStorage */,
 			);
 			productName = MyBookShelf;
 			productReference = DA58887A2DE32538001687EE /* MyBookShelf.app */;
@@ -608,6 +611,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = DA4D1C102E017AA800798108 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseFirestore;
+		};
+		DA6BAAB22E06FA53008CE1BA /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DA4D1C102E017AA800798108 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
