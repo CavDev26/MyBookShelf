@@ -7,6 +7,7 @@
 import LocalAuthentication
 import SwiftUI
 import FirebaseAuth
+import SwiftData
 
 struct ProfileView: View {
     @Environment(\.colorScheme) var colorScheme
@@ -267,6 +268,7 @@ struct AccountView: View {
 struct ChangeEmailSheetView: View {
     @EnvironmentObject var auth: AuthManager
     @Environment(\.dismiss) var dismiss
+    @Environment(\.modelContext) private var context
 
     @State private var newEmail: String = ""
     @State private var password: String = ""
@@ -285,7 +287,7 @@ struct ChangeEmailSheetView: View {
                             Label("Check your inbox and verify your new email.", systemImage: "envelope.badge")
                                 .foregroundColor(.blue)
                             Button("I have verified") {
-                                checkVerificationStatus()
+                                checkVerificationStatus(context: context)
                             }
                         }
                     }
@@ -362,20 +364,21 @@ struct ChangeEmailSheetView: View {
         }
     }
 
-    func checkVerificationStatus() {
+    func checkVerificationStatus(context: ModelContext) {
         Task {
             do {
                 try await Auth.auth().currentUser?.reload()
                 if Auth.auth().currentUser?.isEmailVerified == true {
                     await MainActor.run {
                         timer?.invalidate()
+
+                        // 👉 logout completo
+                            auth.logout(context: context)
+                        /*if let context = try? Environment(\.modelContext).wrappedValue {
+                            auth.logout(context: context)
+                        }*/
+
                         dismiss()
-                        // Navigate to AuthView manually
-                        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                           let window = windowScene.windows.first {
-                            window.rootViewController = UIHostingController(rootView: AuthView().environmentObject(auth))
-                            window.makeKeyAndVisible()
-                        }
                     }
                 } else {
                     feedbackMessage = "❗️ Email not yet verified."
@@ -388,7 +391,7 @@ struct ChangeEmailSheetView: View {
 
     func startVerificationPolling() {
         timer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { _ in
-            checkVerificationStatus()
+            checkVerificationStatus(context: context)
         }
     }
 }
