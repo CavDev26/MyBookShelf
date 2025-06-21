@@ -57,35 +57,6 @@ class MonthlyReadingChallenge {
     }
 }
 
-/*enum BadgeType: String, Codable {
-    case global
-    case yearly
-    case monthly
-    case streak
-}
-
-@Model
-class Badge {
-    var id: String
-    var name: String
-    var badgeDescription: String
-    var earnedDate: Date?
-    var isEarned: Bool
-    var type: String // BadgeType.rawValue
-
-    init(id: String, name: String, description: String, type: BadgeType, isEarned: Bool = false, earnedDate: Date? = nil) {
-        self.id = id
-        self.name = name
-        self.badgeDescription = description
-        self.type = type.rawValue
-        self.isEarned = isEarned
-        self.earnedDate = earnedDate
-    }
-}*/
-
-
-
-
 
 ///FIREBASE SECTION
 ///
@@ -120,20 +91,3 @@ struct FirestoreMonthlyReadingChallenge: Codable, Identifiable {
     var isCompleted: Bool
     var completionDate: Date?
 }
-
-
-/*enum FirestoreBadgeType: String, Codable {
-    case global
-    case yearly
-    case monthly
-    case streak
-}
-
-struct FirestoreBadge: Codable, Identifiable {
-    var id: String
-    var name: String
-    var description: String
-    var earnedDate: Date?
-    var isEarned: Bool
-    var type: FirestoreBadgeType
-}*/

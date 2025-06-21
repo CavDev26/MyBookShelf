@@ -21,9 +21,6 @@ struct StartupView: View {
                 ContentView()
                     .environmentObject(auth)
                     .transition(.move(edge: .trailing).combined(with: .opacity))
-                    .onAppear{
-                        ensureStatsExistAndUpdate()
-                    }
             } else {
                 AuthView()
                     .environmentObject(auth)
@@ -36,9 +33,19 @@ struct StartupView: View {
                 isChecking = false
                 if auth.isLoggedIn {
                     FirebaseBookService.shared.syncBooksToLocal(for: auth.uid, context: modelContext)
+
                     Task {
+                        await auth.refreshUserInfo()
+                        print("sono nell'on Appear di startup")
+
+                        // 2️⃣ Fetch da Firebase
                         await StatsManager.shared.fetchStatsFromFirebase(for: auth.uid, context: modelContext)
                         await StatsManager.shared.fetchChallengesFromFirebase(for: auth.uid, context: modelContext)
+                        // 3️⃣ Aggiorna stats SOLO se esistono
+                        let books = try? modelContext.fetch(FetchDescriptor<SavedBook>())
+                        if let books, !books.isEmpty {
+                            StatsManager.shared.updateStats(using: books, in: modelContext, uid: auth.uid)
+                        }
                     }
                 }
             }
@@ -55,7 +62,6 @@ struct StartupView: View {
         do {
             let books = try modelContext.fetch(FetchDescriptor<SavedBook>())
             StatsManager.shared.updateStats(using: books, in: modelContext, uid: auth.uid)
-            
         } catch {
             print("❌ Failed to update stats: \(error)")
         }

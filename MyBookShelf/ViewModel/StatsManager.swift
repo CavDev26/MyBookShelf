@@ -101,9 +101,44 @@ extension StatsManager {
             .collection("stats")
 
         do {
-            // YEARLY
             let yearlyDocs = try await ref.getDocuments()
+            
+            
             for doc in yearlyDocs.documents {
+                let id = doc.documentID
+
+                if id.contains("-") {
+                    // ➕ È una MonthlyChallenge
+                    if let m = try? doc.data(as: FirestoreMonthlyReadingChallenge.self) {
+                        let model = MonthlyReadingChallenge(
+                            year: m.year,
+                            month: m.month,
+                            goal: m.goal,
+                            booksFinished: m.booksFinished
+                        )
+                        model.isCompleted = m.isCompleted
+                        model.completionDate = m.completionDate
+                        print("📘 Monthly trovato: \(model.goal)")
+                        context.insert(model)
+                    }
+                } else {
+                    // ➕ È una YearlyChallenge
+                    if let y = try? doc.data(as: FirestoreYearlyReadingChallenge.self) {
+                        let model = YearlyReadingChallenge(
+                            year: y.year,
+                            goal: y.goal,
+                            booksFinished: y.booksFinished
+                        )
+                        model.isCompleted = y.isCompleted
+                        model.completionDate = y.completionDate
+                        print("📗 Yearly trovato: \(model.goal)")
+                        context.insert(model)
+                    }
+                }
+            }
+            
+            
+            /*for doc in yearlyDocs.documents {
                 if let y = try? doc.data(as: FirestoreYearlyReadingChallenge.self) {
                     let model = YearlyReadingChallenge(
                         year: y.year,
@@ -112,6 +147,7 @@ extension StatsManager {
                     )
                     model.isCompleted = y.isCompleted
                     model.completionDate = y.completionDate
+                    print("Yearly trovato: \(model.goal)")
                     context.insert(model)
                 } else if let m = try? doc.data(as: FirestoreMonthlyReadingChallenge.self) {
                     let model = MonthlyReadingChallenge(
@@ -122,9 +158,10 @@ extension StatsManager {
                     )
                     model.isCompleted = m.isCompleted
                     model.completionDate = m.completionDate
+                    print("Monthly trovato: \(model.goal)")
                     context.insert(model)
                 }
-            }
+            }*/
 
             try? context.save()
             print("✅ Challenges fetched from Firebase")
@@ -217,6 +254,9 @@ extension StatsManager {
                     mostBooksReadInAMonth: data.mostBooksReadInAMonth,
                     totalXP: data.experiencePoints
                 )
+                print("📥 Dati stats ricevuti da Firebase:")
+                print("📘 Totale libri finiti: \(data.totalBooksFinished)")
+                print("📄 Pagine lette: \(data.totalPagesRead)")
                 context.insert(stats)
                 try? context.save()
                 print("✅ Stats fetched from Firebase")

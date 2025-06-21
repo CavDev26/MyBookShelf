@@ -50,6 +50,12 @@ struct HomeView: View {
             if !auth.uid.isEmpty {
                 FirebaseBookService.shared.syncBooksToLocal(for: auth.uid, context: context)
                 ShelfService.shared.syncModifiedShelves(userID: auth.uid, context: context)
+                
+                        let currentYear = Calendar.current.component(.year, from: .now)
+                        let currentMonth = Calendar.current.component(.month, from: .now)
+                        let yc = try? context.fetch(FetchDescriptor<YearlyReadingChallenge>())
+                            .first(where: { $0.year == currentYear })
+                        print("🔁 Yearly after login: \(yc?.goal ?? -1) - booksFinished: \(yc?.booksFinished ?? -1)")
             }
         }
     }

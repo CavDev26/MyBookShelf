@@ -9,6 +9,7 @@ struct ChallengesView: View {
     @Environment(\.modelContext) private var context
     @Query var yearlyChallenges: [YearlyReadingChallenge]
     @Query var monthlyChallenges: [MonthlyReadingChallenge]
+    @StateObject private var auth = AuthManager()
     
     @Environment(\.dismiss) var dismiss
     @Environment(\.colorScheme) var colorScheme
@@ -104,6 +105,12 @@ struct ChallengesView: View {
             try context.save()
             yearlyChallenge = nil
             monthlyChallenge = nil
+            do {
+                let books = try context.fetch(FetchDescriptor<SavedBook>())
+                StatsManager.shared.updateStats(using: books, in: context, uid: auth.uid)
+            } catch {
+                print("❌ Failed to update stats: \(error)")
+            }
             print("🗑️ Tutte le challenge eliminate.")
         } catch {
             print("❌ Errore nella cancellazione delle challenge: \(error)")
@@ -146,7 +153,8 @@ struct ReadingChallengeView: View {
                 RoundedRectangle(cornerRadius: 2)
                     .fill(Color.terracotta)
                     .frame(width: 4, height: 20)
-                Text("\(Calendar.current.component(.year, from: .now)) Reading Challenge")                    .modifier(TitleTextMod(size: 20))
+                Text("\(Calendar.current.component(.year, from: .now)) Reading Challenge")
+                    .modifier(TitleTextMod(size: 20))
                 if goal != 0 {
                     Button {
                         showSheet = true
@@ -288,6 +296,8 @@ struct goalSetterSheetView: View {
                 if let newGoal = Int(tempGoal), newGoal > 0 {
                     if let yChall = yChall {
                         yChall.goal = newGoal
+                        print("newGoal: \(newGoal) \n")
+                        print("ychall.goal: \(yChall.goal)")
                     } else if let mChall = mChall {
                         mChall.goal = newGoal
                     }

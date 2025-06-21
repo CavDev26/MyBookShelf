@@ -1,9 +1,13 @@
 import SwiftUI
+import SwiftData
 
 struct ContentView: View {
     @Environment(\.colorScheme) var systemColorScheme
     @AppStorage("useSystemColorScheme") private var useSystemColorScheme: Bool = true
     @AppStorage("isDarkMode") private var isDarkMode: Bool = false
+    @StateObject private var auth = AuthManager()
+    @Environment(\.modelContext) private var modelContext
+
 
     @State private var selectedTab = 0
     @State private var forceUpdate = false
@@ -35,7 +39,19 @@ struct ContentView: View {
         .tint(!currentIsDark ? .terracottaDarkIcons : .peachColorIcons)
         .onAppear {
             setTabBarAppearance(isDark: currentIsDark)
-        }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+
+                            Task {
+                                await auth.refreshUserInfo()
+                                print("sono nell'on Appear di contentView\n")
+
+                                // 2️⃣ Fetch da Firebase
+                                await StatsManager.shared.fetchStatsFromFirebase(for: auth.uid, context: modelContext)
+                                await StatsManager.shared.fetchChallengesFromFirebase(for: auth.uid, context: modelContext)
+
+                            }
+                        }
+                }
         .onChange(of: currentIsDark) { _ in
             if useSystemColorScheme {
                 setTabBarAppearance(isDark: !currentIsDark)
