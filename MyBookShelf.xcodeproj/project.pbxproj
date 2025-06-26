@@ -11,6 +11,7 @@
 		DA4D1C142E017AA800798108 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = DA4D1C132E017AA800798108 /* FirebaseCore */; };
 		DA4D1C202E01A27500798108 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = DA4D1C1F2E01A27500798108 /* FirebaseFirestore */; };
 		DA6BAAB32E06FA53008CE1BA /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = DA6BAAB22E06FA53008CE1BA /* FirebaseStorage */; };
+		DACC68322E071346007E67F7 /* WatchMyBookShelf Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = DACC680F2E071342007E67F7 /* WatchMyBookShelf Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -28,17 +29,68 @@
 			remoteGlobalIDString = DA5888792DE32538001687EE;
 			remoteInfo = MyBookShelf;
 		};
+		DACC681F2E071346007E67F7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DA5888722DE32538001687EE /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DACC680E2E071342007E67F7;
+			remoteInfo = "WatchMyBookShelf Watch App";
+		};
+		DACC68292E071346007E67F7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DA5888722DE32538001687EE /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DACC680E2E071342007E67F7;
+			remoteInfo = "WatchMyBookShelf Watch App";
+		};
+		DACC68302E071346007E67F7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DA5888722DE32538001687EE /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DACC680E2E071342007E67F7;
+			remoteInfo = "WatchMyBookShelf Watch App";
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		DA6BAADF2E07029F008CE1BA /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				DACC68322E071346007E67F7 /* WatchMyBookShelf Watch App.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		DA58887A2DE32538001687EE /* MyBookShelf.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MyBookShelf.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA58888A2DE3253B001687EE /* MyBookShelfTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MyBookShelfTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA5888942DE3253B001687EE /* MyBookShelfUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MyBookShelfUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		DACC680F2E071342007E67F7 /* WatchMyBookShelf Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "WatchMyBookShelf Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DACC681E2E071346007E67F7 /* WatchMyBookShelf Watch AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "WatchMyBookShelf Watch AppTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DACC68282E071346007E67F7 /* WatchMyBookShelf Watch AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "WatchMyBookShelf Watch AppUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		DA6BAAE72E070316008CE1BA /* Exceptions for "MyBookShelf" folder in "MyBookShelf" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = DA5888792DE32538001687EE /* MyBookShelf */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		DA58887C2DE32538001687EE /* MyBookShelf */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				DA6BAAE72E070316008CE1BA /* Exceptions for "MyBookShelf" folder in "MyBookShelf" target */,
+			);
 			path = MyBookShelf;
 			sourceTree = "<group>";
 		};
@@ -50,6 +102,11 @@
 		DA5888972DE3253B001687EE /* MyBookShelfUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = MyBookShelfUITests;
+			sourceTree = "<group>";
+		};
+		DACC68102E071342007E67F7 /* WatchMyBookShelf Watch App */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "WatchMyBookShelf Watch App";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -80,6 +137,27 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		DACC680C2E071342007E67F7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DACC681B2E071346007E67F7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DACC68252E071346007E67F7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -89,6 +167,7 @@
 				DA58887C2DE32538001687EE /* MyBookShelf */,
 				DA58888D2DE3253B001687EE /* MyBookShelfTests */,
 				DA5888972DE3253B001687EE /* MyBookShelfUITests */,
+				DACC68102E071342007E67F7 /* WatchMyBookShelf Watch App */,
 				DA58887B2DE32538001687EE /* Products */,
 			);
 			sourceTree = "<group>";
@@ -99,6 +178,9 @@
 				DA58887A2DE32538001687EE /* MyBookShelf.app */,
 				DA58888A2DE3253B001687EE /* MyBookShelfTests.xctest */,
 				DA5888942DE3253B001687EE /* MyBookShelfUITests.xctest */,
+				DACC680F2E071342007E67F7 /* WatchMyBookShelf Watch App.app */,
+				DACC681E2E071346007E67F7 /* WatchMyBookShelf Watch AppTests.xctest */,
+				DACC68282E071346007E67F7 /* WatchMyBookShelf Watch AppUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -113,10 +195,12 @@
 				DA5888762DE32538001687EE /* Sources */,
 				DA5888772DE32538001687EE /* Frameworks */,
 				DA5888782DE32538001687EE /* Resources */,
+				DA6BAADF2E07029F008CE1BA /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				DACC68312E071346007E67F7 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				DA58887C2DE32538001687EE /* MyBookShelf */,
@@ -178,6 +262,68 @@
 			productReference = DA5888942DE3253B001687EE /* MyBookShelfUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		DACC680E2E071342007E67F7 /* WatchMyBookShelf Watch App */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DACC68332E071346007E67F7 /* Build configuration list for PBXNativeTarget "WatchMyBookShelf Watch App" */;
+			buildPhases = (
+				DACC680B2E071342007E67F7 /* Sources */,
+				DACC680C2E071342007E67F7 /* Frameworks */,
+				DACC680D2E071342007E67F7 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				DACC68102E071342007E67F7 /* WatchMyBookShelf Watch App */,
+			);
+			name = "WatchMyBookShelf Watch App";
+			packageProductDependencies = (
+			);
+			productName = "WatchMyBookShelf Watch App";
+			productReference = DACC680F2E071342007E67F7 /* WatchMyBookShelf Watch App.app */;
+			productType = "com.apple.product-type.application";
+		};
+		DACC681D2E071346007E67F7 /* WatchMyBookShelf Watch AppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DACC68362E071346007E67F7 /* Build configuration list for PBXNativeTarget "WatchMyBookShelf Watch AppTests" */;
+			buildPhases = (
+				DACC681A2E071346007E67F7 /* Sources */,
+				DACC681B2E071346007E67F7 /* Frameworks */,
+				DACC681C2E071346007E67F7 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DACC68202E071346007E67F7 /* PBXTargetDependency */,
+			);
+			name = "WatchMyBookShelf Watch AppTests";
+			packageProductDependencies = (
+			);
+			productName = "WatchMyBookShelf Watch AppTests";
+			productReference = DACC681E2E071346007E67F7 /* WatchMyBookShelf Watch AppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		DACC68272E071346007E67F7 /* WatchMyBookShelf Watch AppUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DACC68392E071346007E67F7 /* Build configuration list for PBXNativeTarget "WatchMyBookShelf Watch AppUITests" */;
+			buildPhases = (
+				DACC68242E071346007E67F7 /* Sources */,
+				DACC68252E071346007E67F7 /* Frameworks */,
+				DACC68262E071346007E67F7 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DACC682A2E071346007E67F7 /* PBXTargetDependency */,
+			);
+			name = "WatchMyBookShelf Watch AppUITests";
+			packageProductDependencies = (
+			);
+			productName = "WatchMyBookShelf Watch AppUITests";
+			productReference = DACC68282E071346007E67F7 /* WatchMyBookShelf Watch AppUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -198,6 +344,17 @@
 					DA5888932DE3253B001687EE = {
 						CreatedOnToolsVersion = 16.2;
 						TestTargetID = DA5888792DE32538001687EE;
+					};
+					DACC680E2E071342007E67F7 = {
+						CreatedOnToolsVersion = 16.2;
+					};
+					DACC681D2E071346007E67F7 = {
+						CreatedOnToolsVersion = 16.2;
+						TestTargetID = DACC680E2E071342007E67F7;
+					};
+					DACC68272E071346007E67F7 = {
+						CreatedOnToolsVersion = 16.2;
+						TestTargetID = DACC680E2E071342007E67F7;
 					};
 				};
 			};
@@ -221,6 +378,9 @@
 				DA5888792DE32538001687EE /* MyBookShelf */,
 				DA5888892DE3253B001687EE /* MyBookShelfTests */,
 				DA5888932DE3253B001687EE /* MyBookShelfUITests */,
+				DACC680E2E071342007E67F7 /* WatchMyBookShelf Watch App */,
+				DACC681D2E071346007E67F7 /* WatchMyBookShelf Watch AppTests */,
+				DACC68272E071346007E67F7 /* WatchMyBookShelf Watch AppUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -241,6 +401,27 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		DA5888922DE3253B001687EE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DACC680D2E071342007E67F7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DACC681C2E071346007E67F7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DACC68262E071346007E67F7 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -271,6 +452,27 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		DACC680B2E071342007E67F7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DACC681A2E071346007E67F7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DACC68242E071346007E67F7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -283,6 +485,21 @@
 			isa = PBXTargetDependency;
 			target = DA5888792DE32538001687EE /* MyBookShelf */;
 			targetProxy = DA5888952DE3253B001687EE /* PBXContainerItemProxy */;
+		};
+		DACC68202E071346007E67F7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DACC680E2E071342007E67F7 /* WatchMyBookShelf Watch App */;
+			targetProxy = DACC681F2E071346007E67F7 /* PBXContainerItemProxy */;
+		};
+		DACC682A2E071346007E67F7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DACC680E2E071342007E67F7 /* WatchMyBookShelf Watch App */;
+			targetProxy = DACC68292E071346007E67F7 /* PBXContainerItemProxy */;
+		};
+		DACC68312E071346007E67F7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DACC680E2E071342007E67F7 /* WatchMyBookShelf Watch App */;
+			targetProxy = DACC68302E071346007E67F7 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -348,6 +565,7 @@
 				NEW_SETTING = "";
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -407,6 +625,7 @@
 				MTL_FAST_MATH = YES;
 				NEW_SETTING = "";
 				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -423,7 +642,10 @@
 				DEVELOPMENT_TEAM = Y649WMQLD6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MyBookShelf/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "\"We need access to your camera to scan books!";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "We use Face ID to lock your private diary";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to tag shelves with coordinates.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -439,6 +661,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
 			};
 			name = Debug;
 		};
@@ -453,7 +676,10 @@
 				DEVELOPMENT_TEAM = Y649WMQLD6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MyBookShelf/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "\"We need access to your camera to scan books!";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "We use Face ID to lock your private diary";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to tag shelves with coordinates.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -469,6 +695,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
 			};
 			name = Release;
 		};
@@ -544,6 +771,146 @@
 			};
 			name = Release;
 		};
+		DACC68342E071346007E67F7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"WatchMyBookShelf Watch App/Preview Content\"";
+				DEVELOPMENT_TEAM = Y649WMQLD6;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = WatchMyBookShelf;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = "com.Lorenzo-Cavallucci.MyBookShelf";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.Lorenzo-Cavallucci.MyBookShelf.watchkitapp";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchsimulator watchos";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Debug;
+		};
+		DACC68352E071346007E67F7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"WatchMyBookShelf Watch App/Preview Content\"";
+				DEVELOPMENT_TEAM = Y649WMQLD6;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = WatchMyBookShelf;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = "com.Lorenzo-Cavallucci.MyBookShelf";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.Lorenzo-Cavallucci.MyBookShelf.watchkitapp";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchsimulator watchos";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Release;
+		};
+		DACC68372E071346007E67F7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = Y649WMQLD6;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.Lorenzo-Cavallucci.WatchMyBookShelf-Watch-AppTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/WatchMyBookShelf Watch App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/WatchMyBookShelf Watch App";
+				WATCHOS_DEPLOYMENT_TARGET = 11.2;
+			};
+			name = Debug;
+		};
+		DACC68382E071346007E67F7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = Y649WMQLD6;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.Lorenzo-Cavallucci.WatchMyBookShelf-Watch-AppTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/WatchMyBookShelf Watch App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/WatchMyBookShelf Watch App";
+				WATCHOS_DEPLOYMENT_TARGET = 11.2;
+			};
+			name = Release;
+		};
+		DACC683A2E071346007E67F7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = Y649WMQLD6;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.Lorenzo-Cavallucci.WatchMyBookShelf-Watch-AppUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_TARGET_NAME = "WatchMyBookShelf Watch App";
+				WATCHOS_DEPLOYMENT_TARGET = 11.2;
+			};
+			name = Debug;
+		};
+		DACC683B2E071346007E67F7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = Y649WMQLD6;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.Lorenzo-Cavallucci.WatchMyBookShelf-Watch-AppUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_TARGET_NAME = "WatchMyBookShelf Watch App";
+				WATCHOS_DEPLOYMENT_TARGET = 11.2;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -579,6 +946,33 @@
 			buildConfigurations = (
 				DA5888A52DE3253B001687EE /* Debug */,
 				DA5888A62DE3253B001687EE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DACC68332E071346007E67F7 /* Build configuration list for PBXNativeTarget "WatchMyBookShelf Watch App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DACC68342E071346007E67F7 /* Debug */,
+				DACC68352E071346007E67F7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DACC68362E071346007E67F7 /* Build configuration list for PBXNativeTarget "WatchMyBookShelf Watch AppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DACC68372E071346007E67F7 /* Debug */,
+				DACC68382E071346007E67F7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DACC68392E071346007E67F7 /* Build configuration list for PBXNativeTarget "WatchMyBookShelf Watch AppUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DACC683A2E071346007E67F7 /* Debug */,
+				DACC683B2E071346007E67F7 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

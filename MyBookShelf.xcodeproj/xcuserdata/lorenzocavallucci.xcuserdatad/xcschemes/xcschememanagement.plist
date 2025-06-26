@@ -9,6 +9,69 @@
 			<key>orderHint</key>
 			<integer>0</integer>
 		</dict>
+		<key>Promises (Playground).xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>1</integer>
+		</dict>
+		<key>WatchMyBookShelf Watch App (Notification).xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>3</integer>
+		</dict>
+		<key>WatchMyBookShelf Watch App.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>2</integer>
+		</dict>
+	</dict>
+	<key>SuppressBuildableAutocreation</key>
+	<dict>
+		<key>DA5888792DE32538001687EE</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>DA5888892DE3253B001687EE</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>DA5888932DE3253B001687EE</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>DA6BAAB72E07029C008CE1BA</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>DA6BAAC62E07029F008CE1BA</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>DA6BAAD02E07029F008CE1BA</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>DACC680E2E071342007E67F7</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>DACC681D2E071346007E67F7</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>DACC68272E071346007E67F7</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
 	</dict>
 </dict>
 </plist>

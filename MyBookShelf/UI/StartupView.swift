@@ -1,8 +1,9 @@
 import SwiftUICore
 import SwiftData
-//import FirebaseAuth
 import SwiftUI
 import SwiftUI
+import UserNotifications
+
 
 struct StartupView: View {
     @EnvironmentObject var auth: AuthManager
@@ -29,6 +30,8 @@ struct StartupView: View {
         }
         .animation(.easeInOut(duration: 0.3), value: auth.isLoggedIn)
         .onAppear {
+            requestNotificationPermission()
+            
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 isChecking = false
                 if auth.isLoggedIn {
@@ -48,6 +51,17 @@ struct StartupView: View {
                         }
                     }
                 }
+            }
+        }
+    }
+    
+
+    func requestNotificationPermission() {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+            if granted {
+                print("✅ Notifiche autorizzate")
+            } else {
+                print("❌ Permesso notifiche negato: \(error?.localizedDescription ?? "unknown")")
             }
         }
     }
