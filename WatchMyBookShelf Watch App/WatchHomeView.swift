@@ -17,10 +17,6 @@ struct WatchHomeView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             Spacer()
-            /*Text("📚 MyBookShelf")
-                .font(.headline)
-                .padding(.top)*/
-
             NavigationLink(destination: BookSelectionView()) {
                 Text("Start a reading session")
                     .padding()

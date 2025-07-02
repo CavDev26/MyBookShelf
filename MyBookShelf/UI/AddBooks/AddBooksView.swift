@@ -44,6 +44,7 @@ struct AddBooksView: View {
                         ScrollView(showsIndicators: false) {
                             genreDiscoverView(gridSpacing: gridSpacing, columnCount: columnCount)
                             topPicksDiscoverView(viewModel: viewModel)
+                            topUsersPreView()
                             addBookManuallyView(viewModel: viewModel)
                         }
                     }
@@ -65,14 +66,14 @@ struct addBookManuallyView: View {
         }
         label: {
             RoundedRectangle(cornerRadius: 10)
-                .fill(Color.blue)
+                .fill(Color.terracotta)
                 .overlay{
-                    Text("Add manually\n-\nDebug")
+                    Text("Add a book manually")
                         .foregroundColor(.white)
                 }
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 150)
+        .frame(height: 120)
         .padding()
         .sheet(isPresented: $showSheet) {
             manualAddSheet(viewModel: viewModel)
@@ -204,7 +205,31 @@ struct genreView: View {
     }
 }
 
+struct topUsersPreView: View {
+    @Environment(\.colorScheme) var colorScheme
 
-#Preview {
-    AddBooksView()
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            NavigationLink(destination: topUsersView()) {
+                HStack {
+                    Text("Top Readers")
+                        .font(.system(size: 18, weight: .semibold, design: .serif))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .foregroundColor(colorScheme == .dark ? .white : .black)
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(colorScheme == .dark ? .white : .black)
+                        .font(.system(size: 18, weight: .semibold))
+                }.padding(.top)
+                    .padding(.horizontal)
+            }
+            ScrollView(.horizontal, showsIndicators: false) {
+                
+            }
+        }
+    }
+}
+struct topUsersView: View {
+    var body: some View {
+        Text("users")
+    }
 }
