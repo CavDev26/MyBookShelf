@@ -30,8 +30,10 @@ struct StartupView: View {
         }
         .animation(.easeInOut(duration: 0.3), value: auth.isLoggedIn)
         .onAppear {
-            requestNotificationPermission()
+            WatchSessionManager.shared.setModelContext(modelContext)
+            WatchSessionManager.shared.setAuthManager(auth)
             
+            requestNotificationPermission()
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 isChecking = false
                 if auth.isLoggedIn {
@@ -39,8 +41,6 @@ struct StartupView: View {
 
                     Task {
                         await auth.refreshUserInfo()
-                        print("sono nell'on Appear di startup")
-
                         // 2️⃣ Fetch da Firebase
                         await StatsManager.shared.fetchStatsFromFirebase(for: auth.uid, context: modelContext)
                         await StatsManager.shared.fetchChallengesFromFirebase(for: auth.uid, context: modelContext)

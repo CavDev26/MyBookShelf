@@ -12,12 +12,17 @@ struct HomeView: View {
     @State var showShelfSheet: Bool = false
     @StateObject private var viewModel = CombinedGenreSearchViewModel()
     
+    @StateObject private var notificationViewModel = NotificationViewModel()
+    @State private var showNotifications = false
+    
+    
+    
     let columnCount: Int = 3
     let gridSpacing: CGFloat = 20.0
     @Query(sort: \SavedBook.title, order: .forward) var books: [SavedBook]
     @Binding var selectedTab: Int
     @Query(sort: \Shelf.name) var shelves: [Shelf] // 👈 carica automaticamente le scaffalature
-
+    
     var body: some View {
         NavigationStack {
             ZStack(alignment: .top) {
@@ -31,6 +36,19 @@ struct HomeView: View {
                                 .padding(.leading, -10)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .font(.custom("Baskerville-SemiBoldItalic", size: 20))
+                            
+                            Button(action: {
+                                showNotifications = true
+                            }) {
+                                Image(systemName: "bell.fill")
+                            }
+                            .modifier(TopBarButtonStyle())
+                            .sheet(isPresented: $showNotifications) {
+                                NavigationStack {
+                                    NotificationsView(viewModel: notificationViewModel)
+                                }
+                                .presentationDetents([.fraction(0.6)])
+                            }
                         }
                     }
                     ScrollView(.vertical, showsIndicators: false) {
@@ -51,11 +69,26 @@ struct HomeView: View {
                 FirebaseBookService.shared.syncBooksToLocal(for: auth.uid, context: context)
                 ShelfService.shared.syncModifiedShelves(userID: auth.uid, context: context)
                 
-                        let currentYear = Calendar.current.component(.year, from: .now)
-                        let currentMonth = Calendar.current.component(.month, from: .now)
-                        let yc = try? context.fetch(FetchDescriptor<YearlyReadingChallenge>())
-                            .first(where: { $0.year == currentYear })
-                        print("🔁 Yearly after login: \(yc?.goal ?? -1) - booksFinished: \(yc?.booksFinished ?? -1)")
+                WatchSessionManager.shared.sendReadingBooksToWatch(from: books)
+                
+                let currentYear = Calendar.current.component(.year, from: .now)
+                let currentMonth = Calendar.current.component(.month, from: .now)
+                let yc = try? context.fetch(FetchDescriptor<YearlyReadingChallenge>())
+                    .first(where: { $0.year == currentYear })
+                print("🔁 Yearly after login: \(yc?.goal ?? -1) - booksFinished: \(yc?.booksFinished ?? -1)")
+                
+                NotificationCenter.default.addObserver(forName: .readingSessionReceived, object: nil, queue: .main) { notification in
+                    if let userInfo = notification.userInfo,
+                       let duration = userInfo["duration"] as? Int,
+                       let title = userInfo["title"] as? String,
+                       let timestamp = userInfo["timestamp"] as? Date {
+                        let notName = "Apple Watch Reading session"
+                        let message = "You read \(title) for \(duration) minutes"
+                        notificationViewModel.addNotification(
+                            ReadingNotification(notName: notName, message: message, timestamp: timestamp)
+                        )
+                    }
+                }
             }
         }
     }
@@ -70,8 +103,8 @@ struct yourShelvesView: View {
     var shelves: [Shelf]
     @Binding var showShelfSheet: Bool
     @ObservedObject var viewModel: CombinedGenreSearchViewModel
-
-
+    
+    
     var body: some View {
         NavigationLink(destination: ShelvesView(shelves: shelves, viewModel: viewModel)
         ) {
@@ -146,23 +179,23 @@ struct ChallengesPreview: View {
     @Environment(\.colorScheme) var colorScheme
     @Query var yearlyChallenges: [YearlyReadingChallenge]
     @Query var monthlyChallenges: [MonthlyReadingChallenge]
-
+    
     var currentYear: Int {
         Calendar.current.component(.year, from: .now)
     }
-
+    
     var currentMonth: Int {
         Calendar.current.component(.month, from: .now)
     }
-
+    
     var yearlyChallenge: YearlyReadingChallenge? {
         yearlyChallenges.first { $0.year == currentYear }
     }
-
+    
     var monthlyChallenge: MonthlyReadingChallenge? {
         monthlyChallenges.first { $0.year == currentYear && $0.month == currentMonth }
     }
-
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             NavigationLink(destination: ChallengesView()) {
@@ -182,7 +215,7 @@ struct ChallengesPreview: View {
                 .padding(.horizontal)
                 .padding(.top)
             }
-
+            
             HStack(spacing: 16) {
                 // Yearly challenge
                 NavigationLink(destination: ChallengesView()) {
@@ -203,7 +236,7 @@ struct ChallengesPreview: View {
                         }
                     }
                 }
-
+                
                 // Monthly challenge
                 NavigationLink(destination: ChallengesView()) {
                     VStack(spacing: 4) {
@@ -223,7 +256,7 @@ struct ChallengesPreview: View {
                         }
                     }
                 }
-
+                
                 // Stats icon
                 NavigationLink(destination: ChallengesView()) {
                     VStack(spacing: 4) {
@@ -257,7 +290,7 @@ struct ChallengesPreview: View {
             .padding(.bottom, 10)
         }
     }
-
+    
     func progress(for current: Int?, goal: Int?) -> Double {
         guard let current, let goal, goal > 0 else { return 0 }
         return Double(current) / Double(goal)
@@ -394,13 +427,13 @@ struct addShelfSheetView: View {
     @Environment(\.dismiss) private var dismiss
     @FocusState private var isAddressFieldFocused: Bool
     @Environment(\.colorScheme) var colorScheme
-
+    
     @State private var address: String = ""
     @State private var name: String = ""
     @State private var description: String = ""
     @State private var latitude: Double? = nil
     @State private var longitude: Double? = nil
-
+    
     @EnvironmentObject var auth: AuthManager
     
     @StateObject private var completerDelegate = CompleterDelegate()
@@ -408,157 +441,134 @@ struct addShelfSheetView: View {
     private var canSubmit: Bool { !name.isEmpty }
     @StateObject private var locationService = LocationService()
     var body: some View {
-            NavigationStack {
-                ZStack {
-                    /*if colorScheme == .dark {
-                        Color.backgroundColorDark2.ignoresSafeArea()
-                    } else {
-                        Color.lightColorApp.ignoresSafeArea()
-                    }*/
-                    Form {
-                        Section(
-                            content: {
-                                TextField("Name", text: $name)
-                                    .padding(10)
-                                    .background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
-                                    .cornerRadius(8)
-                            },
-                            header: { Text("Name") }
-                        )
-                        Section(
-                            content: {
-                                TextField("Description", text: $description)
-                                    .padding(10)
-                                    .background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
-                                    .cornerRadius(8)
-                            },
-                            header: { Text("Description") }
-                        )
-                        
-                        
-                        Section(header: Text("Address (optional)")) {
-                            TextField("Enter address", text: $address)
+        NavigationStack {
+            ZStack {
+                /*if colorScheme == .dark {
+                 Color.backgroundColorDark2.ignoresSafeArea()
+                 } else {
+                 Color.lightColorApp.ignoresSafeArea()
+                 }*/
+                Form {
+                    Section(
+                        content: {
+                            TextField("Name", text: $name)
                                 .padding(10)
                                 .background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
                                 .cornerRadius(8)
-                                .focused($isAddressFieldFocused)
-                                .onChange(of: address) { newValue in
-                                    print("🔍 Querying: \(newValue)")
-                                    searchCompleter.queryFragment = newValue
-                                }
-                            
-                            if !completerDelegate.suggestions.isEmpty {
-                                List(completerDelegate.suggestions, id: \.self) { suggestion in
-                                    HStack {
-                                        VStack(alignment: .leading, spacing: 2) {
-                                            Text(suggestion.title)
-                                                .font(.subheadline)
-                                            if !suggestion.subtitle.isEmpty {
-                                                Text(suggestion.subtitle)
-                                                    .font(.caption)
-                                                    .foregroundColor(.secondary)
-                                            }
-                                        }
-                                        Spacer()
-                                    }
-                                    .padding(.vertical, 4)
-                                    .contentShape(Rectangle())
-                                    .onTapGesture {
-                                        let fullAddress = suggestion.title + ", " + suggestion.subtitle
-                                        address = fullAddress
-                                        resolveCoordinates(for: suggestion)
-                                        isAddressFieldFocused = false // chiude tastiera
-                                        
-                                        // ❗️Posticipa l'azzeramento per farlo dopo l'autocompletamento
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                                            withAnimation {
-                                                completerDelegate.suggestions = []
-                                            }
-                                            searchCompleter.queryFragment = ""
-                                        }
-                                    }
-                                }
-                                .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 12))
+                        },
+                        header: { Text("Name") }
+                    )
+                    Section(
+                        content: {
+                            TextField("Description", text: $description)
+                                .padding(10)
+                                .background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
+                                .cornerRadius(8)
+                        },
+                        header: { Text("Description") }
+                    )
+                    
+                    
+                    Section(header: Text("Address (optional)")) {
+                        TextField("Enter address", text: $address)
+                            .padding(10)
+                            .background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
+                            .cornerRadius(8)
+                            .focused($isAddressFieldFocused)
+                            .onChange(of: address) { newValue in
+                                print("🔍 Querying: \(newValue)")
+                                searchCompleter.queryFragment = newValue
                             }
-                        }
-                        Section(
-                            content: {
-                                TextField("Latitude", value: $latitude, format: .number)
-                                    .padding(10)
-                                    .background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
-                                    .cornerRadius(8)
-                                    .keyboardType(.numberPad)
-                                    .onChange(of: locationService.latitude) {
-                                        latitude = locationService.latitude
-                                    }
-                                TextField("Longitude", value: $longitude, format: .number)
-                                    .padding(10)
-                                    .background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
-                                    .cornerRadius(8)
-                                    .keyboardType(.numberPad)
-                                    .onChange(of: locationService.longitude) {
-                                        longitude = locationService.longitude
-                                    }
-                                
+                        
+                        if !completerDelegate.suggestions.isEmpty {
+                            List(completerDelegate.suggestions, id: \.self) { suggestion in
                                 HStack {
-                                    Button(action: { locationService.requestLocation() }
-                                    ) {
-                                        HStack{
-                                            Image(systemName: "location.fill")
-                                                .padding(.trailing)
-                                            Text("Get current location")
-                                                //.cornerRadius(8)
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(suggestion.title)
+                                            .font(.subheadline)
+                                        if !suggestion.subtitle.isEmpty {
+                                            Text(suggestion.subtitle)
+                                                .font(.caption)
+                                                .foregroundColor(.secondary)
                                         }
-                                        .frame(maxWidth: .infinity)
-                                        .padding(10)
-                                        .background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
-                                        .cornerRadius(8)
-
                                     }
-                                    if locationService.isMonitoring {
-                                        Spacer()
-                                        ProgressView().tint(Color.terracotta)
-                                    }
+                                    Spacer()
                                 }
-                            },
-                            header: { Text("Coordinates") }
-                        )
-                    }
-                    .scrollContentBackground(.hidden)
-                }     
-                .navigationTitle("Add Shelf")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItemGroup(placement: .topBarLeading) {
-                        Button("Cancel") { dismiss() }
-                    }
-                    ToolbarItemGroup(placement: .topBarTrailing) {
-                        Button("Save") {
-                            if !canSubmit { return }
-                            if !auth.uid.isEmpty {
-                                let shelf = Shelf(
-                                    name: name,
-                                    latitude: latitude ?? 0,
-                                    longitude: longitude ?? 0,
-                                    shelfDescription: description ?? "",
-                                    address: address.isEmpty ? nil : address
-                                )
-                                
-                                ShelfService.shared.saveShelf(shelf, context: context, userID: auth.uid) { result in
-                                    switch result {
-                                    case .success():
-                                        print("✅ Uploaded to Firebase")
-                                    case .failure(let error):
-                                        print("⚠️ Upload failed: \(error.localizedDescription)")
+                                .padding(.vertical, 4)
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    let fullAddress = suggestion.title + ", " + suggestion.subtitle
+                                    address = fullAddress
+                                    resolveCoordinates(for: suggestion)
+                                    isAddressFieldFocused = false // chiude tastiera
+                                    
+                                    // ❗️Posticipa l'azzeramento per farlo dopo l'autocompletamento
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                        withAnimation {
+                                            completerDelegate.suggestions = []
+                                        }
+                                        searchCompleter.queryFragment = ""
                                     }
-                                    dismiss()
                                 }
                             }
+                            .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 12))
+                        }
+                    }
+                    Section(
+                        content: {
+                            TextField("Latitude", value: $latitude, format: .number)
+                                .padding(10)
+                                .background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
+                                .cornerRadius(8)
+                                .keyboardType(.numberPad)
+                                .onChange(of: locationService.latitude) {
+                                    latitude = locationService.latitude
+                                }
+                            TextField("Longitude", value: $longitude, format: .number)
+                                .padding(10)
+                                .background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
+                                .cornerRadius(8)
+                                .keyboardType(.numberPad)
+                                .onChange(of: locationService.longitude) {
+                                    longitude = locationService.longitude
+                                }
                             
-                            
-                            
-                            
-                            /*if !canSubmit { return }
+                            HStack {
+                                Button(action: { locationService.requestLocation() }
+                                ) {
+                                    HStack{
+                                        Image(systemName: "location.fill")
+                                            .padding(.trailing)
+                                        Text("Get current location")
+                                        //.cornerRadius(8)
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .padding(10)
+                                    .background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
+                                    .cornerRadius(8)
+                                    
+                                }
+                                if locationService.isMonitoring {
+                                    Spacer()
+                                    ProgressView().tint(Color.terracotta)
+                                }
+                            }
+                        },
+                        header: { Text("Coordinates") }
+                    )
+                }
+                .scrollContentBackground(.hidden)
+            }
+            .navigationTitle("Add Shelf")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItemGroup(placement: .topBarLeading) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    Button("Save") {
+                        if !canSubmit { return }
+                        if !auth.uid.isEmpty {
                             let shelf = Shelf(
                                 name: name,
                                 latitude: latitude ?? 0,
@@ -566,37 +576,60 @@ struct addShelfSheetView: View {
                                 shelfDescription: description ?? "",
                                 address: address.isEmpty ? nil : address
                             )
-                            context.insert(shelf)
-                            do {
-                                try context.save()
-                                print("✅ Saved: \(shelf.name)")
-                                /*if let uid = Auth.auth().currentUser?.uid {
-                                    let firestoreBook = FirebaseBookMapper.toFirestore(saved)
-                                    FirebaseBookService.shared.upload(book: firestoreBook, for: uid)
-                                }*/
-                            } catch {
-                                print("❌ Save error: \(error)")
+                            
+                            ShelfService.shared.saveShelf(shelf, context: context, userID: auth.uid) { result in
+                                switch result {
+                                case .success():
+                                    print("✅ Uploaded to Firebase")
+                                case .failure(let error):
+                                    print("⚠️ Upload failed: \(error.localizedDescription)")
+                                }
+                                dismiss()
                             }
-                            dismiss()*/
                         }
-                        .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
+                        
+                        
+                        
+                        
+                        /*if !canSubmit { return }
+                         let shelf = Shelf(
+                         name: name,
+                         latitude: latitude ?? 0,
+                         longitude: longitude ?? 0,
+                         shelfDescription: description ?? "",
+                         address: address.isEmpty ? nil : address
+                         )
+                         context.insert(shelf)
+                         do {
+                         try context.save()
+                         print("✅ Saved: \(shelf.name)")
+                         /*if let uid = Auth.auth().currentUser?.uid {
+                          let firestoreBook = FirebaseBookMapper.toFirestore(saved)
+                          FirebaseBookService.shared.upload(book: firestoreBook, for: uid)
+                          }*/
+                         } catch {
+                         print("❌ Save error: \(error)")
+                         }
+                         dismiss()*/
                     }
+                    .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
-                .onAppear {
-                    searchCompleter.resultTypes = .address
-                    searchCompleter.delegate = completerDelegate
-                    completerDelegate.onUpdate = { results in
-                        print("✅ Received \(results.count) suggestions")
-                        completerDelegate.suggestions = results
-                    }
+            }
+            .onAppear {
+                searchCompleter.resultTypes = .address
+                searchCompleter.delegate = completerDelegate
+                completerDelegate.onUpdate = { results in
+                    print("✅ Received \(results.count) suggestions")
+                    completerDelegate.suggestions = results
                 }
-                .onChange(of: locationService.latitude) { lat in
-                    if let lat, let lon = locationService.longitude {
-                        latitude = lat
-                        longitude = lon
-                        print("📍 Location set: \(lat), \(lon)")
-                    }
+            }
+            .onChange(of: locationService.latitude) { lat in
+                if let lat, let lon = locationService.longitude {
+                    latitude = lat
+                    longitude = lon
+                    print("📍 Location set: \(lat), \(lon)")
                 }
+            }
         }
     }
     private func resolveCoordinates(for suggestion: MKLocalSearchCompletion) {
@@ -616,11 +649,37 @@ struct addShelfSheetView: View {
 class CompleterDelegate: NSObject, ObservableObject, MKLocalSearchCompleterDelegate {
     @Published var suggestions: [MKLocalSearchCompletion] = []
     var onUpdate: (([MKLocalSearchCompletion]) -> Void)?
-
+    
     func completerDidUpdateResults(_ completer: MKLocalSearchCompleter) {
         onUpdate?(completer.results)
     }
     func completer(_ completer: MKLocalSearchCompleter, didFailWithError error: Error) {
         print("❌ Completer error: \(error.localizedDescription)")
+    }
+}
+
+
+
+
+
+
+
+struct NotificationsView: View {
+    @ObservedObject var viewModel: NotificationViewModel
+    
+    var body: some View {
+        List(viewModel.notifications) { notification in
+            VStack(alignment: .leading, spacing: 4) {
+                Text(notification.notName)
+                    .font(.headline)
+                Text(notification.message)
+                    .font(.caption)
+                Text(notification.timestamp.formatted(date: .numeric, time: .shortened))
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            .padding(.vertical, 6)
+        }
+        .navigationTitle("Notifications")
     }
 }

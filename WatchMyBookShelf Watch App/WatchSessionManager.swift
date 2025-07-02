@@ -10,7 +10,9 @@ import Foundation
 import WatchConnectivity
 
 class WatchSessionManager: NSObject, WCSessionDelegate, ObservableObject {
+    
     static let shared = WatchSessionManager()
+    @Published var readingBooks: [WatchBook] = []
 
     override init() {
         super.init()
@@ -26,6 +28,17 @@ class WatchSessionManager: NSObject, WCSessionDelegate, ObservableObject {
         }
     }
 
+    
+    func session(_ session: WCSession, didReceiveUserInfo userInfo: [String : Any] = [:]) {
+        if let booksData = userInfo["readingBooks"] as? Data {
+            if let decoded = try? JSONDecoder().decode([WatchBook].self, from: booksData) {
+                DispatchQueue.main.async {
+                    self.readingBooks = decoded
+                }
+            }
+        }
+    }
+    
     func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
         if let error = error {
             print("❌ Watch session activation failed: \(error.localizedDescription)")

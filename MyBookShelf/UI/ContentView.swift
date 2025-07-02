@@ -43,8 +43,6 @@ struct ContentView: View {
 
                             Task {
                                 await auth.refreshUserInfo()
-                                print("sono nell'on Appear di contentView\n")
-
                                 // 2️⃣ Fetch da Firebase
                                 await StatsManager.shared.fetchStatsFromFirebase(for: auth.uid, context: modelContext)
                                 await StatsManager.shared.fetchChallengesFromFirebase(for: auth.uid, context: modelContext)

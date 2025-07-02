@@ -12,7 +12,9 @@ struct WatchMyBookShelf_Watch_AppApp: App {
     @StateObject var watchSessionManager = WatchSessionManager.shared
     var body: some Scene {
         WindowGroup {
-            ReadingSessionView()
+            NavigationStack{
+                WatchHomeView()
+            }
         }
     }
 }

@@ -92,6 +92,7 @@ struct SearchResultList: View {
                                                 try? context.saveAndSync(for: auth.uid)
                                                     let books = try context.fetch(FetchDescriptor<SavedBook>())
                                                     StatsManager.shared.updateStats(using: books, in: context, uid: auth.uid)
+                                                    WatchSessionManager.shared.sendReadingBooksToWatch(from: books)
                                             }
                                             print("📖 Updated to \(status.rawValue)")
                                         } catch {
@@ -362,8 +363,4 @@ struct SearchResultListPreview: View {
         }
         .padding(.top, 8)
     }
-}
-
-#Preview {
-    AddBooksView()
 }

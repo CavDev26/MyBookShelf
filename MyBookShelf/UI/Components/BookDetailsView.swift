@@ -247,6 +247,7 @@ struct BookDetailsView: View {
                 do {
                     let books = try context.fetch(FetchDescriptor<SavedBook>())
                     StatsManager.shared.updateStats(using: books, in: context, uid: auth.uid)
+                    WatchSessionManager.shared.sendReadingBooksToWatch(from: books)
                 } catch {
                     print("❌ Failed to update stats: \(error)")
                 }
@@ -837,7 +838,7 @@ struct EditProgressSheetView: View {
     func saveProgress() {
         guard let value = Int(inputValue), value >= 0 else { return }
         book.pagesRead = min(value, totalPages)
-        if value == totalPages {
+        if value >= totalPages {
             book.readingStatus = .read
         }
     }

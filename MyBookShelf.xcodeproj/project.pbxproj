@@ -83,6 +83,13 @@
 			);
 			target = DA5888792DE32538001687EE /* MyBookShelf */;
 		};
+		DAFA92CC2E15833E00F71861 /* Exceptions for "WatchMyBookShelf Watch App" folder in "MyBookShelf" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				WatchBook.swift,
+			);
+			target = DA5888792DE32538001687EE /* MyBookShelf */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -106,6 +113,9 @@
 		};
 		DACC68102E071342007E67F7 /* WatchMyBookShelf Watch App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				DAFA92CC2E15833E00F71861 /* Exceptions for "WatchMyBookShelf Watch App" folder in "MyBookShelf" target */,
+			);
 			path = "WatchMyBookShelf Watch App";
 			sourceTree = "<group>";
 		};
