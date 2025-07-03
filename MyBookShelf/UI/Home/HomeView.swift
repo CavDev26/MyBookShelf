@@ -55,6 +55,7 @@ struct HomeView: View {
                         yourProgressView(books: books, gridSpacing: gridSpacing, columnCount: columnCount, selectedTab: $selectedTab, viewModel: viewModel)
                         ChallengesPreview()
                         yourShelvesView(shelves: shelves, showShelfSheet: $showShelfSheet, viewModel: viewModel)
+                        topUsersPreView()
                     }
                 }
             }

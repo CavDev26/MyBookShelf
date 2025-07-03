@@ -1,9 +1,6 @@
 import SwiftUI
 import _SwiftData_SwiftUI
 
-import SwiftUI
-import _SwiftData_SwiftUI
-
 struct ChallengesView: View {
     
     @Environment(\.modelContext) private var context
@@ -82,7 +79,7 @@ struct ChallengesView: View {
             try? context.save()
         }
         .customNavigationTitle("Challenges")
-        .toolbar {
+        /*.toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     deleteAllChallenges()
@@ -91,7 +88,7 @@ struct ChallengesView: View {
                         .foregroundColor(.red)
                 }
             }
-        }
+        }*/
     }
     /// DEBUG
     func deleteAllChallenges() {

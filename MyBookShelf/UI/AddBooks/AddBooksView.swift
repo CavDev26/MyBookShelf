@@ -44,7 +44,6 @@ struct AddBooksView: View {
                         ScrollView(showsIndicators: false) {
                             genreDiscoverView(gridSpacing: gridSpacing, columnCount: columnCount)
                             topPicksDiscoverView(viewModel: viewModel)
-                            topUsersPreView()
                             addBookManuallyView(viewModel: viewModel)
                         }
                     }
@@ -202,61 +201,5 @@ struct genreView: View {
             .clipped()
             .shadow(radius: 4)
             .padding()
-    }
-}
-
-struct topUsersPreView: View {
-    @Environment(\.colorScheme) var colorScheme
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            NavigationLink(destination: topUsersView()) {
-                HStack {
-                    Text("Top Readers")
-                        .font(.system(size: 18, weight: .semibold, design: .serif))
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .foregroundColor(colorScheme == .dark ? .white : .black)
-                    Image(systemName: "chevron.right")
-                        .foregroundColor(colorScheme == .dark ? .white : .black)
-                        .font(.system(size: 18, weight: .semibold))
-                }.padding(.top)
-                    .padding(.horizontal)
-            }
-            ScrollView(.horizontal, showsIndicators: false) {
-                
-            }
-        }
-    }
-}
-
-struct topUsersView: View {
-    @StateObject private var viewModel = UserRankingViewModel()
-
-    var body: some View {
-        List(viewModel.users.indices, id: \.self) { index in
-            let user = viewModel.users[index]
-            HStack {
-                Circle()
-                    .fill(.gray)
-                    .frame(width: 40, height: 40)
-                    .overlay(Text("👤"))
-                VStack(alignment: .leading) {
-                    Text(user.email)
-                        .font(.headline)
-                    Text("Level \(user.level)")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                Spacer()
-                Text("#\(index + 1)")
-                    .font(.caption)
-                    .foregroundColor(.blue)
-            }
-            .padding(.vertical, 4)
-        }
-        .navigationTitle("Classifica")
-        .onAppear {
-            viewModel.loadUsers()
-        }
     }
 }

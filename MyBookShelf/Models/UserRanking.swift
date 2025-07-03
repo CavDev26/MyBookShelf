@@ -10,4 +10,6 @@ struct UserRanking: Identifiable, Codable {
     var id: String // uid
     var email: String
     var level: Int
+    var nickname: String
+    var proPic: String?
 }

@@ -19,6 +19,7 @@ struct ProfileView: View {
     @State private var showDiaryAuthError = false
     @Environment(\.modelContext) private var context
     @State private var profileImage: UIImage? = nil
+    @State private var nickname: String = ""
 
     @AppStorage("isDarkMode") private var isDarkMode: Bool = false
     @AppStorage("username") private var username: String = ""
@@ -40,10 +41,10 @@ struct ProfileView: View {
                         }
                     }
                     List {
-                        Section {
+                        Section (header: Text("Account")) {
                             if auth.isLoggedIn {
                                 NavigationLink(destination: AccountView()) {
-                                    HStack {
+                                    VStack {
                                         Group {
                                             if let image = profileImage {
                                                 Image(uiImage: image)
@@ -57,32 +58,36 @@ struct ProfileView: View {
                                             }
                                         }
                                         .frame(width: 100, height: 100)
+                                        .padding()
                                         
                                         VStack(alignment: .leading) {
-                                            Text(auth.email)
+                                            Text(nickname.isEmpty ? auth.email : nickname)
                                                 .font(.headline)
+                                                //.padding(.bottom)
+                                        }
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                }
+                            } else {
+                                NavigationLink(destination: AuthView()) {
+                                    HStack {
+                                        Image(systemName: "person.crop.circle.badge.plus")
+                                            .resizable()
+                                            .frame(width: 48, height: 48)
+                                            .foregroundColor(.gray)
+                                        
+                                        VStack(alignment: .leading) {
+                                            Text("Accedi o registrati")
+                                                .font(.headline)
+                                                .foregroundColor(.primary)
+                                            Text("Crea un account o accedi")
+                                                .font(.subheadline)
+                                                .foregroundColor(.secondary)
                                         }
                                     }
                                 }
-                                } else {
-                                    NavigationLink(destination: AuthView()) {
-                                        HStack {
-                                            Image(systemName: "person.crop.circle.badge.plus")
-                                                .resizable()
-                                                .frame(width: 48, height: 48)
-                                                .foregroundColor(.gray)
-                                            
-                                            VStack(alignment: .leading) {
-                                                Text("Accedi o registrati")
-                                                    .font(.headline)
-                                                    .foregroundColor(.primary)
-                                                Text("Crea un account o accedi")
-                                                    .font(.subheadline)
-                                                    .foregroundColor(.secondary)
-                                            }
-                                        }
-                                    }
-                                }                        }
+                            }
+                        }
                         .listRowBackground(colorScheme == .dark ? Color.backgroundColorDark2 : Color.backgroundColorLight)
                         
                         
@@ -180,8 +185,10 @@ struct ProfileView: View {
             if let data = snapshot?.data(),
                let base64String = data["profileImageBase64"] as? String,
                let imageData = Data(base64Encoded: base64String),
-               let uiImage = UIImage(data: imageData) {
+               let uiImage = UIImage(data: imageData),
+               let nick = data["nickname"] as? String {
                 profileImage = uiImage
+                nickname = nick
             }
         }
     }
@@ -323,8 +330,11 @@ struct AccountView: View {
                     
                     Section(header: Text("Nickname")) {
                         TextField("Enter your nickname", text: $nickname)
-                        Button("Save Nickname") {
+                        Button {
                             saveNickname()
+                        } label: {
+                            Text("Save Nickname")
+                                .frame(maxWidth: .infinity)
                         }
                     }
                     .listRowBackground(colorScheme == .dark ? Color.backgroundColorDark2 : Color.backgroundColorLight)
