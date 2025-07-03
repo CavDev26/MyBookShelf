@@ -228,8 +228,35 @@ struct topUsersPreView: View {
         }
     }
 }
+
 struct topUsersView: View {
+    @StateObject private var viewModel = UserRankingViewModel()
+
     var body: some View {
-        Text("users")
+        List(viewModel.users.indices, id: \.self) { index in
+            let user = viewModel.users[index]
+            HStack {
+                Circle()
+                    .fill(.gray)
+                    .frame(width: 40, height: 40)
+                    .overlay(Text("👤"))
+                VStack(alignment: .leading) {
+                    Text(user.email)
+                        .font(.headline)
+                    Text("Level \(user.level)")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+                Text("#\(index + 1)")
+                    .font(.caption)
+                    .foregroundColor(.blue)
+            }
+            .padding(.vertical, 4)
+        }
+        .navigationTitle("Classifica")
+        .onAppear {
+            viewModel.loadUsers()
+        }
     }
 }

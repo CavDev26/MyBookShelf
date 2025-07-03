@@ -233,6 +233,7 @@ struct AccountView: View {
     @State private var showAlert = false
     @State private var alertMessage = ""
     @State private var isUploading = false
+    @State private var nickname: String = ""
 
     var body: some View {
         NavigationStack {
@@ -319,6 +320,14 @@ struct AccountView: View {
                         }
                         .disabled(newPassword.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     }.listRowBackground(colorScheme == .dark ? Color.backgroundColorDark2 : Color.backgroundColorLight)
+                    
+                    Section(header: Text("Nickname")) {
+                        TextField("Enter your nickname", text: $nickname)
+                        Button("Save Nickname") {
+                            saveNickname()
+                        }
+                    }
+                    .listRowBackground(colorScheme == .dark ? Color.backgroundColorDark2 : Color.backgroundColorLight)
                 }
                 .scrollContentBackground(.hidden)
             }
@@ -338,6 +347,18 @@ struct AccountView: View {
         }
     }
 
+    func saveNickname() {
+        let userRef = Firestore.firestore().collection("users").document(auth.uid)
+        userRef.setData(["nickname": nickname], merge: true) { error in
+            if let error = error {
+                alertMessage = "❌ Errore salvataggio nickname: \(error.localizedDescription)"
+            } else {
+                alertMessage = "✅ Nickname salvato!"
+            }
+            showAlert = true
+        }
+    }
+    
     func uploadProfileImage(_ image: UIImage, for uid: String) {
         guard let imageData = image.jpegData(compressionQuality: 0.4) else { return }
 
@@ -357,11 +378,16 @@ struct AccountView: View {
     func loadProfileImage() {
         let userRef = Firestore.firestore().collection("users").document(auth.uid)
         userRef.getDocument { snapshot, error in
-            if let data = snapshot?.data(),
-               let base64String = data["profileImageBase64"] as? String,
+            guard let snapshot = snapshot, let data = snapshot.data() else { return }
+
+            if let base64String = data["profileImageBase64"] as? String,
                let imageData = Data(base64Encoded: base64String),
                let uiImage = UIImage(data: imageData) {
                 selectedImage = uiImage
+            }
+
+            if let savedNickname = data["nickname"] as? String {
+                nickname = savedNickname
             }
         }
     }

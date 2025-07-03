@@ -3,6 +3,7 @@ import Foundation
 import FirebaseAuth
 import SwiftUI
 import SwiftData
+import FirebaseFirestore
 
 class AuthManager: ObservableObject {
     @Published var isLoggedIn: Bool = false
@@ -25,7 +26,10 @@ class AuthManager: ObservableObject {
                     self.isLoggedIn = true
                     self.email = user.email ?? ""
                     self.uid = user.uid
+                    
+                    //self.syncUserDocument()
                 }
+                self.syncUserDocumentWith(uid: user.uid, email: user.email ?? "")
                 completion(nil)
             }
         }
@@ -40,7 +44,10 @@ class AuthManager: ObservableObject {
                     self.isLoggedIn = true
                     self.email = user.email ?? ""
                     self.uid = user.uid
+                    
+                    //self.syncUserDocument()
                 }
+                self.syncUserDocumentWith(uid: user.uid, email: user.email ?? "")
                 completion(nil)
             }
         }
@@ -117,4 +124,154 @@ class AuthManager: ObservableObject {
             print("❌ Failed to reload user info: \(error.localizedDescription)")
         }
     }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    func syncUserDocument(nickname: String? = nil, profileImageBase64: String? = nil) {
+        let db = Firestore.firestore()
+        let statsRef = db.collection("users").document(uid).collection("stats").document("global")
+        let userRef = db.collection("users").document(uid)
+
+        statsRef.getDocument { statsSnapshot, _ in
+            let xp = statsSnapshot?.data()?["experiencePoints"] as? Int ?? 0
+            let level = xp / 100
+
+            userRef.getDocument { snapshot, error in
+                var dataToUpdate: [String: Any] = [:]
+
+                if let snapshot = snapshot, snapshot.exists {
+                    // Documento esistente: aggiorna solo i campi mancanti
+                    let data = snapshot.data() ?? [:]
+                    if data["email"] == nil { dataToUpdate["email"] = self.email }
+                    if data["level"] == nil { dataToUpdate["level"] = level }
+                    if data["nickname"] == nil {
+                        dataToUpdate["nickname"] = nickname ?? "User\(Int.random(in: 1000...9999))"
+                    }
+                    if data["profileImageBase64"] == nil, let imageBase64 = profileImageBase64 {
+                        dataToUpdate["profileImageBase64"] = imageBase64
+                    }
+                } else {
+                    // Documento assente: crea tutto
+                    dataToUpdate = [
+                        "email": self.email,
+                        "level": level,
+                        "nickname": nickname ?? "User\(Int.random(in: 1000...9999))"
+                    ]
+                    if let imageBase64 = profileImageBase64 {
+                        dataToUpdate["profileImageBase64"] = imageBase64
+                    }
+                }
+
+                if !dataToUpdate.isEmpty {
+                    userRef.setData(dataToUpdate, merge: true) { error in
+                        if let error = error {
+                            print("❌ Errore aggiornamento utente: \(error.localizedDescription)")
+                        } else {
+                            print("✅ Utente sincronizzato correttamente (livello: \(level))")
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    /*func syncUserDocumentWith(uid: String, email: String, nickname: String? = nil, profileImageBase64: String? = nil) {
+        print("🚀 Chiamata syncUserDocumentWith con uid: \(uid), email: \(email)")
+
+        let db = Firestore.firestore()
+        let statsRef = db.collection("users").document(uid).collection("stats").document("global")
+        let userRef = db.collection("users").document(uid)
+
+        statsRef.getDocument { statsSnapshot, error in
+            if let error = error {
+                print("❌ Errore fetching stats: \(error.localizedDescription)")
+            }
+
+            let xp = statsSnapshot?.data()?["experiencePoints"] as? Int ?? 0
+            let level = xp / 100
+            print("📊 XP: \(xp) -> livello calcolato: \(level)")
+
+            // 🔁 FORZA l'aggiornamento di tutti i campi
+            var dataToUpdate: [String: Any] = [
+                "email": email,
+                "level": level,
+                "nickname": nickname ?? "User\(Int.random(in: 1000...9999))",
+                "profileImageBase64": profileImageBase64 ?? ""
+            ]
+
+            print("📝 Scrittura su Firestore (forzata): \(dataToUpdate)")
+
+            userRef.setData(dataToUpdate, merge: true) { error in
+                if let error = error {
+                    print("❌ Errore aggiornamento utente: \(error.localizedDescription)")
+                } else {
+                    print("✅ Utente sincronizzato correttamente (livello: \(level))")
+                }
+            }
+        }
+    }*/
+    
+    
+    
+    func syncUserDocumentWith(uid: String, email: String, nickname: String? = nil, profileImageBase64: String? = nil) {
+        print("🚀 Chiamata syncUserDocumentWith con uid: \(uid), email: \(email)")
+        
+        let db = Firestore.firestore()
+        let statsRef = db.collection("users").document(uid).collection("stats").document("global")
+        let userRef = db.collection("users").document(uid)
+
+        statsRef.getDocument { statsSnapshot, error in
+            if let error = error {
+                print("❌ Errore fetching stats: \(error.localizedDescription)")
+            }
+            let xp = statsSnapshot?.data()?["experiencePoints"] as? Int ?? 0
+            let level = xp / 100
+            print("📊 XP: \(xp) -> livello calcolato: \(level)")
+
+            userRef.getDocument { snapshot, error in
+                var dataToUpdate: [String: Any] = [:]
+
+                if let snapshot = snapshot, snapshot.exists {
+                    let data = snapshot.data() ?? [:]
+                    if data["email"] == nil { dataToUpdate["email"] = email }
+                    if data["level"] == nil { dataToUpdate["level"] = level }
+                    if data["nickname"] == nil {
+                        dataToUpdate["nickname"] = nickname ?? "User\(Int.random(in: 1000...9999))"
+                    }
+                    if data["profileImageBase64"] == nil, let imageBase64 = profileImageBase64 {
+                        dataToUpdate["profileImageBase64"] = imageBase64
+                    }
+                } else {
+                    dataToUpdate = [
+                        "email": email,
+                        "level": level,
+                        "nickname": nickname ?? "User\(Int.random(in: 1000...9999))"
+                    ]
+                    if let imageBase64 = profileImageBase64 {
+                        dataToUpdate["profileImageBase64"] = imageBase64
+                    }
+                }
+
+                print("📝 Scrittura su Firestore: \(dataToUpdate)")
+
+                if !dataToUpdate.isEmpty {
+                    print("📝 Scrittura su Firestore: \(dataToUpdate)")
+                    userRef.setData(dataToUpdate, merge: true) { error in
+                        if let error = error {
+                            print("❌ Errore aggiornamento utente: \(error.localizedDescription)")
+                        } else {
+                            print("✅ Utente sincronizzato correttamente (livello: \(level))")
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
 }

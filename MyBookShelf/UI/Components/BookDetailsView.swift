@@ -240,7 +240,6 @@ struct BookDetailsView: View {
         }
         .onDisappear {
             if !auth.uid.isEmpty {
-                
                 guard let book = book as? SavedBook else { return }
                 try? context.saveAndSync(book, for: auth.uid)
                 
