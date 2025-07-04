@@ -22,6 +22,17 @@ struct ProfileView: View {
     @State private var profileImage: UIImage? = nil
     @State private var nickname: String = ""
     
+    
+    @StateObject private var exportVM = ExportLibraryViewModel()
+    @State private var showExportPicker = false
+    @State private var selectedExportFormat: ExportFormat? = nil
+    @Query private var savedBooks: [SavedBook]
+    struct IdentifiableURL: Identifiable {
+        var id: URL { url }
+        let url: URL
+    }
+    
+    
     @AppStorage("isDarkMode") private var isDarkMode: Bool = false
     @AppStorage("username") private var username: String = ""
     @AppStorage("useSystemColorScheme") private var useSystemColorScheme: Bool = true
@@ -117,16 +128,21 @@ struct ProfileView: View {
                         .listRowBackground(colorScheme == .dark ? Color.backgroundColorDark2 : Color.backgroundColorLight)
                         
                         Section(header: Text("Others")) {
-                            NavigationLink(destination: Text("Privacy View")) {
-                                Label("Privacy", systemImage: "hand.raised.fill")
-                            }
+                            
                             NavigationLink(destination: Text("About View")) {
                                 Label("About", systemImage: "info.circle")
+                            }
+                            
+                            Button {
+                                showExportPicker = true
+                            } label: {
+                                Label("Export Library", systemImage: "square.and.arrow.up")
                             }
                             Button(role: .destructive) {
                                 showLogoutConfirmation = true
                             } label: {
                                 Label("Logout", systemImage: "rectangle.portrait.and.arrow.forward")
+                                    .padding(.leading, 4)
                             }
                             .alert("Are you sure you want to logout?", isPresented: $showLogoutConfirmation) {
                                 Button("Cancel", role: .cancel) { }
@@ -175,7 +191,17 @@ struct ProfileView: View {
 
                     }
                 }
-                
+                .actionSheet(isPresented: $showExportPicker) {
+                    ActionSheet(title: Text("Select export format"), buttons: ExportFormat.allCases.map { format in
+                        .default(Text(format.rawValue.uppercased())) {
+                            selectedExportFormat = format
+                            exportVM.exportLibrary(as: format, books: savedBooks)
+                        }
+                    } + [.cancel()])
+                }
+                .sheet(item: $exportVM.exportFile) { identifiable in
+                    ShareSheet(activityItems: [identifiable.url])
+                }
             }
         }
     }
@@ -209,7 +235,6 @@ struct ProfileView: View {
                 }
             }
         } else {
-            // Fall back or show alert if no biometrics are available
             showDiaryAuthError = true
         }
     }
@@ -601,4 +626,15 @@ class UserProfileManager: ObservableObject {
             }
         }
     }
+}
+
+struct ShareSheet: UIViewControllerRepresentable {
+    var activityItems: [Any]
+    var applicationActivities: [UIActivity]? = nil
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: activityItems, applicationActivities: applicationActivities)
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
