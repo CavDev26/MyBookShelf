@@ -107,11 +107,12 @@ class AuthManager: ObservableObject {
         }
     }
     
-    func updatePassword(to newPassword: String, completion: @escaping (String?) -> Void) {
+    func updatePassword(to newPassword: String, completion: @escaping (Error?) -> Void) {
         Auth.auth().currentUser?.updatePassword(to: newPassword) { error in
-            completion(error?.localizedDescription)
+            completion(error)
         }
     }
+    
     func refreshUserInfo() async {
         guard let user = Auth.auth().currentUser else { return }
         do {

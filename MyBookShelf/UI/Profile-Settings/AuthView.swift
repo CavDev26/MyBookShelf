@@ -1,7 +1,5 @@
 import SwiftUI
 import FirebaseAuth
-import Firebase
-import GoogleSignIn
 
 struct AuthView: View {
     @EnvironmentObject var auth: AuthManager
@@ -162,8 +160,10 @@ struct AuthView: View {
                         )
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
-                    Button {
-                        auth.signInWithGoogle()
+                    
+                    ///Still needs to be implemented.
+                    /*Button {
+                        auth.signInWithApple()
                     } label: {
                         HStack(spacing: 10) {
                             Image(systemName: "apple.logo")
@@ -182,7 +182,7 @@ struct AuthView: View {
                                 .stroke(Color.gray.opacity(0.3), lineWidth: 1)
                         )
                         .clipShape(RoundedRectangle(cornerRadius: 12))
-                    }
+                    }*/
                     
                     
                 }
@@ -191,48 +191,4 @@ struct AuthView: View {
         }
         .preferredColorScheme(.light)
     }
-    
-    
-    /*func signInWithGoogle() {
-        guard let clientID = FirebaseApp.app()?.options.clientID else { return }
-
-        let config = GIDConfiguration(clientID: clientID)
-        GIDSignIn.sharedInstance.configuration = config
-
-        guard let rootViewController = UIApplication.shared.connectedScenes
-            .compactMap({ $0 as? UIWindowScene })
-            .first?.windows
-            .first?.rootViewController else {
-            return
-        }
-
-        GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController) { result, error in
-            if let error = error {
-                print("Google Sign-In error: \(error)")
-                return
-            }
-
-            guard let idToken = result?.user.idToken?.tokenString,
-                  let accessToken = result?.user.accessToken.tokenString else {
-                return
-            }
-
-            let credential = GoogleAuthProvider.credential(withIDToken: idToken,
-                                                           accessToken: accessToken)
-
-            Auth.auth().signIn(with: credential) { authResult, error in
-                if let error = error {
-                    print("Firebase Sign-In error: \(error)")
-                } else if let user = authResult?.user {
-                    // 🔐 Aggiorna lo stato in AuthManager
-                    DispatchQueue.main.async {
-                        auth.isLoggedIn = true
-                        auth.email = user.email ?? ""
-                        auth.uid = user.uid
-                    }
-                    auth.syncUserDocumentWith(uid: user.uid, email: user.email ?? "")
-                }
-            }
-        }
-    }*/
 }

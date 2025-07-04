@@ -19,7 +19,6 @@ struct ProfileView: View {
     @State private var isDiaryUnlocked = false
     @State private var showDiaryAuthError = false
     @Environment(\.modelContext) private var context
-    //@State private var profileImage: UIImage? = nil
     @State private var nickname: String = ""
     
     
@@ -31,7 +30,6 @@ struct ProfileView: View {
         var id: URL { url }
         let url: URL
     }
-    
     
     @AppStorage("isDarkMode") private var isDarkMode: Bool = false
     @AppStorage("username") private var username: String = ""
@@ -73,7 +71,6 @@ struct ProfileView: View {
                                         .padding()
                                         
                                         VStack(alignment: .leading) {
-                                            //Text(userProfile.nickname)
                                             Text(userProfile.nickname.isEmpty ? auth.email : userProfile.nickname)
                                                 .font(.headline)
                                                 .padding(.bottom)
@@ -129,7 +126,7 @@ struct ProfileView: View {
                         
                         Section(header: Text("Others")) {
                             
-                            NavigationLink(destination: Text("About View")) {
+                            NavigationLink(destination: AboutView()) {
                                 Label("About", systemImage: "info.circle")
                             }
                             
@@ -262,15 +259,22 @@ struct AccountView: View {
     @State private var showChangeEmailSheet = false
     @State private var newPassword = ""
     @State private var showAlert = false
-    @State private var alertMessage = ""
+    @State var alertMessage = ""
     @State private var isUploading = false
     @State private var nickname: String = ""
-
+    
+    
+    @State var showCustomAlert: Bool = false
+    @State var successAlert: Bool = false
+    
+    
+    
     var body: some View {
         NavigationStack {
             ZStack(alignment: .top) {
                 Color(colorScheme == .dark ? Color.backgroundColorDark : Color.lightColorApp)
                     .ignoresSafeArea()
+                
                 List {
                     Section {
                         HStack {
@@ -312,7 +316,6 @@ struct AccountView: View {
                                     .onDisappear {
                                         if let image = selectedImage {
                                             uploadProfileImage(image, for: auth.uid)
-                                            //userProfile.loadProfile(for: auth.uid)
                                         }
                                     }
                             }
@@ -338,13 +341,21 @@ struct AccountView: View {
                         SecureField("Insert new password", text: $newPassword)
 
                         Button{
+                            UIApplication.shared.endEditing()
                             auth.updatePassword(to: newPassword) { error in
-                                if let error = error {
-                                    alertMessage = "\(error)"
+                                if let error = error as NSError? {
+                                    if error.localizedDescription == "" {
+                                        alertMessage = "Error updating password"
+                                    } else {
+                                        alertMessage = "\(error.localizedDescription)"
+                                    }
+                                    successAlert = false
                                 } else {
                                     alertMessage = "Password succesfully updated!"
+                                    successAlert = true
                                 }
-                                showAlert = true
+                                showCustomAlert = true
+                                //showAlert = true
                             }
                         } label: {
                             Text("Change Password")
@@ -356,6 +367,7 @@ struct AccountView: View {
                     Section(header: Text("Nickname")) {
                         TextField("Enter your nickname", text: $nickname)
                         Button {
+                            UIApplication.shared.endEditing()
                             saveNickname()
                         } label: {
                             Text("Save Nickname")
@@ -366,6 +378,7 @@ struct AccountView: View {
                 }
                 .scrollContentBackground(.hidden)
                 
+                Spacer()
                 
                 if isUploading {
                     Color.black.opacity(0.4)
@@ -375,20 +388,22 @@ struct AccountView: View {
                         .background(RoundedRectangle(cornerRadius: 12).fill(Color(.systemBackground)))
                         .shadow(radius: 10)
                 }
-                
-                
-                
+                if showCustomAlert {
+                    CustomAlertView(message: alertMessage, success: successAlert) {
+                        showCustomAlert = false
+                    }
+                }
             }
             .customNavigationTitle("Account Settings")
             .sheet(isPresented: $showChangeEmailSheet) {
                 ChangeEmailSheetView()
                     .environmentObject(auth)
             }
-            .alert("Account Update", isPresented: $showAlert) {
+            /*.alert("Account Update", isPresented: $showAlert) {
                 Button("OK", role: .cancel) { }
             } message: {
                 Text(alertMessage)
-            }
+            }*/
             .onAppear {
                 loadProfileImage()
             }
@@ -396,16 +411,47 @@ struct AccountView: View {
     }
 
     func saveNickname() {
-        let userRef = Firestore.firestore().collection("users").document(auth.uid)
-        userRef.setData(["nickname": nickname], merge: true) { error in
+        //showAlert = true
+        let db = Firestore.firestore()
+        let usersRef = db.collection("users")
+        
+        // 1. Cerca se esiste già un altro utente con questo nickname
+        usersRef.whereField("nickname", isEqualTo: nickname).getDocuments { snapshot, error in
             if let error = error {
-                alertMessage = "❌ Error saving Nickname: \(error.localizedDescription)"
-            } else {
-                alertMessage = "✅ Nickname Updated!"
+                successAlert = false
+                alertMessage = "Error checking nickname: \(error.localizedDescription)"
+                //showAlert = true
+                showCustomAlert = true
+                return
             }
-            showAlert = true
+
+            let documents = snapshot?.documents ?? []
+
+            // 2. Se esiste un altro utente con quel nickname, blocca
+            if documents.contains(where: { $0.documentID != auth.uid }) {
+                successAlert = false
+                alertMessage = "Nickname already taken. Please choose another one."
+                //showAlert = true
+                showCustomAlert = true
+                return
+            }
+
+            // 3. Altrimenti, salva il nickname
+            let userRef = usersRef.document(auth.uid)
+            userRef.setData(["nickname": nickname], merge: true) { error in
+                if let error = error {
+                    successAlert = false
+                    alertMessage = "Error saving Nickname: \(error.localizedDescription)"
+                } else {
+                    successAlert = true
+                    alertMessage = "Nickname succesfully updated!"
+                }
+                //showAlert = true
+                showCustomAlert = true
+            }
+
+            userProfile.loadProfile(for: auth.uid)
         }
-        userProfile.loadProfile(for: auth.uid)
     }
     
     func uploadProfileImage(_ image: UIImage, for uid: String) {
@@ -418,11 +464,14 @@ struct AccountView: View {
         userRef.setData(["profileImageBase64": base64String], merge: true) { error in
             isUploading = false
             if let error = error {
-                alertMessage = "❌ Firestore upload error: \(error.localizedDescription)"
+                successAlert = false
+                alertMessage = "Image upload error: \(error.localizedDescription)"
             } else {
-                alertMessage = "✅ Immagine successfully uploaded!"
+                successAlert = true
+                alertMessage = "Image successfully uploaded!"
             }
-            showAlert = true
+            showCustomAlert = true
+            //showAlert = true
         }
     }
     
@@ -586,44 +635,6 @@ struct ChangeEmailSheetView: View {
     func startVerificationPolling() {
         timer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { _ in
             checkVerificationStatus(context: context)
-        }
-    }
-}
-
-
-
-
-
-
-
-
-class UserProfileManager: ObservableObject {
-    @Published var nickname: String = ""
-    @Published var profileImage: UIImage? = nil
-
-    func loadProfile(for uid: String) {
-        let userRef = Firestore.firestore().collection("users").document(uid)
-        userRef.getDocument { snapshot, error in
-            guard let data = snapshot?.data() else { return }
-
-            DispatchQueue.main.async {
-                if let nick = data["nickname"] as? String {
-                    self.nickname = nick
-                }
-
-                if let base64 = data["profileImageBase64"] as? String,
-                   let data = Data(base64Encoded: base64),
-                   let image = UIImage(data: data) {
-                    self.profileImage = image
-                }
-            }
-        }
-    }
-    
-    func reset() {
-        DispatchQueue.main.async {
-            self.nickname = ""
-            self.profileImage = nil
         }
     }
 }
