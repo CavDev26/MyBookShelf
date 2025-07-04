@@ -4,6 +4,8 @@ import FirebaseAuth
 import SwiftUI
 import SwiftData
 import FirebaseFirestore
+import Firebase
+import GoogleSignIn
 
 class AuthManager: ObservableObject {
     @Published var isLoggedIn: Bool = false
@@ -26,8 +28,6 @@ class AuthManager: ObservableObject {
                     self.isLoggedIn = true
                     self.email = user.email ?? ""
                     self.uid = user.uid
-                    
-                    //self.syncUserDocument()
                 }
                 self.syncUserDocumentWith(uid: user.uid, email: user.email ?? "")
                 completion(nil)
@@ -44,8 +44,6 @@ class AuthManager: ObservableObject {
                     self.isLoggedIn = true
                     self.email = user.email ?? ""
                     self.uid = user.uid
-                    
-                    //self.syncUserDocument()
                 }
                 self.syncUserDocumentWith(uid: user.uid, email: user.email ?? "")
                 completion(nil)
@@ -53,15 +51,15 @@ class AuthManager: ObservableObject {
         }
     }
 
-    func logout(context: ModelContext) {
+    func logout(context: ModelContext, userProfile: UserProfileManager) {
         do {
             try Auth.auth().signOut()
             DispatchQueue.main.async {
                 self.isLoggedIn = false
                 self.email = ""
                 self.uid = ""
+                userProfile.reset()
 
-                // 🔁 CANCELLA DATI LOCALI
                 do {
                     let allBooks = try context.fetch(FetchDescriptor<SavedBook>())
                     allBooks.forEach { context.delete($0) }
@@ -127,13 +125,7 @@ class AuthManager: ObservableObject {
             print("❌ Failed to reload user info: \(error.localizedDescription)")
         }
     }
-    
-    
-    
-    
-    
-    
-    
+
     
     
     func syncUserDocument(nickname: String? = nil, profileImageBase64: String? = nil) {
@@ -183,42 +175,6 @@ class AuthManager: ObservableObject {
             }
         }
     }
-    
-    /*func syncUserDocumentWith(uid: String, email: String, nickname: String? = nil, profileImageBase64: String? = nil) {
-        print("🚀 Chiamata syncUserDocumentWith con uid: \(uid), email: \(email)")
-
-        let db = Firestore.firestore()
-        let statsRef = db.collection("users").document(uid).collection("stats").document("global")
-        let userRef = db.collection("users").document(uid)
-
-        statsRef.getDocument { statsSnapshot, error in
-            if let error = error {
-                print("❌ Errore fetching stats: \(error.localizedDescription)")
-            }
-
-            let xp = statsSnapshot?.data()?["experiencePoints"] as? Int ?? 0
-            let level = xp / 100
-            print("📊 XP: \(xp) -> livello calcolato: \(level)")
-
-            // 🔁 FORZA l'aggiornamento di tutti i campi
-            var dataToUpdate: [String: Any] = [
-                "email": email,
-                "level": level,
-                "nickname": nickname ?? "User\(Int.random(in: 1000...9999))",
-                "profileImageBase64": profileImageBase64 ?? ""
-            ]
-
-            print("📝 Scrittura su Firestore (forzata): \(dataToUpdate)")
-
-            userRef.setData(dataToUpdate, merge: true) { error in
-                if let error = error {
-                    print("❌ Errore aggiornamento utente: \(error.localizedDescription)")
-                } else {
-                    print("✅ Utente sincronizzato correttamente (livello: \(level))")
-                }
-            }
-        }
-    }*/
     
     
     
@@ -277,4 +233,65 @@ class AuthManager: ObservableObject {
         }
     }
     
+    
+    
+    func signInWithGoogle() {
+        guard let clientID = FirebaseApp.app()?.options.clientID else { return }
+
+        let config = GIDConfiguration(clientID: clientID)
+        GIDSignIn.sharedInstance.configuration = config
+
+        guard let rootViewController = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
+            .first?.windows
+            .first?.rootViewController else {
+            return
+        }
+
+        GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController) { result, error in
+            if let error = error {
+                print("Google Sign-In error: \(error)")
+                return
+            }
+
+            guard let idToken = result?.user.idToken?.tokenString,
+                  let accessToken = result?.user.accessToken.tokenString else {
+                return
+            }
+
+            let credential = GoogleAuthProvider.credential(withIDToken: idToken,
+                                                           accessToken: accessToken)
+
+            Auth.auth().signIn(with: credential) { authResult, error in
+                if let error = error {
+                    print("Firebase Sign-In error: \(error)")
+                } else if let user = authResult?.user {
+                    // 🔐 Aggiorna lo stato in AuthManager
+                    DispatchQueue.main.async {
+                        self.isLoggedIn = true
+                        self.email = user.email ?? ""
+                        self.uid = user.uid
+                    }
+                    self.syncUserDocumentWith(uid: user.uid, email: user.email ?? "")
+                }
+            }
+        }
+    }
+    
+    
+    
+    
+}
+
+class AppDelegate: UIResponder, UIApplicationDelegate {
+    func application(_ application: UIApplication,
+                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        FirebaseApp.configure()
+        return true
+    }
+
+    func application(_ app: UIApplication, open url: URL,
+                     options: [UIApplication.OpenURLOptionsKey : Any]) -> Bool {
+        return GIDSignIn.sharedInstance.handle(url)
+    }
 }

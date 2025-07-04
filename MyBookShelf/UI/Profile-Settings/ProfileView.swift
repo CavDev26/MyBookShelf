@@ -19,7 +19,7 @@ struct ProfileView: View {
     @State private var isDiaryUnlocked = false
     @State private var showDiaryAuthError = false
     @Environment(\.modelContext) private var context
-    @State private var profileImage: UIImage? = nil
+    //@State private var profileImage: UIImage? = nil
     @State private var nickname: String = ""
     
     
@@ -147,7 +147,7 @@ struct ProfileView: View {
                             .alert("Are you sure you want to logout?", isPresented: $showLogoutConfirmation) {
                                 Button("Cancel", role: .cancel) { }
                                 Button("Logout", role: .destructive) {
-                                    auth.logout(context: context)
+                                    auth.logout(context: context, userProfile: userProfile)
                                 }
                             } message: {
                                 Text("This action will disconnect your account.")
@@ -186,9 +186,7 @@ struct ProfileView: View {
                 }
                 .onAppear {
                     if auth.isLoggedIn {
-                        //loadProfileImage()
                         userProfile.loadProfile(for: auth.uid)
-
                     }
                 }
                 .actionSheet(isPresented: $showExportPicker) {
@@ -468,6 +466,7 @@ struct AccountView: View {
 
 struct ChangeEmailSheetView: View {
     @EnvironmentObject var auth: AuthManager
+    @EnvironmentObject var userProfile: UserProfileManager
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) private var context
 
@@ -572,13 +571,7 @@ struct ChangeEmailSheetView: View {
                 if Auth.auth().currentUser?.isEmailVerified == true {
                     await MainActor.run {
                         timer?.invalidate()
-
-                        // 👉 logout completo
-                            auth.logout(context: context)
-                        /*if let context = try? Environment(\.modelContext).wrappedValue {
-                            auth.logout(context: context)
-                        }*/
-
+                        auth.logout(context: context, userProfile: userProfile)
                         dismiss()
                     }
                 } else {
@@ -624,6 +617,13 @@ class UserProfileManager: ObservableObject {
                     self.profileImage = image
                 }
             }
+        }
+    }
+    
+    func reset() {
+        DispatchQueue.main.async {
+            self.nickname = ""
+            self.profileImage = nil
         }
     }
 }

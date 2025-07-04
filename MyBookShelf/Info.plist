@@ -8,5 +8,16 @@
 		<string>remote-notification</string>
 		<string>bluetooth-peripheral</string>
 	</array>
+    
+    <key>CFBundleURLTypes</key>
+    <array>
+      <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+          <string>com.googleusercontent.apps.1004949856153-gdbk6cd7vqfjuaaig42mfcaufp1hqfep</string>
+        </array>
+      </dict>
+    </array>
+    
 </dict>
 </plist>
