@@ -102,6 +102,54 @@ class ShelfService {
         }
     }
     
+    func fetchShelvesFromFirebase(userID: String, context: ModelContext, completion: @escaping (Result<[Shelf], Error>) -> Void) {
+        Firestore.firestore()
+            .collection("users")
+            .document(userID)
+            .collection("shelves")
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("❌ Error fetching shelves: \(error)")
+                    completion(.failure(error))
+                    return
+                }
+
+                guard let documents = snapshot?.documents else {
+                    completion(.success([]))
+                    return
+                }
+
+                var fetchedShelves: [Shelf] = []
+
+                for doc in documents {
+                    let data = doc.data()
+                    guard let name = data["name"] as? String else { continue }
+
+                    let shelf = Shelf(
+                        name: name,
+                        latitude: data["latitude"] as? Double,
+                        longitude: data["longitude"] as? Double,
+                        shelfDescription: data["description"] as? String,
+                        address: data["address"] as? String,
+                        books: [] // NB: dovrai eventualmente risolvere i SavedBook tramite ID
+                    )
+                    shelf.id = data["id"] as? String ?? UUID().uuidString
+                    shelf.needsSync = false
+
+                    fetchedShelves.append(shelf)
+                    context.insert(shelf)
+                }
+
+                do {
+                    try context.save()
+                    print("✅ Saved fetched shelves locally")
+                    completion(.success(fetchedShelves))
+                } catch {
+                    print("❌ Error saving fetched shelves: \(error)")
+                    completion(.failure(error))
+                }
+            }
+    }
     
     func deleteShelf(
         _ shelf: Shelf,
@@ -147,5 +195,31 @@ class ShelfService {
             "address": shelf.address ?? "",
             "bookIDs": shelf.books.map { $0.id } // se vuoi anche i libri
         ]
+    }
+    
+    
+    
+    func syncShelvesIfNeeded(userID: String, context: ModelContext) {
+        let localShelfIDs = (try? context.fetch(FetchDescriptor<Shelf>()).map { $0.id }) ?? []
+
+        Firestore.firestore()
+            .collection("users")
+            .document(userID)
+            .collection("shelves")
+            .getDocuments { snapshot, error in
+                guard let documents = snapshot?.documents, error == nil else {
+                    print("❌ Firebase fetch error: \(error?.localizedDescription ?? "")")
+                    return
+                }
+
+                let remoteIDs = documents.map { $0.documentID }
+
+                if Set(remoteIDs) != Set(localShelfIDs) {
+                    print("🔄 Differenza nelle shelf: inizio sync")
+                    self.fetchShelvesFromFirebase(userID: userID, context: context) { _ in }
+                } else {
+                    print("✅ Shelf già sincronizzate. Nessuna azione necessaria.")
+                }
+            }
     }
 }

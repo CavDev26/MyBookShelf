@@ -6,6 +6,7 @@ struct ReadingDiaryView: View {
     @State private var diaryText: String = ""
     @State private var isSaving: Bool = false
     @EnvironmentObject var auth: AuthManager
+    @State private var lastSavedDate: Date = .now
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -41,14 +42,23 @@ struct ReadingDiaryView: View {
         }
         .customNavigationTitle("Personal Diary")
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear { loadDiary(for: selectedDate) }
-        .onChange(of: selectedDate) { loadDiary(for: $0) }
-        .onDisappear { saveDiary() }
+        .onAppear {
+            lastSavedDate = selectedDate
+            loadDiary(for: selectedDate)
+        }
+        .onChange(of: selectedDate) { newDate in
+            // Salva prima il diario del giorno precedente
+            saveDiary(for: lastSavedDate)
+            // Carica il diario del nuovo giorno
+            loadDiary(for: newDate)
+            // Aggiorna il riferimento
+            lastSavedDate = newDate
+        }        .onDisappear { saveDiary() }
     }
     
-    func saveDiary() {
+    func saveDiary(for date: Date = .now) {
         isSaving = true
-        let key = formattedDate(selectedDate)
+        let key = formattedDate(date)
         FirebaseDiaryService.shared.saveEntry(for: key, text: diaryText, uid: auth.uid) {
             isSaving = false
         }

@@ -74,6 +74,9 @@ class AuthManager: ObservableObject {
 
                     let allMonthly = try context.fetch(FetchDescriptor<MonthlyReadingChallenge>())
                     allMonthly.forEach { context.delete($0) }
+                    
+                    let allShelves = try context.fetch(FetchDescriptor<Shelf>())
+                    allShelves.forEach { context.delete($0) }
 
                     try context.save()
                     print("🧹 Dati locali cancellati con successo")

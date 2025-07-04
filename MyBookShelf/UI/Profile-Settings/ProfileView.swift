@@ -14,13 +14,14 @@ import FirebaseFirestore
 struct ProfileView: View {
     @Environment(\.colorScheme) var colorScheme
     @EnvironmentObject var auth: AuthManager
+    @EnvironmentObject var userProfile: UserProfileManager
     @State private var showLogoutConfirmation = false
     @State private var isDiaryUnlocked = false
     @State private var showDiaryAuthError = false
     @Environment(\.modelContext) private var context
     @State private var profileImage: UIImage? = nil
     @State private var nickname: String = ""
-
+    
     @AppStorage("isDarkMode") private var isDarkMode: Bool = false
     @AppStorage("username") private var username: String = ""
     @AppStorage("useSystemColorScheme") private var useSystemColorScheme: Bool = true
@@ -46,7 +47,7 @@ struct ProfileView: View {
                                 NavigationLink(destination: AccountView()) {
                                     VStack {
                                         Group {
-                                            if let image = profileImage {
+                                            if let image = userProfile.profileImage {
                                                 Image(uiImage: image)
                                                     .resizable()
                                                     .scaledToFill()
@@ -61,9 +62,10 @@ struct ProfileView: View {
                                         .padding()
                                         
                                         VStack(alignment: .leading) {
-                                            Text(nickname.isEmpty ? auth.email : nickname)
+                                            //Text(userProfile.nickname)
+                                            Text(userProfile.nickname.isEmpty ? auth.email : userProfile.nickname)
                                                 .font(.headline)
-                                                //.padding(.bottom)
+                                                .padding(.bottom)
                                         }
                                     }
                                     .frame(maxWidth: .infinity)
@@ -99,15 +101,14 @@ struct ProfileView: View {
                             NavigationLink(destination: NotificationView()) {
                                 Label("Notifications", systemImage: "bell")
                             }
-                        }.listRowBackground(colorScheme == .dark ? Color.backgroundColorDark2 : Color.backgroundColorLight)
+                        }
+                        .listRowBackground(colorScheme == .dark ? Color.backgroundColorDark2 : Color.backgroundColorLight)
                         
                         
                         Section(header: Text("Appearance")) {
-                            
                             Toggle(isOn: $useSystemColorScheme) {
                                 Label("Automatic Theme", systemImage: "circle.lefthalf.fill")
                             }
-
                             Toggle(isOn: $isDarkMode) {
                                 Label("Dark Mode", systemImage: "moon.fill")
                             }
@@ -116,15 +117,12 @@ struct ProfileView: View {
                         .listRowBackground(colorScheme == .dark ? Color.backgroundColorDark2 : Color.backgroundColorLight)
                         
                         Section(header: Text("Others")) {
-                            
                             NavigationLink(destination: Text("Privacy View")) {
                                 Label("Privacy", systemImage: "hand.raised.fill")
                             }
-                            
                             NavigationLink(destination: Text("About View")) {
                                 Label("About", systemImage: "info.circle")
                             }
-                            
                             Button(role: .destructive) {
                                 showLogoutConfirmation = true
                             } label: {
@@ -172,14 +170,16 @@ struct ProfileView: View {
                 }
                 .onAppear {
                     if auth.isLoggedIn {
-                        loadProfileImage()
+                        //loadProfileImage()
+                        userProfile.loadProfile(for: auth.uid)
+
                     }
                 }
                 
             }
         }
     }
-    func loadProfileImage() {
+    /*func loadProfileImage() {
         let userRef = Firestore.firestore().collection("users").document(auth.uid)
         userRef.getDocument { snapshot, error in
             if let data = snapshot?.data(),
@@ -191,7 +191,7 @@ struct ProfileView: View {
                 nickname = nick
             }
         }
-    }
+    }*/
     func authenticateForDiary() {
         let context = LAContext()
         var error: NSError?
@@ -228,6 +228,7 @@ struct NotificationView: View {
 struct AccountView: View {
     @Environment(\.colorScheme) var colorScheme
     @EnvironmentObject var auth: AuthManager
+    @EnvironmentObject var userProfile: UserProfileManager
 
     @State private var selectedImage: UIImage? = nil
     @State private var showingSourceDialog = false
@@ -288,6 +289,7 @@ struct AccountView: View {
                                     .onDisappear {
                                         if let image = selectedImage {
                                             uploadProfileImage(image, for: auth.uid)
+                                            //userProfile.loadProfile(for: auth.uid)
                                         }
                                     }
                             }
@@ -317,7 +319,7 @@ struct AccountView: View {
                                 if let error = error {
                                     alertMessage = "\(error)"
                                 } else {
-                                    alertMessage = "Password aggiornata con successo"
+                                    alertMessage = "Password succesfully updated!"
                                 }
                                 showAlert = true
                             }
@@ -340,6 +342,19 @@ struct AccountView: View {
                     .listRowBackground(colorScheme == .dark ? Color.backgroundColorDark2 : Color.backgroundColorLight)
                 }
                 .scrollContentBackground(.hidden)
+                
+                
+                if isUploading {
+                    Color.black.opacity(0.4)
+                        .ignoresSafeArea()
+                    ProgressView("Uploading...")
+                        .padding()
+                        .background(RoundedRectangle(cornerRadius: 12).fill(Color(.systemBackground)))
+                        .shadow(radius: 10)
+                }
+                
+                
+                
             }
             .customNavigationTitle("Account Settings")
             .sheet(isPresented: $showChangeEmailSheet) {
@@ -361,30 +376,33 @@ struct AccountView: View {
         let userRef = Firestore.firestore().collection("users").document(auth.uid)
         userRef.setData(["nickname": nickname], merge: true) { error in
             if let error = error {
-                alertMessage = "❌ Errore salvataggio nickname: \(error.localizedDescription)"
+                alertMessage = "❌ Error saving Nickname: \(error.localizedDescription)"
             } else {
-                alertMessage = "✅ Nickname salvato!"
+                alertMessage = "✅ Nickname Updated!"
+            }
+            showAlert = true
+        }
+        userProfile.loadProfile(for: auth.uid)
+    }
+    
+    func uploadProfileImage(_ image: UIImage, for uid: String) {
+        let resizedImage = resizeImage(image: image, maxDimension: 300)
+        guard let imageData = resizedImage.jpegData(compressionQuality: 0.3) else { return }
+        let base64String = imageData.base64EncodedString()
+        isUploading = true
+
+        let userRef = Firestore.firestore().collection("users").document(uid)
+        userRef.setData(["profileImageBase64": base64String], merge: true) { error in
+            isUploading = false
+            if let error = error {
+                alertMessage = "❌ Firestore upload error: \(error.localizedDescription)"
+            } else {
+                alertMessage = "✅ Immagine successfully uploaded!"
             }
             showAlert = true
         }
     }
     
-    func uploadProfileImage(_ image: UIImage, for uid: String) {
-        guard let imageData = image.jpegData(compressionQuality: 0.4) else { return }
-
-        let base64String = imageData.base64EncodedString()
-
-        let userRef = Firestore.firestore().collection("users").document(uid)
-        userRef.setData(["profileImageBase64": base64String], merge: true) { error in
-            if let error = error {
-                alertMessage = "❌ Firestore upload error: \(error.localizedDescription)"
-                showAlert = true
-            } else {
-                alertMessage = "✅ Immagine caricata con successo!"
-                showAlert = true
-            }
-        }
-    }
     func loadProfileImage() {
         let userRef = Firestore.firestore().collection("users").document(auth.uid)
         userRef.getDocument { snapshot, error in
@@ -399,6 +417,24 @@ struct AccountView: View {
             if let savedNickname = data["nickname"] as? String {
                 nickname = savedNickname
             }
+        }
+    }
+    
+    func resizeImage(image: UIImage, maxDimension: CGFloat) -> UIImage {
+        let aspectRatio = image.size.width / image.size.height
+        var newSize: CGSize
+
+        if aspectRatio > 1 {
+            // landscape
+            newSize = CGSize(width: maxDimension, height: maxDimension / aspectRatio)
+        } else {
+            // portrait or square
+            newSize = CGSize(width: maxDimension * aspectRatio, height: maxDimension)
+        }
+
+        let renderer = UIGraphicsImageRenderer(size: newSize)
+        return renderer.image { _ in
+            image.draw(in: CGRect(origin: .zero, size: newSize))
         }
     }
     
@@ -532,6 +568,37 @@ struct ChangeEmailSheetView: View {
     func startVerificationPolling() {
         timer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { _ in
             checkVerificationStatus(context: context)
+        }
+    }
+}
+
+
+
+
+
+
+
+
+class UserProfileManager: ObservableObject {
+    @Published var nickname: String = ""
+    @Published var profileImage: UIImage? = nil
+
+    func loadProfile(for uid: String) {
+        let userRef = Firestore.firestore().collection("users").document(uid)
+        userRef.getDocument { snapshot, error in
+            guard let data = snapshot?.data() else { return }
+
+            DispatchQueue.main.async {
+                if let nick = data["nickname"] as? String {
+                    self.nickname = nick
+                }
+
+                if let base64 = data["profileImageBase64"] as? String,
+                   let data = Data(base64Encoded: base64),
+                   let image = UIImage(data: data) {
+                    self.profileImage = image
+                }
+            }
         }
     }
 }

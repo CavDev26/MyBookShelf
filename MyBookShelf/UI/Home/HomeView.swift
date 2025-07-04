@@ -69,7 +69,7 @@ struct HomeView: View {
             if !auth.uid.isEmpty {
                 FirebaseBookService.shared.syncBooksToLocal(for: auth.uid, context: context)
                 ShelfService.shared.syncModifiedShelves(userID: auth.uid, context: context)
-                
+                ShelfService.shared.syncShelvesIfNeeded(userID: auth.uid, context: context)
                 WatchSessionManager.shared.sendReadingBooksToWatch(from: books)
                 
                 let currentYear = Calendar.current.component(.year, from: .now)
@@ -444,36 +444,37 @@ struct addShelfSheetView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                /*if colorScheme == .dark {
-                 Color.backgroundColorDark2.ignoresSafeArea()
-                 } else {
-                 Color.lightColorApp.ignoresSafeArea()
-                 }*/
+                Color(colorScheme == .dark ? Color.backgroundColorDark : Color.lightColorApp)
+                    .ignoresSafeArea()
                 Form {
                     Section(
                         content: {
                             TextField("Name", text: $name)
-                                .padding(10)
-                                .background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
+                                //.padding(10)
+                                //.background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
                                 .cornerRadius(8)
                         },
                         header: { Text("Name") }
                     )
+                    .listRowBackground(colorScheme == .dark ? Color.backgroundColorDark2 : Color.backgroundColorLight)
+
                     Section(
                         content: {
                             TextField("Description", text: $description)
-                                .padding(10)
-                                .background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
+                                //.padding(10)
+                                //.background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
                                 .cornerRadius(8)
                         },
                         header: { Text("Description") }
                     )
+                    .listRowBackground(colorScheme == .dark ? Color.backgroundColorDark2 : Color.backgroundColorLight)
+
                     
                     
                     Section(header: Text("Address (optional)")) {
                         TextField("Enter address", text: $address)
-                            .padding(10)
-                            .background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
+                            //.padding(10)
+                            //.background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
                             .cornerRadius(8)
                             .focused($isAddressFieldFocused)
                             .onChange(of: address) { newValue in
@@ -503,7 +504,6 @@ struct addShelfSheetView: View {
                                     resolveCoordinates(for: suggestion)
                                     isAddressFieldFocused = false // chiude tastiera
                                     
-                                    // ❗️Posticipa l'azzeramento per farlo dopo l'autocompletamento
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                                         withAnimation {
                                             completerDelegate.suggestions = []
@@ -515,19 +515,21 @@ struct addShelfSheetView: View {
                             .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 12))
                         }
                     }
+                    .listRowBackground(colorScheme == .dark ? Color.backgroundColorDark2 : Color.backgroundColorLight)
+
                     Section(
                         content: {
                             TextField("Latitude", value: $latitude, format: .number)
-                                .padding(10)
-                                .background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
+                                //.padding(10)
+                                //.background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
                                 .cornerRadius(8)
                                 .keyboardType(.numberPad)
                                 .onChange(of: locationService.latitude) {
                                     latitude = locationService.latitude
                                 }
                             TextField("Longitude", value: $longitude, format: .number)
-                                .padding(10)
-                                .background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
+                                //.padding(10)
+                                //.background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
                                 .cornerRadius(8)
                                 .keyboardType(.numberPad)
                                 .onChange(of: locationService.longitude) {
@@ -544,8 +546,8 @@ struct addShelfSheetView: View {
                                         //.cornerRadius(8)
                                     }
                                     .frame(maxWidth: .infinity)
-                                    .padding(10)
-                                    .background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
+                                    //.padding(10)
+                                    //.background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
                                     .cornerRadius(8)
                                     
                                 }
@@ -557,6 +559,8 @@ struct addShelfSheetView: View {
                         },
                         header: { Text("Coordinates") }
                     )
+                    .listRowBackground(colorScheme == .dark ? Color.backgroundColorDark2 : Color.backgroundColorLight)
+
                 }
                 .scrollContentBackground(.hidden)
             }

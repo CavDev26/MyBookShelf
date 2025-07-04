@@ -7,6 +7,7 @@ import UserNotifications
 
 struct StartupView: View {
     @EnvironmentObject var auth: AuthManager
+    @StateObject var userProfileManager = UserProfileManager()
     @State private var isChecking = true
     @Namespace private var transitionNamespace
     @Environment(\.modelContext) private var modelContext
@@ -21,6 +22,7 @@ struct StartupView: View {
             } else if auth.isLoggedIn {
                 ContentView()
                     .environmentObject(auth)
+                    .environmentObject(userProfileManager)
                     .transition(.move(edge: .trailing).combined(with: .opacity))
             } else {
                 AuthView()

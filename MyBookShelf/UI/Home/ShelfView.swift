@@ -2,6 +2,7 @@ import SwiftUICore
 import _SwiftData_SwiftUI
 import SwiftUI
 import MapKit
+import CoreLocation
 
 struct ShelfView: View {
     var shelf: Shelf
@@ -15,7 +16,7 @@ struct ShelfView: View {
     @State var manageShelfSheet: Bool = false
     @ObservedObject var viewModel: CombinedGenreSearchViewModel
     @EnvironmentObject var auth: AuthManager
-
+    @State private var mapRegion: MKCoordinateRegion = MKCoordinateRegion()
     
     @State var showRemoveAlert : Bool = false
     
@@ -23,7 +24,7 @@ struct ShelfView: View {
         shelf.books
     }
     
-    private var mapRegion: MKCoordinateRegion {
+    /*private var mapRegion: MKCoordinateRegion {
         MKCoordinateRegion(
             center: CLLocationCoordinate2D(
                 latitude: shelf.latitude ?? 0,
@@ -31,7 +32,7 @@ struct ShelfView: View {
             ),
             span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1) // circa 10km
         )
-    }
+    }*/
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -85,7 +86,7 @@ struct ShelfView: View {
                                 Text(showAllBooks ? "Show Less" : "Show More")
                                     .font(.subheadline)
                                     .padding(.horizontal)
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(Color.terracotta)
                             }
                         }
                     } else { //no books
@@ -133,8 +134,7 @@ struct ShelfView: View {
                     
                     // Mappa
                     if let lat = shelf.latitude, let lon = shelf.longitude {
-                        Map(coordinateRegion: .constant(mapRegion), annotationItems: [shelf]) { _ in
-                            MapMarker(coordinate: CLLocationCoordinate2D(latitude: lat, longitude: lon), tint: .red)
+                        Map(coordinateRegion: $mapRegion, annotationItems: [shelf]) { _ in                            MapMarker(coordinate: CLLocationCoordinate2D(latitude: lat, longitude: lon), tint: .red)
                         }
                         .frame(height: 250)
                         .cornerRadius(12)
@@ -182,7 +182,7 @@ struct ShelfView: View {
         }
         .sheet(isPresented: $manageShelfSheet) {
             ManageShelfSheet(shelf: shelf, showRemoveAlert: $showRemoveAlert, auth: auth)
-                .presentationDetents([.fraction(0.4)])
+                .presentationDetents([.fraction(0.6)])
                 .presentationDragIndicator(.visible)
         }
         .alert("Remove Shelf?", isPresented: $showRemoveAlert, presenting: shelf) { shelf in
@@ -204,40 +204,88 @@ struct ShelfView: View {
         } message: { shelf in
             Text("Are you sure you want to remove \"\(shelf.name)\" Shelf?")
         }
+        .onAppear {
+            if let lat = shelf.latitude, let lon = shelf.longitude {
+                mapRegion = MKCoordinateRegion(
+                    center: CLLocationCoordinate2D(latitude: lat, longitude: lon),
+                    span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1)
+                )
+            }
+        }
+        .onChange(of: shelf.latitude) { newLat in
+            updateMapRegion()
+        }
+        .onChange(of: shelf.longitude) { newLon in
+            updateMapRegion()
+        }
+    }
+    func updateMapRegion() {
+        if let lat = shelf.latitude, let lon = shelf.longitude {
+            mapRegion = MKCoordinateRegion(
+                center: CLLocationCoordinate2D(latitude: lat, longitude: lon),
+                span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1)
+            )
+        }
     }
 }
 
 struct ManageShelfSheet: View {
     var shelf : Shelf
     @Binding var showRemoveAlert : Bool
-    
     @ObservedObject var auth: AuthManager
     @State private var name: String = ""
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) var colorScheme
+    @State private var address: String = ""
+    @State private var latitude: Double?
+    @State private var longitude: Double?
     
     var body: some View {
         NavigationStack{
-            VStack{
-                Text("Edit Shelf name")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal)
-                TextField("Name", text: $name)
+            VStack(spacing: 16) {
+                Group {
+                    Text("Edit Shelf name")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    TextField("Name", text: $name)
+                        .padding(10)
+                        .background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
+                        .cornerRadius(8)
+
+                    Text("Edit Address")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    TextField("Address", text: $address)
+                        .padding(10)
+                        .background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
+                        .cornerRadius(8)
+
+                    Text("Coordinates")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    HStack {
+                        TextField("Latitude", value: $latitude, format: .number)
+                            .keyboardType(.decimalPad)
+                        TextField("Longitude", value: $longitude, format: .number)
+                            .keyboardType(.decimalPad)
+                    }
                     .padding(10)
                     .background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
                     .cornerRadius(8)
-                    .padding(.horizontal)
+                }
+                .padding(.horizontal)
+
                 Spacer()
-                
+
                 Button {
                     showRemoveAlert.toggle()
                 } label: {
                     RoundedRectangle(cornerRadius: 8)
                         .fill(Color.red.opacity(0.8))
                         .frame(width: 140, height: 50)
-                        .overlay{
+                        .overlay {
                             Text("Delete Shelf")
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.white)
@@ -254,19 +302,50 @@ struct ManageShelfSheet: View {
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     Button("Save") {
                         shelf.name = name
-                        shelf.needsSync = true
-                        ShelfService.shared.saveShelf(shelf, context: context, userID: auth.uid) { result in
-                            switch result {
-                            case .success():
-                                print("✅ Uploaded to Firebase")
-                            case .failure(let error):
-                                print("⚠️ Upload failed: \(error.localizedDescription)")
+                        shelf.address = address
+                        
+                        if !address.isEmpty {
+                            let geocoder = CLGeocoder()
+                            geocoder.geocodeAddressString(address) { placemarks, error in
+                                if let error = error {
+                                    print("❌ Geocoding error: \(error.localizedDescription)")
+                                }
+
+                                if let location = placemarks?.first?.location {
+                                    shelf.latitude = location.coordinate.latitude
+                                    shelf.longitude = location.coordinate.longitude
+                                    print("📍 Location found: \(location.coordinate)")
+                                }
+
+                                // salva comunque, con o senza coordinate
+                                finishSavingShelf()
                             }
-                            dismiss()
+                        } else {
+                            shelf.latitude = latitude
+                            shelf.longitude = longitude
+                            finishSavingShelf()
                         }
                     }
                 }
             }
+            .onAppear{
+                name = shelf.name
+                address = shelf.address ?? ""
+                latitude = shelf.latitude
+                longitude = shelf.longitude
+            }
+        }
+    }
+    func finishSavingShelf() {
+        shelf.needsSync = true
+        ShelfService.shared.saveShelf(shelf, context: context, userID: auth.uid) { result in
+            switch result {
+            case .success():
+                print("✅ Uploaded to Firebase")
+            case .failure(let error):
+                print("⚠️ Upload failed: \(error.localizedDescription)")
+            }
+            dismiss()
         }
     }
 }
@@ -346,6 +425,7 @@ struct AddBooksToShelfSheet: View {
                         VStack(alignment: .leading) {
                             Text(book.title)
                                 .font(.headline)
+                                .lineLimit(1)
                             if let author = book.authors.first {
                                 Text(author)
                                     .font(.subheadline)
@@ -355,10 +435,8 @@ struct AddBooksToShelfSheet: View {
                         Spacer()
                         Button {
                             if shelf.books.contains(book) {
-                                // Rimuove il libro
                                 shelf.books.removeAll { $0.id == book.id }
                             } else {
-                                // Aggiunge il libro
                                 shelf.books.append(book)
                             }
                         } label: {

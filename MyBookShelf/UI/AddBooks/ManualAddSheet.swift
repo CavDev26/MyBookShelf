@@ -65,23 +65,26 @@ struct manualAddSheet: View {
                         Button("From URL") { showingURLPrompt = true }
                         Button("Cancel", role: .cancel) { }
                     }
-                    // Title
                     TextField("Title", text: $title)
-                        .textFieldStyle(.roundedBorder)
+                        .padding(8)
+                        .background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
                     
-                    // Author
                     TextField("Author", text: $author)
-                        .textFieldStyle(.roundedBorder)
+                        .padding(8)
+                        .background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
                     
-                    // Publisher
                     TextField("Publisher", text: $publisher)
-                        .textFieldStyle(.roundedBorder)
+                        .padding(8)
+                        .background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
                     
-                    // Published Date
                     TextField("Published Date", text: $publishedDate)
-                        .textFieldStyle(.roundedBorder)
+                        .padding(8)
+                        .background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
                     
-                    // Reading Status and Rating
                     HStack {
                         Menu {
                             ForEach(ReadingStatus.assignableCases, id: \.self) { status in
@@ -98,23 +101,22 @@ struct manualAddSheet: View {
                                         .foregroundColor(.secondary)
                                 )
                         }
-                        
                         Spacer()
-                        
                         RatingViewEditable(rating: $rating)
                     }
                     
-                    // Page Count
                     TextField("Page Count", text: $pageCount)
                         .keyboardType(.numberPad)
-                        .textFieldStyle(.roundedBorder)
+                        .padding(8)
+                        .background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
                     
-                    // Description
                     TextField("Description", text: $description, axis: .vertical)
-                        .textFieldStyle(.roundedBorder)
+                        .padding(8)
+                        .background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
                         .lineLimit(4...6)
                     
-                    // Genre Selector
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Genres")
                             .font(.headline)
@@ -154,7 +156,7 @@ struct manualAddSheet: View {
                                 }
                             }
                             .font(.caption)
-                            .foregroundColor(.blue)
+                            .foregroundColor(Color.terracotta)
                             .padding(.top, 4)
                         }
                     }

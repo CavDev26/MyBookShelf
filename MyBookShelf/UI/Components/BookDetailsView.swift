@@ -289,13 +289,16 @@ struct detailsGenreView : View {
     var body: some View {
         if let savedBook = book as? SavedBook {
             if let genres = savedBook.genres {
-                Text("Genres: \(genres.map { $0.rawValue.capitalized }.joined(separator: ", "))")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.secondary)
-            } else {
-                Text("Genres: None")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.secondary)
+                if genres == [] || genres == [.unknown] {
+                    Text("Genres: None")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.secondary)
+                        .italic()
+                } else {
+                    Text("Genres: \(genres.map { $0.rawValue.capitalized }.joined(separator: ", "))")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.secondary)
+                }
             }
         } else if book is BookAPI {
             if let genres = genres {
@@ -303,6 +306,7 @@ struct detailsGenreView : View {
                     Text("Genres: None")
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(.secondary)
+                        .italic()
                 } else {
                     Text("Genres: \(genres.map { $0.rawValue.capitalized }.joined(separator: ", "))")
                         .font(.system(size: 16, weight: .semibold))
@@ -707,6 +711,7 @@ struct ExpandableDescriptionView: View {
             
             Text(text)
                 .font(.system(size: 15, weight: .semibold, design: .serif))
+                .italic()
                 .foregroundColor(.secondary)
                 .lineLimit(isExpanded ? nil : 8)
                 .animation(.easeInOut, value: isExpanded)
@@ -719,7 +724,7 @@ struct ExpandableDescriptionView: View {
                     }
                 }
                 .font(.caption)
-                .foregroundColor(.blue)
+                .foregroundColor(Color.terracotta)
             }
         }
     }
