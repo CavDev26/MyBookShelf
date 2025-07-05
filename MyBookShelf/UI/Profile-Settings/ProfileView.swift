@@ -18,8 +18,8 @@ struct ProfileView: View {
     @State private var showDiaryAuthError = false
     @Environment(\.modelContext) private var context
     @State private var nickname: String = ""
-    
-    
+    @EnvironmentObject var permissionManager: PermissionManager
+    @State private var showBiometrySettingsAlert = false
     @StateObject private var exportVM = ExportLibraryViewModel()
     @State private var showExportPicker = false
     @State private var selectedExportFormat: ExportFormat? = nil
@@ -173,6 +173,14 @@ struct ProfileView: View {
                     .navigationDestination(isPresented: $isDiaryUnlocked) {
                         ReadingDiaryView()
                     }
+                    .alert("Biometry Not Available", isPresented: $showBiometrySettingsAlert) {
+                        Button("Open Settings") {
+                            permissionManager.openAppSettings()
+                        }
+                        Button("Cancel", role: .cancel) { }
+                    } message: {
+                        Text("Face ID or Touch ID is not available or has been disabled. You can enable it in Settings.")
+                    }
                     .alert("Authentication Failed", isPresented: $showDiaryAuthError) {
                         Button("OK", role: .cancel) { }
                     }
@@ -228,7 +236,7 @@ struct ProfileView: View {
                 }
             }
         } else {
-            showDiaryAuthError = true
+            showBiometrySettingsAlert = true
         }
     }
 }

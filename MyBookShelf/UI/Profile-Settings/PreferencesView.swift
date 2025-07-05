@@ -1,4 +1,5 @@
 import SwiftUI
+import LocalAuthentication
 import AVFoundation
 import Photos
 import UserNotifications
@@ -12,6 +13,8 @@ struct PreferencesView: View {
     @State private var photoStatus: PHAuthorizationStatus = .notDetermined
     @State private var notificationsAllowed: Bool? = nil
     @State private var locationStatus: CLAuthorizationStatus = .notDetermined
+    @State private var isBiometryAvailable: Bool = false
+    @State private var biometryType: LABiometryType = .none
 
     var body: some View {
         ZStack {
@@ -19,41 +22,56 @@ struct PreferencesView: View {
                 .ignoresSafeArea()
             List {
                 Section(header: Text("App Permissions")) {
-                    
                     HStack {
                         Label("Camera", systemImage: "camera")
                         Spacer()
                         Text(describe(status: cameraStatus))
                             .foregroundColor(.secondary)
                     }
-                    HStack {
+                    .padding(3)
+                    /*HStack {
                         Label("Photo Library", systemImage: "photo.on.rectangle")
                         Spacer()
                         Text(describe(status: photoStatus))
                             .foregroundColor(.secondary)
-                    }
+                    }*/
                     HStack {
                         Label("Notifications", systemImage: "bell")
                         Spacer()
                         Text(notificationsAllowedText)
                             .foregroundColor(.secondary)
                     }
+                    .padding(3)
                     HStack {
                         Label("Location", systemImage: "location")
                         Spacer()
                         Text(describe(status: locationStatus))
                             .foregroundColor(.secondary)
                     }
+                    .padding(3)
+                    HStack {
+                        Label(biometryType == .faceID ? "Face ID" : "Touch ID", systemImage: biometryType == .faceID ? "faceid" : "touchid")
+                        Spacer()
+                        Text(isBiometryAvailable ? "Allowed" : "Denied")
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(3)
                 }
+                .listRowBackground(colorScheme == .dark ? Color.backgroundColorDark2 : Color.backgroundColorLight)
+                .listStyle(.insetGrouped)
                 Section {
                     Button {
                         openAppSettings()
                     } label: {
                         Label("Manage Permissions", systemImage: "gearshape")
                             .foregroundColor(Color.terracotta)
+                            .padding(3)
                     }
                 }
+                .listRowBackground(colorScheme == .dark ? Color.backgroundColorDark2 : Color.backgroundColorLight)
+                .listStyle(.insetGrouped)
             }
+            .scrollContentBackground(.hidden)
         }
         .onAppear {
             updatePermissions()
@@ -110,7 +128,13 @@ struct PreferencesView: View {
         }
 
         locationStatus = CLLocationManager().authorizationStatus
+
+        let context = LAContext()
+        var error: NSError?
+        isBiometryAvailable = context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error)
+        biometryType = context.biometryType
     }
+    
     func openAppSettings() {
         if let url = URL(string: UIApplication.openSettingsURLString),
            UIApplication.shared.canOpenURL(url) {

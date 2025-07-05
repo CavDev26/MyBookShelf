@@ -1,22 +1,25 @@
-//
-//  PermissionManager.swift
-//  MyBookShelf
-//
-//  Created by Lorenzo Cavallucci on 05/07/25.
-//
-
-
 import Foundation
 import AVFoundation
 import UIKit
+import CoreLocation
+import LocalAuthentication
 
-class PermissionManager: ObservableObject {
+class PermissionManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var isCameraAuthorized: Bool = false
+    @Published var isLocationAuthorized: Bool = false
+    @Published var isBiometryAvailable: Bool = false
+    @Published var biometryType: LABiometryType = .none
 
-    init() {
+    let locationManager = CLLocationManager()
+
+    override init() {
+        super.init()
         checkCameraPermission()
+        setupLocation()
+        checkBiometry()
     }
 
+    // MARK: - Camera
     func checkCameraPermission() {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .authorized:
@@ -34,6 +37,37 @@ class PermissionManager: ObservableObject {
         }
     }
 
+    // MARK: - Location
+    func setupLocation() {
+        locationManager.delegate = self
+        updateLocationAuthorizationStatus()
+    }
+
+    func requestLocationPermission() {
+        locationManager.requestWhenInUseAuthorization()
+    }
+
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        updateLocationAuthorizationStatus()
+    }
+
+    private func updateLocationAuthorizationStatus() {
+        let status = locationManager.authorizationStatus
+        DispatchQueue.main.async {
+            self.isLocationAuthorized = (status == .authorizedWhenInUse || status == .authorizedAlways)
+        }
+    }
+
+    // MARK: - Biometry
+    func checkBiometry() {
+        let context = LAContext()
+        var error: NSError?
+
+        isBiometryAvailable = context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error)
+        biometryType = context.biometryType
+    }
+
+    // MARK: - Open Settings
     func openAppSettings() {
         if let url = URL(string: UIApplication.openSettingsURLString),
            UIApplication.shared.canOpenURL(url) {

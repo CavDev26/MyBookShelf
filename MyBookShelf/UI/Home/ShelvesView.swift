@@ -1,19 +1,21 @@
 import SwiftUICore
 import _MapKit_SwiftUI
 import SwiftUI
+
 struct ShelvesView: View {
     @Environment(\.colorScheme) var colorScheme
+    @EnvironmentObject var permissionManager: PermissionManager // 👈
+    
     var shelves: [Shelf]
     @ObservedObject var viewModel: CombinedGenreSearchViewModel
     @State private var showFullMap = false
-    @StateObject private var locationService = LocationService()
     @State var showShelfSheet: Bool = false
-    
+
     var body: some View {
         ZStack(alignment: .top) {
             Color(colorScheme == .dark ? Color.backgroundColorDark : Color.lightColorApp)
                 .ignoresSafeArea()
-            
+
             ScrollView {
                 LazyVGrid(columns: Array(repeating: .init(.flexible()), count: 3), spacing: 16) {
                     ForEach(shelves) { shelf in
@@ -34,14 +36,17 @@ struct ShelvesView: View {
                     }
                 }
                 .padding()
-                
+
                 Button {
                     showFullMap.toggle()
                 } label: {
-                    MapView(shelves: shelves, userLocation: locationService.currentLocation)
-                        .frame(height: 200)
-                        .cornerRadius(12)
-                        .padding()
+                    MapView(
+                        shelves: shelves,
+                        userLocation: permissionManager.isLocationAuthorized ? permissionManager.locationManager.location?.coordinate : nil
+                    )
+                    .frame(height: 200)
+                    .cornerRadius(12)
+                    .padding()
                 }
             }
         }
@@ -56,10 +61,16 @@ struct ShelvesView: View {
             }
         }
         .onAppear {
-            locationService.requestLocation()
+            if !permissionManager.isLocationAuthorized {
+                permissionManager.requestLocationPermission()
+            }
         }
         .fullScreenCover(isPresented: $showFullMap) {
-            FullMapView(shelves: shelves, userLocation: locationService.currentLocation, dismiss: { showFullMap = false })
+            FullMapView(
+                shelves: shelves,
+                userLocation: permissionManager.isLocationAuthorized ? permissionManager.locationManager.location?.coordinate : nil,
+                dismiss: { showFullMap = false }
+            )
         }
         .sheet(isPresented: $showShelfSheet) {
             addShelfSheetView()

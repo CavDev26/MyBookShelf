@@ -436,6 +436,8 @@ struct addShelfSheetView: View {
     @State private var longitude: Double? = nil
     
     @EnvironmentObject var auth: AuthManager
+    @EnvironmentObject var permissionManager: PermissionManager
+    @State private var showLocationAlert: Bool = false
     
     @StateObject private var completerDelegate = CompleterDelegate()
     private var searchCompleter = MKLocalSearchCompleter()
@@ -537,19 +539,20 @@ struct addShelfSheetView: View {
                                 }
                             
                             HStack {
-                                Button(action: { locationService.requestLocation() }
-                                ) {
-                                    HStack{
+                                Button(action: {
+                                    if permissionManager.isLocationAuthorized {
+                                        locationService.requestLocation()
+                                    } else {
+                                        showLocationAlert = true
+                                    }
+                                }) {
+                                    HStack {
                                         Image(systemName: "location.fill")
                                             .padding(.trailing)
                                         Text("Get current location")
-                                        //.cornerRadius(8)
                                     }
                                     .frame(maxWidth: .infinity)
-                                    //.padding(10)
-                                    //.background(Color.gray.opacity(colorScheme == .dark ? 0.2 : 0.2))
                                     .cornerRadius(8)
-                                    
                                 }
                                 if locationService.isMonitoring {
                                     Spacer()
@@ -560,7 +563,14 @@ struct addShelfSheetView: View {
                         header: { Text("Coordinates") }
                     )
                     .listRowBackground(colorScheme == .dark ? Color.backgroundColorDark2 : Color.backgroundColorLight)
-
+                    .alert("Location access is disabled", isPresented: $showLocationAlert) {
+                        Button("Open Settings") {
+                            permissionManager.openAppSettings()
+                        }
+                        Button("Cancel", role: .cancel) {}
+                    } message: {
+                        Text("Enable location access in Settings to use your current position.")
+                    }
                 }
                 .scrollContentBackground(.hidden)
             }
