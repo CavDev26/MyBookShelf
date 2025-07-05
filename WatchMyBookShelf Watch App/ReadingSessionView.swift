@@ -9,6 +9,8 @@ struct ReadingSessionView: View {
     @State private var timeRemaining: Int = 15 * 60
     @State private var timer: Timer?
     @State private var showUpdateProgress = false
+    @State private var actualDuration: Int = 0
+    @State private var startTime: Date?
 
     var body: some View {
         VStack(spacing: 8) {
@@ -20,7 +22,7 @@ struct ReadingSessionView: View {
                     .font(.largeTitle)
                     .monospacedDigit()
                 Button("Stop") {
-                    endSession()
+                    endSession(manual: true)
                 }
                 .foregroundColor(.red)
             } else {
@@ -44,7 +46,7 @@ struct ReadingSessionView: View {
             timer?.invalidate()
         }
         .sheet(isPresented: $showUpdateProgress) {
-            UpdateProgressView(book: book, durationMinutes: selectedDuration)
+            UpdateProgressView(book: book, durationMinutes: actualDuration)
         }
     }
 
@@ -57,17 +59,26 @@ struct ReadingSessionView: View {
     func startSession() {
         isReading = true
         timeRemaining = selectedDuration * 60
+        startTime = Date()
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
             timeRemaining -= 1
             if timeRemaining <= 0 {
-                endSession()
+                endSession(manual: false)
             }
         }
     }
 
-    func endSession() {
+    func endSession(manual: Bool) {
         timer?.invalidate()
         isReading = false
+
+        if manual, let start = startTime {
+            let secondsElapsed = Int(Date().timeIntervalSince(start))
+            actualDuration = max(1, secondsElapsed / 60)
+        } else {
+            actualDuration = selectedDuration
+        }
+
         showUpdateProgress = true
     }
 }

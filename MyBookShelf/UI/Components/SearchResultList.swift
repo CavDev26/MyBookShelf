@@ -236,12 +236,12 @@ struct addBookButtonView: View {
             Text(isSaved ? "In Your Library" : "Add to My Library")
                 .font(.caption)
                 .fontWeight(.semibold)
-                .foregroundColor(.white)
+                .foregroundColor(isSaved ? .black : .white)
                 .padding(.vertical, 6)
             
             HStack {
                 Image(systemName: isSaved ? "checkmark" : "plus")
-                    .foregroundColor(.white)
+                    .foregroundColor(isSaved ? .black : .white)
                 Spacer()
             }
             .padding(.horizontal, 4)

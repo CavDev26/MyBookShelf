@@ -16,11 +16,11 @@ struct MyBookShelfApp: App {
     @StateObject private var authManager = AuthManager()
     @StateObject private var watchManager = WatchSessionManager.shared
     @StateObject var permissionManager = PermissionManager()
-
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
 
     init() {
-        FirebaseApp.configure()
+        //FirebaseApp.configure()
     }
 
     var body: some Scene {

@@ -19,7 +19,7 @@ class WatchSessionManager: NSObject, ObservableObject, WCSessionDelegate {
     func sessionDidDeactivate(_ session: WCSession) {
         
     }
-    
+    private var handledTimestamps: Set<TimeInterval> = []
     static let shared = WatchSessionManager()
     private var authManager: AuthManager?
     private var modelContext: ModelContext?
@@ -95,10 +95,23 @@ class WatchSessionManager: NSObject, ObservableObject, WCSessionDelegate {
     
     
     private func handleIncomingData(_ data: [String: Any]) {
+        
         guard let type = data["type"] as? String, type == "readingSession" else { return }
 
-        let minutes = data["durationMinutes"] as? Int ?? 0
         let timestamp = data["timestamp"] as? TimeInterval ?? Date().timeIntervalSince1970
+
+        // 🛑 Evita duplicati
+        guard !handledTimestamps.contains(timestamp) else {
+            print("⚠️ Sessione già gestita, ignorata")
+            return
+        }
+        handledTimestamps.insert(timestamp)
+        
+        
+        
+        
+        let minutes = data["durationMinutes"] as? Int ?? 0
+        //let timestamp = data["timestamp"] as? TimeInterval ?? Date().timeIntervalSince1970
         let page = data["pagesRead"] as? Int
         let bookIDString = data["bookID"] as? String
         let date = Date(timeIntervalSince1970: timestamp)
@@ -134,20 +147,21 @@ class WatchSessionManager: NSObject, ObservableObject, WCSessionDelegate {
                 NotificationCenter.default.post(name: .readingSessionReceived, object: nil, userInfo: [
                     "duration": minutes,
                     "timestamp": date,
-                    "title": title
+                    "title": title,
+                    "pagesRead": page ?? 0
                 ])
 
-                self.showReadingSessionNotification(minutes: minutes, title: title, at: date)
+                self.showReadingSessionNotification(minutes: minutes, title: title, at: date, page: page ?? 0)
             }
         }
     }
     
     
     
-    func showReadingSessionNotification(minutes: Int, title: String, at date: Date) {
+    func showReadingSessionNotification(minutes: Int, title: String, at date: Date, page: Int) {
         let content = UNMutableNotificationContent()
         content.title = "Apple Watch Reading Session"
-        content.body = "You read \(title) for \(minutes) minutes."
+        content.body = "Read \(title), for \(minutes) minutes.\nYou are now at page \(page)!"
         content.sound = .default
 
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)

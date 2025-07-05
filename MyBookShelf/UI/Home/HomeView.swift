@@ -82,9 +82,10 @@ struct HomeView: View {
                     if let userInfo = notification.userInfo,
                        let duration = userInfo["duration"] as? Int,
                        let title = userInfo["title"] as? String,
+                       let pages = userInfo["pagesRead"] as? Int,
                        let timestamp = userInfo["timestamp"] as? Date {
                         let notName = "Apple Watch Reading session"
-                        let message = "You read \(title) for \(duration) minutes"
+                        let message = "Read '\(title)' for \(duration) minutes.\nYou are now at page \(pages)!"
                         notificationViewModel.addNotification(
                             ReadingNotification(notName: notName, message: message, timestamp: timestamp)
                         )

@@ -1,8 +1,11 @@
 import Foundation
+import FirebaseAuth
+//import FirebaseMessaging
 import AVFoundation
 import UIKit
 import CoreLocation
 import LocalAuthentication
+//import FirebaseFirestore
 
 class PermissionManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var isCameraAuthorized: Bool = false
@@ -83,6 +86,19 @@ class PermissionManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             DispatchQueue.main.async {
                 self.areNotificationsAuthorized = granted
             }
+            
+            /*Messaging.messaging().token { token, error in
+                if let error = error {
+                    print("❌ Errore ottenimento FCM token: \(error.localizedDescription)")
+                } else if let token = token {
+                    print("✅ FCM Token ottenuto: \(token)")
+                    // 🔁 Salva su Firestore
+                    if let uid = Auth.auth().currentUser?.uid {
+                        let db = Firestore.firestore()
+                        db.collection("users").document(uid).setData(["fcmToken": token], merge: true)
+                    }
+                }
+            }*/
         }
     }
     
