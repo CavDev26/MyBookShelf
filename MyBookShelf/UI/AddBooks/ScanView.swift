@@ -1,11 +1,12 @@
 import SwiftUI
 import _SwiftData_SwiftUI
 import AVFoundation
-
+/*
 struct ScanView: View {
     @Environment(\.dismiss) var dismiss
     @StateObject private var scanner = ScannerViewModel()
     @EnvironmentObject var auth: AuthManager
+    @EnvironmentObject var permissionManager: PermissionManager
     @Binding var searchText: String
     @State var lastSearchText: String
     @State private var scannedBook: BookAPI? = nil
@@ -179,7 +180,198 @@ struct ScanView: View {
             }
         }
     }
+}*/
+
+struct ScanView: View {
+    @Environment(\.dismiss) var dismiss
+    @StateObject private var scanner = ScannerViewModel()
+    @EnvironmentObject var auth: AuthManager
+    @EnvironmentObject var permissionManager: PermissionManager
+    @Binding var searchText: String
+    @State var lastSearchText: String
+    @State private var scannedBook: BookAPI? = nil
+    @StateObject private var viewModel = CombinedGenreSearchViewModel()
+    @Environment(\.modelContext) private var context
+    @State private var lastScannedISBN: String? = nil
+    @State private var showRemoveAlert = false
+    @State private var bookToRemove: SavedBook? = nil
+    @Query var savedBooks: [SavedBook]
+
+    var body: some View {
+        Group {
+            if permissionManager.isCameraAuthorized {
+                scannerViewContent
+            } else {
+                VStack(spacing: 20) {
+                    Image(systemName: "camera.badge.ellipsis")
+                        .font(.system(size: 50))
+                        .foregroundColor(Color.terracotta)
+
+                    Text("To use the scanner function, authorize the app to access your camera.")
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+
+                    Button("Open Settings") {
+                        permissionManager.openAppSettings()
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
+                .padding()
+                .customNavigationTitle("Camera Access")
+            }
+        }
+        .onAppear {
+            permissionManager.checkCameraPermission()
+            scanner.restartIfNeeded()
+        }
+        .onDisappear {
+            scanner.stopScanning()
+        }
+    }
+
+    // MARK: - Scanner View Content
+    var scannerViewContent: some View {
+        let savedBookIDs = Set(savedBooks.map { $0.id })
+
+        return ZStack {
+            ScannerPreview(scanner: scanner)
+                .ignoresSafeArea()
+
+            VStack {
+                Image(systemName: "viewfinder.rectangular")
+                    .resizable()
+                    .scaledToFit()
+                    .opacity(0.4)
+                    .padding()
+                Spacer()
+            }
+
+            if let book = scannedBook {
+                VStack {
+                    Spacer()
+                    if !viewModel.isLoading {
+                        bookOverlay(book: book, isSaved: savedBookIDs.contains(book.id))
+                    } else {
+                        ProgressView()
+                    }
+                }
+                .transition(.move(edge: .bottom))
+                .animation(.easeInOut, value: scannedBook)
+            }
+        }
+        .customNavigationTitle("Looking for ISBNs...")
+        .onChange(of: scanner.scannedCode) {
+            guard let isbn = scanner.scannedCode else { return }
+
+            if isbn == lastScannedISBN {
+                print("ℹ️ ISBN già mostrato, nessuna fetch")
+                return
+            }
+
+            lastScannedISBN = isbn
+            fetchBookForScanner(for: isbn)
+        }
+        .alert("Remove from Library?", isPresented: $showRemoveAlert, presenting: bookToRemove) { book in
+            Button("Remove", role: .destructive) {
+                withAnimation {
+                    context.delete(book)
+                    try? context.save()
+                    if !auth.uid.isEmpty {
+                        FirebaseBookService.shared.deleteBook(bookID: book.id, for: auth.uid)
+                    }
+                    print("🗑️ Removed: \(book.title)")
+                }
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: { book in
+            Text("Are you sure you want to remove \"\(book.title)\" from your library?")
+        }
+    }
+
+    // MARK: - Book Overlay
+    func bookOverlay(book: BookAPI, isSaved: Bool) -> some View {
+        VStack(spacing: 12) {
+            if let urlString = book.coverURL, let url = URL(string: urlString) {
+                AsyncImage(url: url) { image in
+                    image.resizable().scaledToFit()
+                } placeholder: {
+                    Color.gray.opacity(0.3)
+                }
+                .frame(height: 120)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+            }
+
+            Text(book.title)
+                .font(.headline)
+                .lineLimit(1)
+
+            Text(book.authors.joined(separator: ", "))
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .lineLimit(1)
+
+            HStack(spacing: 8) {
+                Button {
+                    if !isSaved {
+                        viewModel.saveBook(book, context: context)
+                    } else if let existing = savedBooks.first(where: { $0.id == book.id }) {
+                        bookToRemove = existing
+                        showRemoveAlert = true
+                    }
+                } label: {
+                    addBookButtonView(isSaved: isSaved)
+                }
+
+                if let existing = savedBooks.first(where: { $0.id == book.id }) {
+                    Menu {
+                        ForEach(ReadingStatus.allCases, id: \.self) { status in
+                            Button {
+                                withAnimation {
+                                    existing.readingStatus = status
+                                    try? context.save()
+                                }
+                            } label: {
+                                Label(status.rawValue.capitalized, systemImage: status.iconName)
+                            }
+                        }
+                    } label: {
+                        Circle()
+                            .fill(existing.readingStatus.color)
+                            .frame(width: 20, height: 20)
+                            .overlay(
+                                Circle().stroke(Color.primary.opacity(0.2), lineWidth: 1)
+                            )
+                            .animation(.easeInOut, value: existing.readingStatus)
+                    }
+                }
+            }
+        }
+        .padding()
+        .background(.ultraThinMaterial)
+        .cornerRadius(16)
+        .padding()
+    }
+
+    func fetchBookForScanner(for isbn: String) {
+        viewModel.searchBooks(query: "isbn:\(isbn)", reset: true) { success in
+            if success, let book = viewModel.searchResults.first {
+                scannedBook = book
+            } else if let fallbackISBN = convertISBN13ToISBN10(isbn) {
+                print("🔁 Retry with ISBN-10: \(fallbackISBN)")
+                viewModel.searchBooks(query: "isbn:\(fallbackISBN)", reset: true) { fallbackSuccess in
+                    scannedBook = fallbackSuccess ? viewModel.searchResults.first : nil
+                }
+            } else {
+                print("❌ Nessun libro trovato e ISBN-13 non convertibile")
+                scannedBook = nil
+            }
+        }
+    }
 }
+
+
+
+
 
 
 struct ScannerPreview: UIViewControllerRepresentable {
@@ -208,3 +400,4 @@ class ScannerPreviewController: UIViewController {
         previewLayer.frame = view.bounds
     }
 }
+

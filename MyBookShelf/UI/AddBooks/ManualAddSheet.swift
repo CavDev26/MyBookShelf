@@ -1,6 +1,7 @@
 
 
 import SwiftUI
+import AVFoundation
 
 struct manualAddSheet: View {
     @Environment(\.colorScheme) var colorScheme
@@ -17,6 +18,8 @@ struct manualAddSheet: View {
     @EnvironmentObject var auth: AuthManager // per UID Firebase
     @ObservedObject var viewModel: CombinedGenreSearchViewModel
     
+    @EnvironmentObject var permissionManager: PermissionManager
+    @State private var showCameraPermissionAlert = false
     
     @State private var isSaving = false
     @State private var showSavedCheckmark = false
@@ -61,7 +64,29 @@ struct manualAddSheet: View {
                     }
                     .confirmationDialog("Choose Image Source", isPresented: $showingSourceDialog, titleVisibility: .visible) {
                         Button("Photo Library") { showingImagePicker = true }
-                        Button("Camera") { showingCamera = true }
+                        
+                        Button("Camera") {
+                            switch AVCaptureDevice.authorizationStatus(for: .video) {
+                            case .authorized:
+                                showingCamera = true
+                            case .notDetermined:
+                                AVCaptureDevice.requestAccess(for: .video) { granted in
+                                    DispatchQueue.main.async {
+                                        if granted {
+                                            showingCamera = true
+                                        } else {
+                                            showCameraPermissionAlert = true
+                                        }
+                                        permissionManager.checkCameraPermission()
+                                    }
+                                }
+                            case .denied, .restricted:
+                                showCameraPermissionAlert = true
+                            default:
+                                showCameraPermissionAlert = true
+                            }
+                        }
+                        //Button("Camera") { showingCamera = true }
                         Button("From URL") { showingURLPrompt = true }
                         Button("Cancel", role: .cancel) { }
                     }
@@ -165,12 +190,23 @@ struct manualAddSheet: View {
             }
             .navigationTitle("Add Book Manually")
             .navigationBarTitleDisplayMode(.inline)
-            .sheet(isPresented: $showingImagePicker) {
+            .fullScreenCover(isPresented: $showingImagePicker) {
                 ImagePicker(sourceType: .photoLibrary, selectedImage: $selectedImage)
+                    .preferredColorScheme(colorScheme)
+                    .ignoresSafeArea()
             }
             .fullScreenCover(isPresented: $showingCamera) {
                 ImagePicker(sourceType: .camera, selectedImage: $selectedImage)
-                    .preferredColorScheme(.dark) // 👈 Forza dark mode solo qui
+                    .preferredColorScheme(.dark) // Forza dark mode solo qui
+                    .ignoresSafeArea()
+            }
+            .alert("Camera Access Required", isPresented: $showCameraPermissionAlert) {
+                Button("Open Settings") {
+                    permissionManager.openAppSettings()
+                }
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text("To take a picture, please enable camera access in Settings.")
             }
             .alert("Insert Image URL", isPresented: $showingURLPrompt, actions: {
                 TextField("Image URL", text: $coverURLFromUser)

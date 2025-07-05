@@ -9,11 +9,15 @@ import SwiftUICore
 import FirebaseFirestore
 import SwiftData
 import FirebaseAuth
+import AVFoundation
 
 struct AccountView: View {
     @Environment(\.colorScheme) var colorScheme
     @EnvironmentObject var auth: AuthManager
     @EnvironmentObject var userProfile: UserProfileManager
+    
+    @EnvironmentObject var permissionManager: PermissionManager
+    @State private var showCameraPermissionAlert = false
 
     @State private var selectedImage: UIImage? = nil
     @State private var showingSourceDialog = false
@@ -27,7 +31,7 @@ struct AccountView: View {
     @State var alertMessage = ""
     @State private var isUploading = false
     @State private var nickname: String = ""
-    
+    @State private var originalImage: UIImage? = nil
     
     @State var showCustomAlert: Bool = false
     @State var successAlert: Bool = false
@@ -71,18 +75,40 @@ struct AccountView: View {
                                     showingImagePicker = true
                                 }
                                 Button("Camera") {
-                                    imagePickerSource = .camera
-                                    showingImagePicker = true
+                                    switch AVCaptureDevice.authorizationStatus(for: .video) {
+                                    case .authorized:
+                                        imagePickerSource = .camera
+                                        showingImagePicker = true
+                                    case .notDetermined:
+                                        AVCaptureDevice.requestAccess(for: .video) { granted in
+                                            DispatchQueue.main.async {
+                                                if granted {
+                                                    imagePickerSource = .camera
+                                                    showingImagePicker = true
+                                                } else {
+                                                    showCameraPermissionAlert = true
+                                                }
+                                                permissionManager.checkCameraPermission()
+                                            }
+                                        }
+                                    case .denied, .restricted:
+                                        showCameraPermissionAlert = true
+                                    default:
+                                        showCameraPermissionAlert = true
+                                    }
                                 }
                                 Button("Cancel", role: .cancel) { }
                             }
-                            .sheet(isPresented: $showingImagePicker) {
+                            .fullScreenCover(isPresented: $showingImagePicker) {
                                 ImagePicker(sourceType: imagePickerSource, selectedImage: $selectedImage)
                                     .onDisappear {
-                                        if let image = selectedImage {
+                                        if let image = selectedImage, image != originalImage {
                                             uploadProfileImage(image, for: auth.uid)
                                         }
                                     }
+                                    .preferredColorScheme(imagePickerSource == .photoLibrary ? colorScheme : .dark)
+                                    //.preferredColorScheme(.dark)
+                                    .ignoresSafeArea()
                             }
                             Spacer()
                         }
@@ -160,7 +186,7 @@ struct AccountView: View {
                 }
             }
             .customNavigationTitle("Account Settings")
-            .sheet(isPresented: $showChangeEmailSheet) {
+            .fullScreenCover(isPresented: $showChangeEmailSheet) {
                 ChangeEmailSheetView()
                     .environmentObject(auth)
             }
@@ -169,6 +195,15 @@ struct AccountView: View {
             } message: {
                 Text(alertMessage)
             }*/
+            .alert("Camera Access Required", isPresented: $showCameraPermissionAlert) {
+                Button("Open Settings") {
+                    permissionManager.openAppSettings()
+                }
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text("To take a profile picture, please enable camera access in Settings.")
+            }
+            
             .onAppear {
                 loadProfileImage()
             }
@@ -249,6 +284,7 @@ struct AccountView: View {
                let imageData = Data(base64Encoded: base64String),
                let uiImage = UIImage(data: imageData) {
                 selectedImage = uiImage
+                originalImage = uiImage // salva anche l'immagine originale
             }
 
             if let savedNickname = data["nickname"] as? String {

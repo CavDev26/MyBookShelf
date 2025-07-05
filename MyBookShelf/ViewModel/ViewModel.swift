@@ -666,5 +666,28 @@ final class ScannerViewModel: NSObject, ObservableObject, AVCaptureMetadataOutpu
         scannedCode = stringValue
         //stopScanning()
     }
+    
+    /*func checkPermissionAndStart(completion: @escaping (Bool) -> Void) {
+        let status = AVCaptureDevice.authorizationStatus(for: .video)
+        switch status {
+        case .authorized:
+            self.startScanning()
+            completion(true)
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .video) { granted in
+                if granted {
+                    self.startScanning()
+                }
+                DispatchQueue.main.async {
+                    completion(granted)
+                }
+            }
+        case .denied, .restricted:
+            completion(false)
+        @unknown default:
+            completion(false)
+        }
+    }*/
+    
 }
 

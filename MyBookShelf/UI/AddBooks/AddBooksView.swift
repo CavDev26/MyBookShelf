@@ -74,10 +74,10 @@ struct addBookManuallyView: View {
         .frame(maxWidth: .infinity)
         .frame(height: 120)
         .padding()
-        .sheet(isPresented: $showSheet) {
+        .fullScreenCover(isPresented: $showSheet) {
             manualAddSheet(viewModel: viewModel)
-                .presentationDetents([.fraction(1)])
-                .presentationDragIndicator(.visible)
+                //.presentationDetents([.fraction(1)])
+                //.presentationDragIndicator(.visible)
         }
     }
 }

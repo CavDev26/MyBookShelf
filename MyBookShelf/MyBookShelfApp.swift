@@ -13,8 +13,10 @@ import Firebase
 struct MyBookShelfApp: App {
     @AppStorage("useSystemColorScheme") var useSystemColorScheme: Bool = true
     @AppStorage("isDarkMode") var isDarkMode: Bool = false
-    @StateObject private var authManager = AuthManager() // 👈
+    @StateObject private var authManager = AuthManager()
     @StateObject private var watchManager = WatchSessionManager.shared
+    @StateObject var permissionManager = PermissionManager()
+
 
 
     init() {
@@ -26,6 +28,7 @@ struct MyBookShelfApp: App {
             StartupView()
                 .environmentObject(watchManager)
                 .environmentObject(authManager)
+                .environmentObject(permissionManager)
                 .preferredColorScheme(
                     useSystemColorScheme ? nil : (isDarkMode ? .dark : .light)
                 )

@@ -177,7 +177,7 @@ struct ShelfView: View {
                 .presentationDetents([.fraction(0.4)])
                 .presentationDragIndicator(.visible)
         }
-        .sheet(isPresented: $showAddBookShelfSheet) {
+        .fullScreenCover(isPresented: $showAddBookShelfSheet) {
             AddBooksToShelfSheet(auth: auth, shelf: shelf)
         }
         .sheet(isPresented: $manageShelfSheet) {
