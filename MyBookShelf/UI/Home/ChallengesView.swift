@@ -43,6 +43,7 @@ struct ChallengesView: View {
                             .frame(height: 120)
                             LevelSectionView(showInfoLevelSheet: $showInfoLevelSheet)
                             StatsSectionView()
+                            GraphicsSectionView()
                         }
                         .padding()
                     }
@@ -414,7 +415,7 @@ struct LevelSectionView: View {
         .modifier(ChallengesBlockMod())
     }
 }
-
+/*
 struct BadgesSectionView: View {
     @Environment(\.colorScheme) var colorScheme
     var body: some View {
@@ -447,7 +448,7 @@ struct BadgesSectionView: View {
         .modifier(ChallengesBlockMod())
     }
 }
-
+*/
 
 
 
@@ -524,7 +525,7 @@ struct StatsSectionView: View {
 
 
 
-
+/*
 struct BadgeView: View {
     var icon: String
     var title: String
@@ -543,7 +544,7 @@ struct BadgeView: View {
         }
         .frame(width: 80)
     }
-}
+}*/
 
 struct SingleRingProgress: View {
     @Environment(\.colorScheme) var colorScheme
@@ -634,3 +635,21 @@ struct LevelInfoSheetView: View {
         .padding()
     }
 }
+
+/*struct GraphicsSectionView: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 6) {
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(Color.terracotta)
+                    .frame(width: 4, height: 20)
+                
+                Text("Stats")
+                    .modifier(TitleTextMod(size: 20))
+            }
+            
+            //grafico
+            
+        }
+    }
+}*/
