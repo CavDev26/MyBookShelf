@@ -678,23 +678,43 @@ class CompleterDelegate: NSObject, ObservableObject, MKLocalSearchCompleterDeleg
 
 
 
-
 struct NotificationsView: View {
     @ObservedObject var viewModel: NotificationViewModel
-    
+    @EnvironmentObject var permissionManager: PermissionManager
+
     var body: some View {
-        List(viewModel.notifications) { notification in
-            VStack(alignment: .leading, spacing: 4) {
-                Text(notification.notName)
-                    .font(.headline)
-                Text(notification.message)
-                    .font(.caption)
-                Text(notification.timestamp.formatted(date: .numeric, time: .shortened))
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+        List {
+            if !permissionManager.areNotificationsAuthorized {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Notifications are not enabled")
+                        .font(.headline)
+                    Text("To receive reading session updates and more, please enable notifications in Settings.")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    Button("Open Settings") {
+                        permissionManager.openAppSettings()
+                    }
+                    .foregroundColor(.blue)
+                }
+                .padding(.vertical, 8)
             }
-            .padding(.vertical, 6)
+
+            ForEach(viewModel.notifications) { notification in
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(notification.notName)
+                        .font(.headline)
+                    Text(notification.message)
+                        .font(.caption)
+                    Text(notification.timestamp.formatted(date: .numeric, time: .shortened))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.vertical, 6)
+            }
         }
         .navigationTitle("Notifications")
+        .onAppear {
+            permissionManager.checkNotificationPermission() // 🔄 aggiornamento dello stato
+        }
     }
 }

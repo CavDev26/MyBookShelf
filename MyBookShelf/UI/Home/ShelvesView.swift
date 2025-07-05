@@ -4,7 +4,7 @@ import SwiftUI
 
 struct ShelvesView: View {
     @Environment(\.colorScheme) var colorScheme
-    @EnvironmentObject var permissionManager: PermissionManager // 👈
+    @EnvironmentObject var permissionManager: PermissionManager
     
     var shelves: [Shelf]
     @ObservedObject var viewModel: CombinedGenreSearchViewModel

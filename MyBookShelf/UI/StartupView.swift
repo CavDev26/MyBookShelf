@@ -8,6 +8,7 @@ import UserNotifications
 struct StartupView: View {
     @EnvironmentObject var auth: AuthManager
     @StateObject var userProfileManager = UserProfileManager()
+    @EnvironmentObject var permissionManager: PermissionManager
     @State private var isChecking = true
     @Namespace private var transitionNamespace
     @Environment(\.modelContext) private var modelContext
@@ -35,7 +36,9 @@ struct StartupView: View {
             WatchSessionManager.shared.setModelContext(modelContext)
             WatchSessionManager.shared.setAuthManager(auth)
             
-            requestNotificationPermission()
+            permissionManager.requestNotificationPermission()
+            
+            //requestNotificationPermission()
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 isChecking = false
                 if auth.isLoggedIn {
@@ -58,7 +61,7 @@ struct StartupView: View {
     }
     
 
-    func requestNotificationPermission() {
+    /*func requestNotificationPermission() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
             if granted {
                 print("✅ Notifiche autorizzate")
@@ -66,7 +69,7 @@ struct StartupView: View {
                 print("❌ Permesso notifiche negato: \(error?.localizedDescription ?? "unknown")")
             }
         }
-    }
+    }*/
     private func ensureStatsExistAndUpdate() {
         if globalStats.isEmpty {
             let stats = GlobalReadingStats()

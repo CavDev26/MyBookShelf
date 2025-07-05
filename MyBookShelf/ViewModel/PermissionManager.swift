@@ -9,6 +9,7 @@ class PermissionManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var isLocationAuthorized: Bool = false
     @Published var isBiometryAvailable: Bool = false
     @Published var biometryType: LABiometryType = .none
+    @Published var areNotificationsAuthorized: Bool = false
 
     let locationManager = CLLocationManager()
 
@@ -17,6 +18,7 @@ class PermissionManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         checkCameraPermission()
         setupLocation()
         checkBiometry()
+        checkNotificationPermission()
     }
 
     // MARK: - Camera
@@ -67,6 +69,25 @@ class PermissionManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         biometryType = context.biometryType
     }
 
+    // MARK: - Notifications
+    func checkNotificationPermission() {
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            DispatchQueue.main.async {
+                self.areNotificationsAuthorized = (settings.authorizationStatus == .authorized)
+            }
+        }
+    }
+
+    func requestNotificationPermission() {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
+            DispatchQueue.main.async {
+                self.areNotificationsAuthorized = granted
+            }
+        }
+    }
+    
+    
+    
     // MARK: - Open Settings
     func openAppSettings() {
         if let url = URL(string: UIApplication.openSettingsURLString),
