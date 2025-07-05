@@ -27,15 +27,29 @@ class WatchSessionManager: NSObject, WCSessionDelegate, ObservableObject {
             print("🟢 Watch session activated")
         }
     }
-
+    
     
     func session(_ session: WCSession, didReceiveUserInfo userInfo: [String : Any] = [:]) {
         if let booksData = userInfo["readingBooks"] as? Data {
             if let decoded = try? JSONDecoder().decode([WatchBook].self, from: booksData) {
                 DispatchQueue.main.async {
                     self.readingBooks = decoded
+                    print("📥 Libri ricevuti via transferUserInfo: \(decoded.count)")
                 }
             }
+        }
+    }
+    
+    func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
+        if let booksData = message["readingBooks"] as? Data {
+            if let decoded = try? JSONDecoder().decode([WatchBook].self, from: booksData) {
+                DispatchQueue.main.async {
+                    self.readingBooks = decoded
+                    print("📥 Libri ricevuti via sendMessage: \(decoded.count)")
+                }
+            }
+        } else {
+            print("⚠️ Messaggio ricevuto ma chiave 'readingBooks' non trovata")
         }
     }
     
@@ -46,6 +60,13 @@ class WatchSessionManager: NSObject, WCSessionDelegate, ObservableObject {
             print("✅ Watch session state: \(activationState.rawValue)")
         }
     }
-
-    // Puoi anche aggiungere altri metodi WCSessionDelegate se ti servono
+    
+    func requestReadingBooks() {
+        if WCSession.default.isReachable {
+            WCSession.default.sendMessage(["requestReadingBooks": true], replyHandler: nil, errorHandler: { error in
+                print("❌ Errore richiesta libri: \(error.localizedDescription)")
+            })
+        }
+    }
+    
 }

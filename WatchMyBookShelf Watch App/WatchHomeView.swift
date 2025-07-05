@@ -23,6 +23,9 @@ struct WatchHomeView: View {
             }
             .padding(.bottom, 20)
         }
+        .onAppear{
+            WatchSessionManager.shared.requestReadingBooks()
+        }
     }
 }
 

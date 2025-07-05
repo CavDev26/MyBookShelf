@@ -52,13 +52,23 @@ class WatchSessionManager: NSObject, ObservableObject, WCSessionDelegate {
         }
     }
 
-    func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
+    /*func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
         handleIncomingData(message)
-    }
+    }*/
 
     func session(_ session: WCSession, didReceiveUserInfo userInfo: [String : Any] = [:]) {
         handleIncomingData(userInfo)
     }
+    
+    func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
+        if message["requestReadingBooks"] as? Bool == true {
+            print("📥 Ricevuta richiesta libri dal Watch")
+            sendCurrentReadingBooks()
+        } else {
+            handleIncomingData(message)
+        }
+    }
+    
 
     /*private func handleIncomingData(_ data: [String: Any]) {
         guard let type = data["type"] as? String else { return }
@@ -150,7 +160,39 @@ class WatchSessionManager: NSObject, ObservableObject, WCSessionDelegate {
         }
     }
     
-    
+    private func sendCurrentReadingBooks() {
+        guard let modelContext = modelContext else { return }
+
+        let descriptor = FetchDescriptor<SavedBook>()
+        guard let books = try? modelContext.fetch(descriptor) else {
+            print("❌ Impossibile fetchare i libri da SwiftData")
+            return
+        }
+
+        let readingBooks = books.filter { $0.readingStatus == .reading }
+
+        let watchBooks: [WatchBook] = readingBooks.map {
+            WatchBook(
+                id: $0.id,
+                title: $0.title,
+                author: $0.authors.joined(separator: ", "),
+                coverData: $0.coverURL
+            )
+        }
+
+        guard let encoded = try? JSONEncoder().encode(watchBooks) else {
+            print("❌ Encoding fallito")
+            return
+        }
+
+        if WCSession.default.isReachable {
+            WCSession.default.sendMessage(["readingBooks": encoded], replyHandler: nil) { error in
+                print("❌ Errore invio libri: \(error.localizedDescription)")
+            }
+        } else {
+            print("⚠️ Watch non raggiungibile al momento")
+        }
+    }
     
     
 
