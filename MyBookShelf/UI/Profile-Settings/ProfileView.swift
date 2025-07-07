@@ -104,9 +104,9 @@ struct ProfileView: View {
                                 Label("Preferences", systemImage: "gearshape")
                             }
                             
-                            NavigationLink(destination: NotificationView()) {
+                            /*NavigationLink(destination: NotificationView()) {
                                 Label("Notifications", systemImage: "bell")
-                            }
+                            }*/
                         }
                         .listRowBackground(colorScheme == .dark ? Color.backgroundColorDark2 : Color.backgroundColorLight)
                         

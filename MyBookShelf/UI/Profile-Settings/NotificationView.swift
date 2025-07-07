@@ -1,4 +1,4 @@
-import SwiftUI
+/*import SwiftUI
 
 struct NotificationView: View {
     @Environment(\.colorScheme) var colorScheme
@@ -12,3 +12,4 @@ struct NotificationView: View {
         .customNavigationTitle("Notifications")
     }
 }
+*/

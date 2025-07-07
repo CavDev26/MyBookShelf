@@ -97,12 +97,12 @@ struct UpdateProgressView: View {
 
     var body: some View {
         VStack {
-            Text("A che pagina sei arrivato?")
+            Text("Set new page")
                 .font(.headline)
-            TextField("Es. 120", text: $currentPage)
+            TextField("Ex. 120", text: $currentPage)
                 //.keyboardType(.numberPad)
 
-            Button("Invia") {
+            Button("Send") {
                 if let page = Int(currentPage) {
                     let info: [String: Any] = [
                         "type": "readingSession",
